@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { TraceLink } from "./components/TraceLink";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -164,6 +165,7 @@ export function LogsTab() {
                           {log.metadata?.error && <Badge variant="destructive">Error</Badge>}
                           {log.executionTimeMs && <Badge variant="secondary">{log.executionTimeMs}ms</Badge>}
                           {log.turnNumber !== null && <Badge>Turn {log.turnNumber}</Badge>}
+                          <TraceLink trace={log.metadata?.langsmith as any} />
                         </div>
                         <span className="text-xs text-muted-foreground">
                           {new Date(log.createdAt).toLocaleString()}

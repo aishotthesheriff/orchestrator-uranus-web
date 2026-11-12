@@ -92,7 +92,7 @@ Two rules keep this safe:
 
 Every attempt is recorded. A stage's entries in the turn's `promptChain` list each attempt in order (`recovery: "retry" | "fallback"`, `jsonQuality: raw | extracted | repaired | salvaged | failed`); the last entry is the output that was used. Retries and fallbacks log a `[LLM]` warning and increment the `llm_stage_recovery_total` metric (`outcome`: `retry_ok`, `fallback_ok`, `failed`).
 
-Steps 2 and 3 live in `server/llm/json.ts`; steps 4 and 5 in `ContentGenerationRouter.withRecovery` (`server/pce/contentRouter.ts`).
+Steps 2 and 3 live in `server/llm/json.ts`; steps 4 and 5 in `withRecovery` (`server/pce/graph/recovery.ts`). On a LangSmith trace each attempt is its own run (`<stage>.attempt`, `<stage>.retry`, `<stage>.fallback`); see [`OBSERVABILITY_AND_EVALS.md`](OBSERVABILITY_AND_EVALS.md).
 
 ## Forcing a model from a theme
 
@@ -105,9 +105,11 @@ Steps 2 and 3 live in `server/llm/json.ts`; steps 4 and 5 in `ContentGenerationR
 | Provider clients, timeout, error text | `server/llm/clients.ts` |
 | Resolution, defaults, theme overrides | `server/llm/models.ts` |
 | JSON repair and narration salvage | `server/llm/json.ts` |
-| Retry and fallback | `withRecovery` in `server/pce/contentRouter.ts` |
-| Stage execution | `executeJsonPrompt` in `server/aiService.ts` |
+| Retry and fallback | `withRecovery` in `server/pce/graph/recovery.ts` |
+| Stage execution | `runStage` in `server/pce/graph/stages.ts`; the model call is `executeJsonPrompt` in `server/llm/jsonPrompt.ts` |
+| Pipeline (stage order, parallel actions and image) | `server/pce/graph/graph.ts`, entered through `runPceGraph` |
 | Qualification runner | `runModelQualification` in `server/pce/inspectorService.ts` |
+| Verdict rules (clean, repaired, fallback, failed) | `server/pce/verdict.ts`, shared with evals |
 | Admin API (CRUD, discover, check, qualify) | `server/routes/llmModelsAdmin.ts` → `/api/admin/llm-models` |
 | Player list | `server/routes/llmModelsReference.ts` → `/api/reference/llm-models` |
 | Dev Tools UI | `client/src/pages/devtools/LlmModelsTab.tsx`, `client/src/pages/devtools/llm/` |
@@ -119,7 +121,8 @@ Steps 2 and 3 live in `server/llm/json.ts`; steps 4 and 5 in `ContentGenerationR
 - **Environment:** `HF_TOKEN` for Hugging Face; `AI_INTEGRATIONS_OPENAI_API_KEY` (or `OPENAI_API_KEY`) for OpenAI. `LLM_REQUEST_TIMEOUT_MS` sets the per-request timeout (default 90000).
 - **Existing databases:** run `npm run db:bootstrap`. It is safe to re-run and applies the migration, which adds the table, `users.llm_model_key`, `mod_story_themes.llm_model_key`, and seed rows (only `gpt-4o-mini` active).
 - **Logs:** every stage call, including failures, is in LLM Logs with its model. Filter by model name.
-- **Tests:** `npx vitest run server/llm server/pce/contentRouter.test.ts client/src/hooks`.
+- **Tests:** `npx vitest run server/llm server/pce/graph server/evals client/src/hooks` (set `DATABASE_URL` to any value; nothing connects).
+- **Comparing models on quality, not only structure:** run an eval experiment per model in Dev Tools > Evals. See [`OBSERVABILITY_AND_EVALS.md`](OBSERVABILITY_AND_EVALS.md).
 
 ## Known limits
 

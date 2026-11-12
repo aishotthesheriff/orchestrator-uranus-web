@@ -69,7 +69,7 @@ DevTools operates as a **content management layer** that sits above the runtime 
 │                                                               │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │  Tab Navigation (shadcn/ui Tabs)                     │   │
-│  │  14 specialized tabs for different domains           │   │
+│  │  17 specialized tabs for different domains           │   │
 │  └─────────────────────────────────────────────────────┘   │
 │                                                               │
 │  ┌─────────────────────────────────────────────────────┐   │
@@ -350,6 +350,17 @@ DevTools operates as a **content management layer** that sits above the runtime 
 #### Story (LLM) Model Configuration
 
 The **LLM Models** tab manages the text models that write the story: a Catalog, a Discover browser, a Playground and a Qualify test that runs the real story pipeline. See [`LLM_MODELS.md`](LLM_MODELS.md) for the full workflow.
+
+The **Evals** tab scores the story pipeline on the saved PCE Inspector scenarios. Use it before publishing a prompt change or activating a model:
+
+1. Run an experiment on **Published** prompts. This is the baseline.
+2. Edit prompts in the Prompts tab (or pick another story model), then run an experiment on **Draft** prompts.
+3. Tick the baseline's checkbox in the Experiments table. Every other row then shows the change in each score.
+4. Select a row for per-scenario scores and the judges' reasoning, or open the experiment in LangSmith to compare outputs side by side.
+
+The tab also sets what share of live turns is scored in the background and which model does the judging. Offline experiments need LangSmith configured; live-turn scoring does not. See [`OBSERVABILITY_AND_EVALS.md`](OBSERVABILITY_AND_EVALS.md).
+
+**Open trace** buttons appear in LLM Logs, PCE Inspector runs, Qualify runs and Game Telemetry on records made while LangSmith tracing was on. Each opens that record's trace: the full turn with every prompt, variable set, model call, retry and fallback.
 
 #### Image Model Configuration
 
@@ -1344,7 +1355,14 @@ DevTools Page
 │   │
 │   ├── Game Telemetry Tab
 │   │   ├── Game Selector
-│   │   └── Game-Specific Metrics
+│   │   ├── Game-Specific Metrics
+│   │   └── Per-Turn Trace Link and Eval Scores
+│   │
+│   ├── Evals Tab
+│   │   ├── Run an Experiment (model, prompts, scenarios, judges)
+│   │   ├── Experiments (scores, baseline comparison)
+│   │   ├── Dataset (scenario sync)
+│   │   └── Live Turns (sample rate, judge model)
 │   │
 │   └── Image Cache Tab
 │       ├── Cache Statistics
@@ -1484,6 +1502,7 @@ Prompts Tab
 - [`AGENTS.md`](../AGENTS.md) - Agent responsibilities and interactions
 - [`docs_master/current/API_GUIDE.md`](API_GUIDE.md) - Complete API documentation
 - [`docs_master/current/LLM_MODELS.md`](LLM_MODELS.md) - Story model catalog, selection and qualification
+- [`docs_master/current/OBSERVABILITY_AND_EVALS.md`](OBSERVABILITY_AND_EVALS.md) - Pipeline graph, LangSmith tracing, eval experiments and live-turn scoring
 - [`docs_master/current/SYSTEM_OVERVIEW.md`](SYSTEM_OVERVIEW.md) - High-level system architecture
 
 **Content Management:**
@@ -1553,9 +1572,18 @@ Prompts Tab
 **Diagnostics:**
 - `GET /api/llm-logs` - List LLM interaction logs (filterable by mode, stage, date)
 
+**Evals:**
+- `GET /api/admin/evals/status` - Tracing state, dataset counts, evaluators, settings
+- `POST /api/admin/evals/dataset/sync` - Sync saved scenarios to the LangSmith dataset
+- `GET /api/admin/evals/experiments` - List experiments
+- `POST /api/admin/evals/experiments` - Start an experiment
+- `PUT /api/admin/evals/settings` - Live sample rate and judge model
+
 **Observability:**
+- `GET /api/admin/observability/status` - Whether LangSmith tracing is on and reachable
+- `GET /api/admin/observability/trace-url` - LangSmith link for a stored trace reference
 - `GET /api/admin/telemetry/metrics` - Get system telemetry
-- `GET /api/admin/telemetry/game/:gameId` - Get game telemetry
+- `GET /api/admin/telemetry/game/:gameId` - Get game telemetry (includes each turn's trace reference and eval scores)
 - `GET /api/cache/stats` - Get cache statistics
 - `GET /api/cache/images` - List cached images
 - `DELETE /api/cache/images/:id` - Delete cached image

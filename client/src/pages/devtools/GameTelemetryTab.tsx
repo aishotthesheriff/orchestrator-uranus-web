@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { apiRequest } from "@/lib/queryClient";
+import { TraceLink, type TraceRef } from "./components/TraceLink";
 
 interface TurnTiming {
   turnNumber: number;
@@ -21,7 +22,19 @@ interface TurnTiming {
     template: string;
     latencyMs: number;
     cache: string;
+    /** Set on a second or third call for the same stage. */
+    recovery?: "retry" | "fallback";
+    error?: string;
   }>;
+  /** Where this turn is in LangSmith; null when it was played with tracing off. */
+  langsmith?: TraceRef | null;
+  /** Scores, when this turn was picked by live sampling (Dev Tools > Evals). */
+  evals?: {
+    sampledAt: string;
+    verdict: string;
+    judgeModel: string;
+    scores: Array<{ key: string; score: number | null; comment?: string }>;
+  } | null;
 }
 
 interface GameTelemetryData {
@@ -63,7 +76,10 @@ function TurnTimingVisualization({ turn }: { turn: TurnTiming }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm">Turn {turn.turnNumber}</CardTitle>
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="text-sm">Turn {turn.turnNumber}</CardTitle>
+          <TraceLink trace={turn.langsmith} />
+        </div>
         <CardDescription className="text-xs">
           Total: {formatDuration(turn.totalDurationMs)}
         </CardDescription>
@@ -97,12 +113,42 @@ function TurnTimingVisualization({ turn }: { turn: TurnTiming }) {
                   <Badge variant="outline" className="text-xs">
                     {call.template}
                   </Badge>
+                  <span className="text-muted-foreground">{call.model}</span>
                   <span className="text-muted-foreground">{formatDuration(call.latencyMs)}</span>
-                  <Badge variant={call.cache === 'hit' ? 'default' : 'secondary'} className="text-xs">
-                    {call.cache}
-                  </Badge>
+                  {call.recovery && (
+                    <Badge
+                      variant="outline"
+                      className="text-xs"
+                      title={call.recovery === "retry" ? "Second try on the same model" : "Served by the fallback model"}
+                    >
+                      {call.recovery}
+                    </Badge>
+                  )}
+                  {call.error && (
+                    <Badge variant="destructive" className="text-xs" title={call.error}>
+                      unusable
+                    </Badge>
+                  )}
                 </div>
               ))}
+            </div>
+          )}
+
+          {turn.evals && (
+            <div className="mt-4 pt-2 border-t" data-testid={`turn-evals-${turn.turnNumber}`}>
+              <div className="text-xs font-medium text-muted-foreground mb-2">
+                Eval scores ({turn.evals.verdict}, judged by {turn.evals.judgeModel}):
+              </div>
+              <ul className="space-y-1 text-xs">
+                {turn.evals.scores.map((score) => (
+                  <li key={score.key} className="break-words">
+                    <span className="font-medium">
+                      {score.key} {score.score === null ? "n/a" : score.score.toFixed(2)}
+                    </span>
+                    {score.comment && <span className="text-muted-foreground"> — {score.comment}</span>}
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </div>

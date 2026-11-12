@@ -272,6 +272,8 @@ export interface QualifyResult {
   narration?: string;
   imagePrompt?: string;
   actions?: string[];
+  /** Where the run is in LangSmith; absent when it was made with tracing off. */
+  trace?: { runId: string; traceId: string };
 }
 
 /** apiRequest throws "<status>: <body>"; pull the server's `error` field out when present. */

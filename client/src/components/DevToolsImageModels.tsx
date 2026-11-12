@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Label } from "@/components/ui/label";
+import { errorMessage } from "@/pages/devtools/llm/shared";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,7 +34,22 @@ type ImageModel = {
   triggerWords?: string | null;
   class?: string | null;
   isDefault?: boolean;
+  /** Generation settings for Hugging Face models: { num_inference_steps?, guidance_scale? }. */
+  providerParams?: { num_inference_steps?: number; guidance_scale?: number } | null;
 };
+
+/** Set or clear one generation setting, keeping the others; null when none are left. */
+function withParam(
+  current: ImageModel["providerParams"],
+  key: "num_inference_steps" | "guidance_scale",
+  raw: string
+): ImageModel["providerParams"] {
+  const next = { ...(current ?? {}) };
+  const trimmed = raw.trim();
+  if (trimmed === "") delete next[key];
+  else next[key] = Number(trimmed);
+  return Object.keys(next).length > 0 ? next : null;
+}
 
 function TruncatedText({ text, maxLength = 30 }: { text: string | null | undefined; maxLength?: number }) {
   if (!text) return <span className="text-muted-foreground">-</span>;
@@ -80,6 +96,7 @@ export default function DevToolsImageModels() {
       hfProvider: model.hfProvider ?? undefined,
       class: model.class ?? undefined,
       triggerWords: model.triggerWords ?? undefined,
+      providerParams: model.providerParams ?? null,
       active: model.active,
       sortOrder: model.sortOrder,
       isDefault: model.isDefault ?? false,
@@ -220,10 +237,49 @@ export default function DevToolsImageModels() {
                 <Label htmlFor="hf-provider">HF Provider</Label>
                 <Input
                   id="hf-provider"
+                  list="hf-provider-options"
                   placeholder="e.g. fal-ai (optional)"
                   value={draft.hfProvider || ""}
                   onChange={(e) => setDraft({ ...draft, hfProvider: e.target.value })}
                 />
+                <datalist id="hf-provider-options">
+                  {["fal-ai", "replicate", "hf-inference", "together", "nebius", "novita", "wavespeed", "auto"].map((name) => (
+                    <option key={name} value={name} />
+                  ))}
+                </datalist>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="steps">Steps</Label>
+                <Input
+                  id="steps"
+                  type="number"
+                  min={1}
+                  max={100}
+                  placeholder="5 (default)"
+                  value={draft.providerParams?.num_inference_steps ?? ""}
+                  onChange={(e) =>
+                    setDraft({ ...draft, providerParams: withParam(draft.providerParams, "num_inference_steps", e.target.value) })
+                  }
+                />
+                <p className="text-xs text-muted-foreground">
+                  Hugging Face models only. Distilled models (FLUX Schnell, turbo) want about 4 to 5; SDXL wants about 30.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="guidance">Guidance scale</Label>
+                <Input
+                  id="guidance"
+                  type="number"
+                  min={0}
+                  max={30}
+                  step="0.5"
+                  placeholder="model default"
+                  value={draft.providerParams?.guidance_scale ?? ""}
+                  onChange={(e) =>
+                    setDraft({ ...draft, providerParams: withParam(draft.providerParams, "guidance_scale", e.target.value) })
+                  }
+                />
+                <p className="text-xs text-muted-foreground">Leave empty for the provider's default. SDXL: about 7.</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="class">Class</Label>
@@ -275,6 +331,14 @@ export default function DevToolsImageModels() {
             </div>
             
             {/* Save Buttons */}
+            {(upsert.error || update.error) && (
+              <div
+                className="mt-4 rounded border border-destructive/50 bg-destructive/10 p-3 text-sm break-words"
+                data-testid="image-model-save-error"
+              >
+                {errorMessage(upsert.error ?? update.error)}
+              </div>
+            )}
             <div className="flex gap-2 mt-4 pt-4 border-t">
               {isEditing && (
                 <>

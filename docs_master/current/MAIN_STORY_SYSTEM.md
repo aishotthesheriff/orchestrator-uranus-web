@@ -326,8 +326,8 @@ The PCE follows a **sequential pipeline architecture** with four distinct stages
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│         ContentGenerationRouter                          │
-│  (Orchestrates stage execution and error handling)      │
+│         Pipeline graph (server/pce/graph)                │
+│  (Stage order, parallel branches, retry and fallback)   │
 └──────────────────────┬───────────────────────────────────┘
                        │
         ┌──────────────▼──────────────┐
@@ -383,18 +383,18 @@ The PCE receives comprehensive context from all three subsystems:
 
 **Core Components**:
 
-#### 1. **Content Generation Router** (`contentRouter.ts`)
+#### 1. **Pipeline Graph** (`server/pce/graph/`)
 
-The router orchestrates the entire pipeline execution:
+The pipeline is a LangGraph graph, entered through `runPceGraph(context, options)`. See [PROMPT_COMPOSITION_ENGINE.md](PROMPT_COMPOSITION_ENGINE.md) and [OBSERVABILITY_AND_EVALS.md](OBSERVABILITY_AND_EVALS.md). The method names listed below are the stages it runs; each is now `runStage("<stage>", ...)` in `stages.ts`.
 
 **Responsibilities**:
 - Stage sequencing and dependency management
 - Error handling and metadata aggregation
 - Parallel execution of independent stages (Image + Actions)
-- Result validation and fallback coordination
+- Retry and fallback-model recovery per stage
 
-**Key Methods**:
-- `generateFullTurnContent(context)`: Executes complete pipeline
+**Stages**:
+- `runPceGraph(context)`: Executes complete pipeline
 - `generateMasterEnrichment(context)`: Stage 1 execution
 - `generateNarrative(context, master)`: Stage 2 execution
 - `generateImagePrompt(context, master, narrative)`: Stage 3 execution
@@ -761,13 +761,7 @@ const context = await buildTurnGenerationContext(
 );
 
 // 5. Generate content via PCE pipeline
-const router = new ContentGenerationRouter({
-  master: runMasterStage,
-  narrative: runNarrativeStage,
-  image: runImageStage,
-  actions: runActionsStage
-});
-const turnContent = await router.generateFullTurnContent(context);
+const turnContent = await runPceGraph(context); // server/pce/graph
 
 // 6. Persist manifest and enqueue to turn-apply
 await storage.updateTurnJob(job.id, { manifestData: manifest });
@@ -1365,7 +1359,7 @@ describe('PCE Integration', () => {
       preferences,
       { name: 'Cosmic Bureaucracy', segment: 'Outer Darkness', skill: 'Engineering' }
     );
-    const result = await router.generateFullTurnContent(context);
+    const result = await runPceGraph(context);
     
     expect(result.narrative.output?.narration).toContain('Cosmic Bureaucracy');
   });
@@ -1373,7 +1367,7 @@ describe('PCE Integration', () => {
   it('incorporates running gags in narrative', async () => {
     const state = createStateWithRunningGags(['Paperwork Singularity', 'Asteroid Belt Surprise']);
     const context = await buildTurnGenerationContext(state, action, checks, preferences, null);
-    const result = await router.generateFullTurnContent(context);
+    const result = await runPceGraph(context);
     
     expect(result.narrative.output?.narration).toMatch(/Paperwork|Asteroid/);
   });
@@ -1651,7 +1645,8 @@ PCE Image/Actions Stages
 - `server/gameLogic.ts`: Day advancement and segment updates
 
 **PCE Pipeline**:
-- `server/pce/contentRouter.ts`: Pipeline orchestration
+- `server/pce/graph/`: Pipeline graph, stage runner, retry and fallback
+- `server/pce/contentRouter.ts`: Shared pipeline types
 - `server/pce/promptBuilder.ts`: Template loading and variable substitution
 - `server/pce/settings.ts`: Theme/style resolution
 - `server/pce/modelInstructions.ts`: Model-specific prompt adaptation

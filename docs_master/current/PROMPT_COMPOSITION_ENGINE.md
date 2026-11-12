@@ -54,7 +54,7 @@ Game State + User Preferences
 ```
 
 **Integration Points**:
-- **AI Service** (`server/aiService.ts`): Consumes PCE pipeline via `ContentGenerationRouter`
+- **AI Service** (`server/aiService.ts`): Runs the PCE pipeline through `runPceGraph` (`server/pce/graph`)
 - **Turn Processor**: Uses PCE to generate turn content during game execution
 - **Game Initialization**: Resolves PCE theme/style selections for new games
 - **DevTools**: Provides PCE prompt editing (Prompts tab) and catalog management (PCE tab)
@@ -69,8 +69,8 @@ The PCE follows a **sequential pipeline architecture** with four distinct stages
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│         ContentGenerationRouter                          │
-│  (Orchestrates stage execution and error handling)      │
+│         Pipeline graph (server/pce/graph)                │
+│  (Stage order, parallel branches, retry and fallback)   │
 └──────────────────────┬───────────────────────────────────┘
                        │
         ┌──────────────▼──────────────┐
@@ -102,22 +102,25 @@ The PCE follows a **sequential pipeline architecture** with four distinct stages
 
 ### Core Components
 
-#### 1. **Content Generation Router** (`contentRouter.ts`)
+#### 1. **Pipeline Graph** (`server/pce/graph/`)
 
-The router orchestrates the entire pipeline execution:
+The pipeline is a LangGraph graph. Types shared with its callers (`StageResult`, `StageMetadata`, `TurnGenerationContext`, `FullTurnContentResult`) are in `contentRouter.ts`.
 
 **Responsibilities**:
-- Stage sequencing and dependency management
-- Error handling and metadata aggregation
+- Stage sequencing and dependency management (`graph.ts`)
+- One stage runner for all four stages: variables, prompt, model call, JSON, output check (`stages.ts`)
+- Retry and fallback-model recovery, with every attempt recorded (`recovery.ts`)
 - Parallel execution of independent stages (Image + Actions)
-- Result validation and fallback coordination
+- Running part of the pipeline on supplied upstream data (PCE Inspector single-stage runs)
 
-**Key Methods**:
-- `generateFullTurnContent(context)`: Executes complete pipeline
-- `generateMasterEnrichment(context)`: Stage 1 execution
-- `generateNarrative(context, master)`: Stage 2 execution
-- `generateImagePrompt(context, master, narrative)`: Stage 3 execution
-- `generateActions(context, master, narrative)`: Stage 4 execution
+**Entry point**: `runPceGraph(context, options)` in `index.ts`
+- no options: the whole turn on published prompts; throws if a stage produced nothing
+- `promptSource: "database"`: use the drafts being edited in Dev Tools
+- `mode: "lenient"`: return what was produced instead of throwing
+- `target`, `upstream`: stop after one stage; supply earlier stages' output instead of running them
+- `recover: false`: run each stage once, without retry or fallback
+
+See [OBSERVABILITY_AND_EVALS.md](OBSERVABILITY_AND_EVALS.md) for the graph's design notes and how each stage appears on a trace.
 
 **Error Handling Strategy**:
 - Each stage returns `StageResult<T>` with `ok` boolean and `metadata` array
@@ -142,7 +145,7 @@ Handles template loading, variable substitution, and validation:
 - Strips documentation blocks (`<!-- PCE_TEMPLATE_DOC_START ... -->`) before LLM delivery
 
 **Key Functions**:
-- `buildPcePrompt(templateName, variables, options)`: Builds system/user prompt pair
+- `buildPcePrompt(templateName, variables, options)`: Builds system/user prompt pair, plus `template: { name, source, hash }` identifying the exact template version used
 - `loadPceTemplate(templateName)`: Loads template from reference or file
 - `validateMetaPromptVariables(template, variables)`: Validates all placeholders
 - `renderTemplateString(template, variables, options)`: Performs substitution
@@ -440,12 +443,14 @@ Flattener creates:
 
 **Internal Modules**:
 - `server/pce/promptBuilder.ts`: Template loading and variable substitution
-- `server/pce/contentRouter.ts`: Pipeline orchestration
+- `server/pce/graph/`: Pipeline graph, stage runner, retry and fallback
+- `server/pce/contentRouter.ts`: Shared pipeline types
+- `server/pce/verdict.ts`: Structural verdict (clean, repaired, fallback, failed)
 - `server/pce/settings.ts`: Theme/style resolution
 - `server/pce/modelInstructions.ts`: Model-specific prompt adaptation
 
 **Integration Points**:
-- `server/aiService.ts`: Consumes PCE via `ContentGenerationRouter`
+- `server/aiService.ts`: Runs the pipeline via `runPceGraph`
 - `server/metrics.ts`: Tracks template load performance
 
 ### Relationships & Interactions
@@ -469,7 +474,7 @@ gatherTurnPromptIngredients()
     ↓
 buildTurnGenerationContext()
     ↓
-ContentGenerationRouter.generateFullTurnContent()
+runPceGraph()
     ↓
 [Master Stage] → MasterEnrichmentData
     ↓
@@ -526,17 +531,13 @@ const context = await buildTurnGenerationContext(
 
 **2. Pipeline Execution**
 ```typescript
-import { ContentGenerationRouter } from './pce/contentRouter';
-import { runMasterStage, runNarrativeStage, runImageStage, runActionsStage } from './aiService';
+import { runPceGraph } from './pce/graph';
 
-const router = new ContentGenerationRouter({
-  master: runMasterStage,
-  narrative: runNarrativeStage,
-  image: runImageStage,
-  actions: runActionsStage
-});
+// Published prompts, retry and fallback on, throws if any stage produced nothing
+const result = await runPceGraph(context);
 
-const result = await router.generateFullTurnContent(context);
+// The same turn on the Dev Tools drafts, returning partial results instead of throwing
+const draft = await runPceGraph(context, { promptSource: "database", mode: "lenient" });
 ```
 
 **3. Result Processing**
@@ -598,57 +599,51 @@ Add to `releases/current/data/prompts.json`:
 }
 ```
 
-**3. Create Stage Handler**
+**3. Describe the Stage**
+
+Add an entry to the `STAGES` table in `server/pce/graph/stages.ts` (and the stage name to `PromptStage` in `contentRouter.ts`). The shared `runStage` does the rest: prompt rendering, the model call, JSON reading, logging, metrics and tracing.
+
 ```typescript
-export async function runCustomStage(
-  context: TurnGenerationContext,
-  master: MasterEnrichmentData,
-  narrative: NarrativePayload
-): Promise<StageResult<CustomPayload>> {
-  const variables = buildCustomVariables(context, master, narrative);
-  const prompts = await buildPcePrompt("custom", variables, { validate: true });
-  
-  const { rawContent, metadata } = await executeJsonPrompt({
-    stage: "custom",
-    template: "custom",
-    systemPrompt: prompts.system,
-    userPrompt: prompts.user || undefined,
-    gameId: context.gameId,
-    turnNumber: context.turnNumber
-  });
-  
-  // Parse and validate output
-  const parsed = JSON.parse(rawContent);
-  const output: CustomPayload = {
-    customField: parsed.customField
-  };
-  
-  return { ok: true, output, metadata: [metadata] };
+custom: {
+  maxTokens: 600,
+  callMetadata: themeAndStyle,
+  // Variables for the prompt, built from earlier stages' output
+  variables: (context, upstream) =>
+    buildCustomVariables(context, upstream.master, upstream.narrative),
+  // Turn the parsed reply into the stage's output, or say why it is unusable
+  validate: (parsed) => {
+    if (!isObject(parsed) || typeof parsed.customField !== "string") {
+      return { error: "Custom stage missing 'customField'" };
+    }
+    return { output: { customField: parsed.customField } };
+  }
 }
 ```
 
-**4. Integrate into Router**
+**4. Add It to the Graph**
+
+In `server/pce/graph/graph.ts`: add a state channel (`customResult`), a node, and the edges that place it. A stage that needs only the narration can run beside `actions` and `image`:
+
 ```typescript
-const router = new ContentGenerationRouter({
-  master: runMasterStage,
-  narrative: runNarrativeStage,
-  image: runImageStage,
-  actions: runActionsStage,
-  custom: runCustomStage  // Add new stage
-});
+.addNode("custom", stageNode("custom"))
+.addEdge("custom", END)
+// and return "custom" from afterNarration() alongside "actions" and "image"
 ```
+
+Then include its result in `runPceGraph`'s return value (`index.ts`) and add a case to `graph.test.ts`.
 
 ### Code Examples & Usage Patterns
 
 **Pattern 1: Testing Individual Stages**
 ```typescript
-import { buildTurnGenerationContext, runMasterStage } from './aiService';
+import { buildTurnGenerationContext } from './aiService';
+import { runPceGraph } from './pce/graph';
 
 // Build context
-const context = await buildTurnGenerationContext(...);
+const { context } = await buildTurnGenerationContext(...);
 
 // Test master stage in isolation
-const masterResult = await runMasterStage(context);
+const { master: masterResult } = await runPceGraph(context, { target: "master", mode: "lenient" });
 
 if (masterResult.ok && masterResult.output) {
   console.log("Enrichment:", masterResult.output.enrichment);
@@ -823,7 +818,7 @@ Object.entries(metrics.perTemplate).forEach(([name, stats]) => {
   - Template instructions unclear about action count
 - **Solutions**:
   1. Check raw response in `llm_logs` for actions stage
-  2. Verify action normalization logic in `runActionsStage()`
+  2. Verify action normalization logic in the `actions` entry of `STAGES` (`server/pce/graph/stages.ts`)
   3. Ensure template specifies minimum action count (e.g., "Provide 4 distinct actions")
   4. Review action validation: all fields (`action`, `summary`, `risk`, `intent`) must be present
 
@@ -881,7 +876,7 @@ console.log("User prompt length:", prompts.user.length);
 
 **3. Review Stage Metadata**
 ```typescript
-const result = await router.generateFullTurnContent(context);
+const result = await runPceGraph(context);
 
 result.promptChain.forEach((stage, index) => {
   console.log(`Stage ${index + 1}: ${stage.stage}`);
@@ -1077,8 +1072,8 @@ describe('PCE Pipeline', () => {
   
   describe('Pipeline Execution', () => {
     it('should execute all stages successfully', async () => {
-      const context = await buildTurnGenerationContext(...);
-      const result = await router.generateFullTurnContent(context);
+      const { context } = await buildTurnGenerationContext(...);
+      const result = await runPceGraph(context);
       
       expect(result.master.ok).toBe(true);
       expect(result.narrative.ok).toBe(true);
@@ -1221,7 +1216,8 @@ Image Model Class
 - `server/metrics.ts`: Performance instrumentation
 
 **Consumed By**:
-- `server/aiService.ts`: Uses PCE via `ContentGenerationRouter`
+- `server/aiService.ts`: Runs the pipeline via `runPceGraph`
+- `server/pce/inspectorService.ts`, `server/evals/runner.ts`: Run it on saved scenarios
 - `server/gameInitialization.ts`: Resolves PCE selections for new games
 
 ### API Surface
@@ -1229,17 +1225,19 @@ Image Model Class
 **Public Functions** (exported from `server/pce/`):
 
 **promptBuilder.ts**:
-- `buildPcePrompt(templateName, variables, options)`: Builds system/user prompt pair
+- `buildPcePrompt(templateName, variables, options)`: Builds system/user prompt pair, plus `template: { name, source, hash }` identifying the exact template version used
 - `loadTemplate(templateName)`: Loads template from file system
 - `validateMetaPromptVariables(template, variables)`: Validates placeholders
 - `flattenMasterEnrichment(enrichment)`: Transforms master output
 - `getTemplateLoadMetrics()`: Returns cache performance metrics
 - `clearTemplateCache()`: Clears template cache (testing)
 
+**graph/index.ts**:
+- `runPceGraph(context, options)`: Runs the pipeline, whole or in part
+- `withRecovery(stage, context, run)`: Retry and fallback for one stage
+
 **contentRouter.ts**:
-- `ContentGenerationRouter`: Pipeline orchestration class
-- `generateFullTurnContent(context)`: Executes complete pipeline
-- Stage-specific methods: `generateMasterEnrichment`, `generateNarrative`, etc.
+- Types only: `StageResult`, `StageMetadata`, `TurnGenerationContext`, `FullTurnContentResult`, stage payloads
 
 **settings.ts**:
 - `resolvePceSelections(overrides)`: Resolves theme/style pair

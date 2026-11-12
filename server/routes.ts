@@ -652,8 +652,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             template: call.promptTemplate,
             latencyMs: call.latencyMs,
             cache: call.cache,
+            stage: call.stage,
+            recovery: call.recovery,
+            error: call.error,
           }));
         }
+
+        // Where this turn is in LangSmith, and its scores if it was sampled
+        timings.langsmith = manifest.request?.langsmith ?? null;
+        timings.evals = manifest.evals ?? null;
         
         // Total duration (from queue entry creation to completion)
         if (apply.completedAt && queueEntryCreatedAt) {

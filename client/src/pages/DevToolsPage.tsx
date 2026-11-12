@@ -25,6 +25,7 @@ import { TelemetryTab } from "@/pages/devtools/TelemetryTab";
 import { GameTelemetryTab } from "@/pages/devtools/GameTelemetryTab";
 import DevToolsImageModels from "@/components/DevToolsImageModels";
 import { LlmModelsTab } from "@/pages/devtools/LlmModelsTab";
+import { EvalsTab } from "@/pages/devtools/EvalsTab";
 
 export default function DevToolsPage() {
   const [adminToken, setAdminTokenState] = useState<string | null>(() => getAdminAuthToken());
@@ -167,6 +168,9 @@ export default function DevToolsPage() {
             <TabsTrigger value="pce-inspector" data-testid="tab-pce-inspector">
               PCE Inspector
             </TabsTrigger>
+            <TabsTrigger value="evals" data-testid="tab-evals">
+              Evals
+            </TabsTrigger>
             <TabsTrigger value="interview" data-testid="tab-interview">
               Interview
             </TabsTrigger>
@@ -224,6 +228,10 @@ export default function DevToolsPage() {
 
           <TabsContent value="pce-inspector" className="space-y-4">
             <PCEInspectorTab />
+          </TabsContent>
+
+          <TabsContent value="evals" className="space-y-4">
+            <EvalsTab />
           </TabsContent>
 
           <TabsContent value="interview" className="space-y-4">

@@ -300,7 +300,7 @@ export function diagnoseJson(rawText: string | null | undefined): JsonDiagnosis 
 /**
  * Parse a stage's reply for the stage runners. Records how it was read on the stage
  * metadata and throws when the reply cannot be used, which sends the stage to the
- * retry / fallback steps (see ContentGenerationRouter).
+ * retry / fallback steps (see server/pce/graph/recovery.ts).
  */
 export function parseStageJson(
   rawContent: string,

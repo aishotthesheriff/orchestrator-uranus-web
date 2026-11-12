@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 import { CATALOG_QUERY_KEY } from "./CatalogSection";
+import { TraceLink } from "../components/TraceLink";
 import {
   errorMessage,
   formatSeconds,
@@ -412,6 +413,7 @@ export function QualifySection({ target }: Props) {
                     <span className="text-muted-foreground">
                       {formatSeconds(r.turnMs)} · {r.promptTokens} in / {r.completionTokens} out · {formatUsd(r.costUsd)}
                     </span>
+                    <TraceLink trace={r.trace} />
                   </summary>
                   <div className="mt-3 space-y-3 text-sm">
                     {failures.map((s) => (

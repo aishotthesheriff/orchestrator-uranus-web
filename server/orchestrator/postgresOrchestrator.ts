@@ -16,6 +16,7 @@ import {
   queueLatencyHistogram,
 } from '../metrics';
 import { log } from '../logger';
+import { QUEUE_TRACE_KEY, traceHeaders } from '../observability/langsmith';
 import type { 
   JobOrchestrator, 
   EnqueueOptions, 
@@ -82,6 +83,11 @@ export class PostgresOrchestrator implements JobOrchestrator {
       throw new Error(`Unknown queue: ${opts.queue}`);
     }
 
+    // A job enqueued from inside a traced run carries that trace's headers, so the worker
+    // that claims it continues the same trace (see server/observability/langsmith.ts).
+    const headers = traceHeaders();
+    const metadata = headers ? { ...(opts.metadata || {}), [QUEUE_TRACE_KEY]: headers } : opts.metadata || {};
+
     // Insert into queue_entries
     await this.pool.query(
       `INSERT INTO queue_entries (
@@ -99,7 +105,7 @@ export class PostgresOrchestrator implements JobOrchestrator {
         opts.runAt ?? new Date(),
         opts.traceId || null,
         opts.requestId || null,
-        JSON.stringify(opts.metadata || {}),
+        JSON.stringify(metadata),
         opts.idempotencyKey || null,
       ]
     );

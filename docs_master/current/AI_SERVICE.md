@@ -85,31 +85,33 @@ The PCE is a four-stage sequential pipeline that generates synchronized content:
 - **Input**: Game state, player action, theme/style selections, equipped items
 - **Output**: `MasterEnrichmentData` containing context, variables, and guidance
 - **Template**: Loaded from database/reference (`pce_master` prompt name) first, falls back to `server/pce/masterPrompt.txt` file
-- **Function**: `runMasterStage(context: TurnGenerationContext)`
+- **Function**: `runStage("master", context, upstream, options)` in `server/pce/graph/stages.ts`
 
 **Stage 2: Narrative Generation**
 - **Purpose**: Generate 6-7 sentence narrative describing the turn's events
 - **Input**: Master enrichment + game state
 - **Output**: `NarrativePayload` with `narration` string and optional `toneHints`
 - **Template**: Loaded from database/reference (`pce_narrative` prompt name) first, falls back to `server/pce/narrativePrompt.txt` file
-- **Function**: `runNarrativeStage(context, master)`
+- **Function**: `runStage("narrative", ...)`, given the master output
 
 **Stage 3: Image Prompt Generation**
 - **Purpose**: Generate synchronized image prompt based on narrative
 - **Input**: Master enrichment + narrative payload
 - **Output**: `ImagePromptPayload` with `imagePrompt` string and optional `modelOverrides`
 - **Template**: Loaded from database/reference (`pce_image` prompt name) first, falls back to `server/pce/imagePrompt.txt` file
-- **Function**: `runImageStage(context, master, narrative)`
+- **Function**: `runStage("image", ...)`, given the master and narrative outputs
 
 **Stage 4: Actions Generation**
 - **Purpose**: Generate next-turn action choices based on narrative context
 - **Input**: Master enrichment + narrative payload
 - **Output**: `ActionsPayload` with array of `ActionChip` objects
 - **Template**: `server/pce/actionsPrompt.txt` (loaded from database/reference first, then files)
-- **Function**: `runActionsStage(context, master, narrative)`
+- **Function**: `runStage("actions", ...)`, given the master and narrative outputs
 - **Special Configuration**: Uses `maxTokens: 800` (higher than other stages to accommodate multiple action choices)
 
-The pipeline is orchestrated by `ContentGenerationRouter` (`server/pce/contentRouter.ts`), which handles stage sequencing, error propagation, and parallel execution. **Note**: The image and actions stages run in parallel (via `Promise.all()`) since they both depend on master + narrative but not on each other, reducing total pipeline latency.
+All four stages are one function, `runStage`; what differs per stage (variables, token limit, output check) is the `STAGES` table at the top of `server/pce/graph/stages.ts`.
+
+The pipeline is a LangGraph graph (`server/pce/graph/graph.ts`), entered through `runPceGraph` (`server/pce/graph/index.ts`). The graph handles stage order and stops after a stage that produced nothing; `withRecovery` (`server/pce/graph/recovery.ts`) handles retry and fallback inside each stage. **Note**: The image and actions stages run in parallel (two branches of the graph) since they both depend on master + narrative but not on each other, reducing total pipeline latency. Shared types (`StageResult`, `StageMetadata`, `TurnGenerationContext`) remain in `server/pce/contentRouter.ts`. See [OBSERVABILITY_AND_EVALS.md](OBSERVABILITY_AND_EVALS.md) for the graph's options and how a turn is traced.
 
 #### 2. **Variable Resolution System**
 
@@ -163,7 +165,7 @@ The image generation system implements a sophisticated three-tier caching strate
 
 #### 4. **LLM Execution & Logging**
 
-All LLM calls go through `executeJsonPrompt()`:
+All story-stage LLM calls go through `executeJsonPrompt()` (`server/llm/jsonPrompt.ts`, re-exported from `server/aiService.ts`):
 
 **Request Structure**:
 ```typescript
@@ -201,8 +203,9 @@ All LLM calls go through `executeJsonPrompt()`:
 **Logging** (`logLlmCall`):
 - **Database**: All calls logged to `llm_logs` table with full prompt/response
 - **Socket.IO**: Optional real-time streaming to browser console (if `CONSOLE_LLM_LOG=true`)
-- **Metadata**: Includes model, stage, execution time, template metrics, cache status
+- **Metadata**: Includes model, stage, execution time, template metrics, cache status, the template's hash and source, and (when tracing is on) a `langsmith` reference to the call's trace
 - **Metrics**: Prometheus metrics for duration, cache hits/misses, error rates
+- **Tracing**: When LangSmith is configured, each call is also an `llm` run on the turn's trace (the clients are wrapped in `server/llm/clients.ts`). `llm_logs` is unaffected and remains the local record
 
 ### Technologies & Frameworks
 
@@ -241,7 +244,7 @@ The primary abstraction for text LLM calls is `executeJsonPrompt()`, which provi
 - **Metrics tracking**: Prometheus metrics for duration, stage, and model
 - **Error handling**: Consistent error propagation with timing metrics
 
-**Implementation** (`server/aiService.ts:710-816`):
+**Implementation** (`server/llm/jsonPrompt.ts`):
 ```typescript
 export async function executeJsonPrompt(
   promptOrOptions: string | PromptExecutionOptions,
@@ -323,7 +326,7 @@ export interface ImageResponse {
 - **GENERATORS**: Maps provider names to generator instances
   - `"openai"` → `OpenAIImageGenerator`
   - `"huggingface"` → `HuggingFaceImageGenerator`
-- **MODEL_PRESETS**: Hardcoded model presets (legacy, now uses database/reference)
+- There is no hardcoded model list. Models come from the catalog (next step), so adding or removing one needs no code change.
 
 **3. Model Resolution** (`server/image/index.ts:resolveModelPreset()`):
 - **Primary**: Lookup in reference data (`releases/current/data/image_models`)
@@ -375,7 +378,7 @@ export async function generateWithModelKey(
   - `provider`: Hugging Face provider (`"fal-ai"`, `"inference-endpoints"`, `"serverless"`, `"auto"`)
   - `model`: Model identifier (e.g., `"black-forest-labs/FLUX.1-schnell"`)
   - `inputs`: Prompt string
-  - `parameters`: `{ width, height, num_inference_steps: 5 }`
+  - `parameters`: `{ width, height, num_inference_steps, guidance_scale? }`. Steps and guidance come from the model's catalog row (`provider_params`, set in Dev Tools > Image Models as "Steps" and "Guidance scale"); without them steps default to 5. Distilled models (FLUX Schnell, the turbo models) need about 4 to 5 steps; SDXL needs about 30 with guidance about 7, and at 5 steps it returns smeared images. Values are validated on save (steps 1 to 100, guidance 0 to 30; see `server/image/generationParams.ts`).
 - **Response Handling**:
   - Converts Blob to Buffer, then to base64
   - Returns: `{ imageBase64, imageUrl: "data:image/png;base64,..." }`
@@ -444,9 +447,9 @@ gatherTurnPromptIngredients()
     ↓
 buildTurnGenerationContext()
     ↓
-ContentGenerationRouter.generateFullTurnContent()
+runPceGraph()   (server/pce/graph)
     ↓
-[Master → Narrative → Image → Actions]
+[Master → Narrative → Image ║ Actions]
     ↓
 TurnContentResult (narration, imagePrompt, actions)
     ↓
@@ -820,19 +823,27 @@ GROUP BY cache_hit;
 
 **4. Test Individual Stages**
 ```typescript
-import { 
-  buildTurnGenerationContext,
-  runMasterStage,
-  runNarrativeStage 
-} from './aiService';
+import { buildTurnGenerationContext } from './aiService';
+import { runPceGraph } from './pce/graph';
 
-// Test master stage in isolation
-const context = await buildTurnGenerationContext(...);
-const masterResult = await runMasterStage(context);
+// Run only the master stage: once, without retry or fallback, without throwing
+const { context } = await buildTurnGenerationContext(...);
+const result = await runPceGraph(context, { target: "master", recover: false, mode: "lenient" });
 
-if (!masterResult.ok) {
-  console.error("Master stage failed:", masterResult.metadata);
+if (!result.master.ok) {
+  console.error("Master stage failed:", result.master.metadata);
 }
+```
+
+The PCE Inspector (Dev Tools) does the same from the UI, on the draft prompts, and can feed a stage saved or mock upstream data.
+
+```typescript
+// A later stage on supplied upstream data
+const actionsOnly = await runPceGraph(context, {
+  target: "actions",
+  upstream: { master: savedMasterOutput, narrative: { narration: "..." } },
+  mode: "lenient"
+});
 ```
 
 **5. Validate Cache Keys**
@@ -931,7 +942,7 @@ console.log("Final prompt:", keys.finalPrompt);
 ### Testing & Validation Approaches
 
 **Unit Testing**:
-- Test individual stage functions (`runMasterStage`, `runNarrativeStage`, etc.)
+- Test the pipeline with a scripted stage runner (`runPceGraph(context, { runStage })`; see `server/pce/graph/graph.test.ts`) and recovery with `server/pce/graph/recovery.test.ts`
 - Mock LLM responses to validate JSON parsing and error handling
 - Test cache key generation and similarity algorithms
 
@@ -999,7 +1010,7 @@ describe('AI Service', () => {
 [buildTurnGenerationContext]
          ↓
 ┌─────────────────────────────────────┐
-│   ContentGenerationRouter           │
+│   Pipeline graph (runPceGraph)      │
 │                                     │
 │  Master Stage → Narrative Stage     │
 │       ↓              ↓              │
@@ -1093,7 +1104,10 @@ Actions Variables (subset of master + CURRENT_NARRATIVE)
 - `server/storage.ts`: Database operations
 - `server/reference/referenceLoader.ts`: Reference data access
 - `server/pce/promptBuilder.ts`: Prompt template building
-- `server/pce/contentRouter.ts`: PCE pipeline orchestration
+- `server/pce/graph/`: PCE pipeline (LangGraph graph, stage runner, retry and fallback)
+- `server/pce/contentRouter.ts`: Types shared by the pipeline and its callers
+- `server/llm/jsonPrompt.ts`: The model call and LLM logging
+- `server/observability/langsmith.ts`: Tracing helpers (pass-through when tracing is off)
 - `server/cacheUtils.ts`: Cache key generation
 - `server/imageStorage.ts`: Image filesystem operations
 - `server/image/index.ts`: Image provider abstraction
@@ -1120,12 +1134,12 @@ Actions Variables (subset of master + CURRENT_NARRATIVE)
 - `generateInterviewAnswer()`: Interview response generation
 - `buildTurnGenerationContext()`: Context builder for custom pipelines
 - `getDefaultImageModelKey()`: Get default image model from reference
-- `runMasterStage()`, `runNarrativeStage()`, `runImageStage()`, `runActionsStage()`: Individual stage execution
 - `buildMasterVariables()`, `buildNarrativeVariables()`, `buildImageVariables()`, `buildActionsVariables()`: Variable builders (exported for testing/debugging)
+- `executeJsonPrompt()`, `logLlmCall()`: Re-exported from `server/llm/jsonPrompt.ts`
+
+Individual stages are run through `runPceGraph(context, { target })` in `server/pce/graph`, not through this module.
 
 **Internal Functions** (not exported, but important):
-- `executeJsonPrompt()`: LLM call execution
-- `logLlmCall()`: LLM logging
 - `gatherTurnPromptIngredients()`: Variable collection
 - `buildMasterVariables()`, `buildNarrativeVariables()`, `buildImageVariables()`, `buildActionsVariables()`: Variable builders
 

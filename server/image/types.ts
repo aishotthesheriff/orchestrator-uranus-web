@@ -11,6 +11,8 @@ export interface ImageRequest {
   inferenceProvider: "openai" | "huggingface";
   modelName: string;
   hfProvider?: InferenceProviderOrPolicy; // HuggingFace provider: "fal-ai", "inference-endpoints", "serverless", etc.
+  /** The catalog row's provider_params (steps, guidance). See generationParams.ts. */
+  providerParams?: unknown;
 }
 
 export interface ImageResponse {
@@ -21,10 +23,3 @@ export interface ImageResponse {
 export interface ImageGenerator {
   generate(req: ImageRequest): Promise<ImageResponse>;
 }
-
-export interface ModelPreset {
-  inferenceProvider: "openai" | "huggingface";
-  modelName: string;
-  hfProvider?: InferenceProviderOrPolicy; // Optional HuggingFace provider for huggingface
-}
-

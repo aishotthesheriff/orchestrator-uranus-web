@@ -11,10 +11,30 @@ import { storage } from "./storage";
 import { setupConsoleLogging, log } from "./logger";
 import { getOrchestrator } from "./orchestrator";
 import { StuckJobSweeper } from "./orchestrator/stuckJobSweeper";
+import { flushTraces, tracingStatus } from "./observability/langsmith";
 const ORCHESTRATOR_DISABLED = process.env.DISABLE_ORCHESTRATOR_ENQUEUE === 'true' || process.env.NODE_ENV === 'test';
 
 // Setup file logging for all console output
 setupConsoleLogging();
+
+{
+  const tracing = tracingStatus();
+  log(tracing.enabled
+    ? `LangSmith tracing on (project "${tracing.project}")`
+    : `LangSmith tracing off: ${tracing.reason}`);
+}
+
+// Traces are sent in batches; give the last batch a chance to leave before exiting.
+let shuttingDown = false;
+for (const signal of ["SIGTERM", "SIGINT"] as const) {
+  process.on(signal, () => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    const deadline = setTimeout(() => process.exit(0), 5000);
+    deadline.unref();
+    flushTraces().finally(() => process.exit(0));
+  });
+}
 
 let stuckJobSweeper: StuckJobSweeper | null = null;
 if (!ORCHESTRATOR_DISABLED) {
@@ -307,6 +327,19 @@ app.use((req, res, next) => {
   {
     const { default: pceInspectorAdmin } = await import("./routes/pceInspectorAdmin.ts");
     app.use("/api/admin/pce-inspector", pceInspectorAdmin);
+  }
+  // Tracing status and trace links for Dev Tools
+  {
+    const { observabilityAdmin } = await import("./routes/observabilityAdmin.ts");
+    app.use("/api/admin/observability", observabilityAdmin);
+  }
+  // Evals: offline experiments and live-turn sampling settings
+  {
+    const { evalsAdmin } = await import("./routes/evalsAdmin.ts");
+    const { failInterruptedExperiments } = await import("./evals/experimentStore.ts");
+    app.use("/api/admin/evals", evalsAdmin);
+    // An experiment runs in this process, so one still marked running did not survive a restart.
+    failInterruptedExperiments().catch((error) => log(`Could not check for interrupted experiments: ${error}`));
   }
   // DevTools LLM model tester (admin only, testing only)
   {

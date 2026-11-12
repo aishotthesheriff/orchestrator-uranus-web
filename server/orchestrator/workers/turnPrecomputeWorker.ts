@@ -19,6 +19,9 @@ import { turnPrecomputePhaseDuration } from '../../metrics';
 import type { ActionInput, GameState, TurnJob } from '@shared/schema';
 import type { JobLease } from '../types';
 import type { PrecomputeSection } from '../manifest/types';
+import type { StageMetadata } from '../../pce/contentRouter';
+import { annotateSpan, currentRootTraceRef, withSpan } from '../../observability/langsmith';
+import { HandledJobFailure, runTracedJob } from './jobTracing';
 
 export class TurnPrecomputeWorker {
   private workerId: string;
@@ -131,7 +134,23 @@ export class TurnPrecomputeWorker {
     await lease.extend(config.leaseDurationMs);
   }
 
+  /** One trace per turn starts here; the apply and image workers continue it. */
   private async processJob(lease: JobLease<TurnJob>) {
+    const payload = lease.job.payload as { id: string };
+    await runTracedJob(
+      lease,
+      {
+        rootName: 'turn',
+        childName: 'turn.precompute',
+        inputs: { turnJobId: payload.id },
+        metadata: { turnJobId: payload.id },
+        tags: ['turn']
+      },
+      () => this.processJobTraced(lease)
+    );
+  }
+
+  private async processJobTraced(lease: JobLease<TurnJob>) {
     const payload = lease.job.payload as { id: string };
     const startedAt = new Date();
     const totalTimer = turnPrecomputePhaseDuration.startTimer({ phase: 'total' });
@@ -158,6 +177,14 @@ export class TurnPrecomputeWorker {
 
       const action = job.actionPayload as ActionInput;
       const userPreferences = await storage.getUserPreferences(currentState.username);
+
+      // thread_id groups every turn of one game into a single thread in LangSmith.
+      annotateSpan({
+        gameId: job.gameId,
+        thread_id: job.gameId,
+        turnNumber: currentState.turnNumber,
+        action: action.action
+      });
 
       // Skip precomputation for intro turns (they process themselves)
       if (action.action === '__intro_turn__') {
@@ -191,6 +218,7 @@ export class TurnPrecomputeWorker {
 
       // Store sourceStateDigest and preconditions in manifest request section
       await updateRequestSection(manifestId, {
+        langsmith: currentRootTraceRef(),
         sourceStateDigest,
         preconditions: {
           turnNumber: currentState.turnNumber,
@@ -206,7 +234,20 @@ export class TurnPrecomputeWorker {
       // Step 1: Compute turn checks (deterministic, no LLM calls)
       const checksTimer = turnPrecomputePhaseDuration.startTimer({ phase: 'compute_checks' });
       const checksStart = Date.now();
-      const computed = await computeTurnChecks(currentState, action);
+      const computed = await withSpan(
+        'turn.checks',
+        {
+          inputs: { action: action.action, customText: (action as any).customText },
+          outputs: (r) => ({
+            selectedAction: r.selectedAction?.action,
+            skill: r.skill,
+            success: r.success,
+            event: r.event?.name ?? null,
+            checks: r.checks
+          })
+        },
+        () => computeTurnChecks(currentState, action)
+      );
       const checksDuration = Date.now() - checksStart;
       checksTimer();
 
@@ -225,13 +266,24 @@ export class TurnPrecomputeWorker {
       const turnContentDuration = Date.now() - turnContentStart;
       contentTimer();
       
-      llmCalls.push({
-        model: 'gpt-4.5', // TODO: Get actual model from generateTurnContentWithFlag
-        promptTemplate: 'turn_narrative',
-        promptHash: '', // TODO: Compute prompt hash
-        latencyMs: turnContentDuration,
-        cache: 'miss', // TODO: Track cache hits
-      });
+      // One entry per model call, in the order they were made (retries and fallbacks included).
+      for (const call of (turnContent.promptChain ?? []) as StageMetadata[]) {
+        llmCalls.push({
+          model: call.model ?? 'unknown',
+          promptTemplate: `pce_${call.template}`,
+          promptHash: call.promptHash ?? '',
+          latencyMs: call.durationMs ?? 0,
+          cache: 'miss', // story stages are never cached
+          stage: call.stage,
+          modelKey: call.modelKey ?? null,
+          provider: call.provider,
+          templateHash: call.templateHash,
+          templateSource: call.templateSource,
+          recovery: call.recovery,
+          usage: call.usage,
+          error: call.error,
+        });
+      }
 
       // Step 3: Generate next actions (LLM call - OUTSIDE transaction)
       // Note: Must run sequentially after narrative generation since actions need the narrative
@@ -278,11 +330,13 @@ export class TurnPrecomputeWorker {
         turnNumber: computed.nextTurnNumber,
         imagePrompt: turnContent.imagePrompt || undefined
       };
-      const precomputedImageMetadata = await prepareTurnImageMetadata(
-        currentState,
-        tempTurn,
-        userPreferences,
-        computed.nextTurnNumber
+      const precomputedImageMetadata = await withSpan(
+        'turn.image_plan',
+        {
+          inputs: { turnNumber: computed.nextTurnNumber, hasImagePrompt: !!tempTurn.imagePrompt },
+          outputs: (r) => ({ cacheHit: !!r?.imageUrl, template: r?.templateName ?? null })
+        },
+        () => prepareTurnImageMetadata(currentState, tempTurn, userPreferences, computed.nextTurnNumber)
       );
       const imageDuration = Date.now() - imageStart;
       imageTimer();
@@ -379,6 +433,7 @@ export class TurnPrecomputeWorker {
         message: errorMessage,
         details: { stack: error instanceof Error ? error.stack : undefined },
       });
+      throw new HandledJobFailure(errorMessage);
     }
   }
 

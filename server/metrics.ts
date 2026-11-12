@@ -137,7 +137,7 @@ export const llmCallDuration = new Histogram({
   buckets: [100, 500, 1000, 2000, 5000, 10000, 30000]
 });
 
-// Story stages that needed a second model call (see ContentGenerationRouter.withRecovery)
+// Story stages that needed a second model call (see server/pce/graph/recovery.ts)
 export const llmStageRecoveryTotal = new Counter({
   name: 'llm_stage_recovery_total',
   help: 'Story stages that needed a retry or the fallback model, by outcome',

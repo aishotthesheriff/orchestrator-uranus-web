@@ -422,6 +422,12 @@ try {
 
 **Trace ID Propagation**: Trace IDs flow from HTTP requests through queue entries to manifests, enabling end-to-end request tracing.
 
+**LangSmith Trace Propagation**: When tracing is on, `enqueue` also stores the current run's headers in the queue entry's `metadata.langsmith`. A worker that claims the entry continues that trace (`runTracedJob` in `server/orchestrator/workers/jobTracing.ts`), so the precompute, apply and image jobs of one turn form a single trace. The manifest's `request.langsmith` holds the trace reference. Queue semantics are unchanged: tracing reads and writes one metadata key and nothing else. See [`OBSERVABILITY_AND_EVALS.md`](OBSERVABILITY_AND_EVALS.md).
+
+**Per-Call LLM Records**: `precompute.llmCalls` has one entry per model call made for the turn (retries and fallbacks included), each with the model, stage, latency, hash of the rendered prompt, and the hash and source of the template it was rendered from.
+
+**Live-Turn Scores**: A turn picked by live sampling gains an `evals` section on its manifest after it completes. It is outside the manifest hash.
+
 **Manifest Versioning**: Manifests include a `version` field to support schema evolution and migration tooling.
 
 **Error Categorization**: Errors are classified as `transient` (retryable) or `permanent` (dead-letter) to guide retry logic.

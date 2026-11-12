@@ -30,6 +30,7 @@ import type { ParsedTestRun, ParsedTestScenario, PceTestRun } from "@shared/sche
 import { apiRequest } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { TraceLink, type TraceRef } from "./components/TraceLink";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -96,6 +97,8 @@ type InspectorStageResults = {
   checks?: Record<string, unknown>[];
   triggeredEvent?: Record<string, unknown> | null;
   executedAt?: string;
+  /** Where the run is in LangSmith; absent when it was made with tracing off. */
+  trace?: TraceRef;
 };
 
 type ActionRecord = {
@@ -524,6 +527,7 @@ export function PCEInspectorTab() {
                     {selectedRun.durationMs ? `${(selectedRun.durationMs / 1000).toFixed(2)}s` : "N/A"}
                     <DollarSign className="h-3.5 w-3.5 ml-2" />
                     {selectedRun.estimatedCostUsd ? `$${selectedRun.estimatedCostUsd.toFixed(4)}` : "N/A"}
+                    <TraceLink trace={selectedRun.stageResults?.trace} />
                   </div>
                 </div>
               </CardHeader>

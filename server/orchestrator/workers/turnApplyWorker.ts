@@ -17,6 +17,9 @@ import type { JobLease } from '../types';
 import type { ApplySection, PrecomputedTurnData } from '../manifest/types';
 import { Server as SocketIOServer } from 'socket.io';
 import { createHash } from 'crypto';
+import { annotateSpan } from '../../observability/langsmith';
+import { HandledJobFailure, runTracedJob } from './jobTracing';
+import { maybeSampleTurn, sampledTurnFromManifest } from '../../evals/liveSampler';
 
 export class TurnApplyWorker {
   private workerId: string;
@@ -130,7 +133,23 @@ export class TurnApplyWorker {
     await lease.extend(config.leaseDurationMs);
   }
 
+  /** Continues the turn's trace when the precompute worker passed its headers along. */
   private async processJob(lease: JobLease<TurnJob>) {
+    const payload = lease.job.payload as { id: string };
+    await runTracedJob(
+      lease,
+      {
+        rootName: 'turn',
+        childName: 'turn.apply',
+        inputs: { turnJobId: payload.id, manifestId: lease.job.metadata?.manifestId ?? null },
+        metadata: { turnJobId: payload.id },
+        tags: ['turn']
+      },
+      () => this.processJobTraced(lease)
+    );
+  }
+
+  private async processJobTraced(lease: JobLease<TurnJob>) {
     const payload = lease.job.payload as { id: string };
     const startedAt = new Date();
     const manifestId = lease.job.metadata?.manifestId as string | undefined;
@@ -160,6 +179,13 @@ export class TurnApplyWorker {
       }
 
       const action = job.actionPayload as ActionInput;
+
+      annotateSpan({
+        gameId: job.gameId,
+        thread_id: job.gameId,
+        turnNumber: currentState.turnNumber,
+        action: action.action
+      });
 
       // For intro turns or skip-precompute, handle directly
       if (action.action === '__intro_turn__' || lease.job.metadata?.skipPrecompute) {
@@ -382,6 +408,11 @@ export class TurnApplyWorker {
       // Notify clients
       this.io.to(job.gameId).emit('turnComplete', { gameId: job.gameId, turnNumber: updatedState.turnNumber });
 
+      // A fraction of turns is scored in the background (off unless a sample rate is set).
+      if (manifestId) {
+        maybeSampleTurn(() => sampledTurnFromManifest(manifestId, job.gameId, updatedState.turnNumber, manifestData));
+      }
+
       // Record end-to-end latency
       if (jobCreatedAt) {
         const e2eDuration = Date.now() - jobCreatedAt;
@@ -439,6 +470,7 @@ export class TurnApplyWorker {
           isStateMismatch,
         },
       });
+      throw new HandledJobFailure(errorMessage);
     }
   }
 

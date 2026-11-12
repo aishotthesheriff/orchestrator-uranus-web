@@ -267,6 +267,7 @@ async function main() {
       "20250115_add_skip_image_cache_to_users.sql",
       "20251103_update_user_defaults.sql",
       "20261112_add_llm_models.sql",
+      "20261112_add_eval_experiments.sql",
     ];
 
     console.log("\n--- Running migrations ---");

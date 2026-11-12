@@ -36,6 +36,12 @@ services:
       ADMIN_API_KEYS: ${ADMIN_API_KEYS}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-*}
       CONSOLE_LLM_LOG: false
+      LANGSMITH_TRACING: ${LANGSMITH_TRACING:-false}
+      LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:-}
+      LANGSMITH_PROJECT: ${LANGSMITH_PROJECT:-quest-to-uranus}
+      LANGSMITH_ENDPOINT: ${LANGSMITH_ENDPOINT:-https://api.smith.langchain.com}
+      LANGSMITH_HIDE_INPUTS: ${LANGSMITH_HIDE_INPUTS:-false}
+      LANGSMITH_HIDE_OUTPUTS: ${LANGSMITH_HIDE_OUTPUTS:-false}
     depends_on:
       postgres:
         condition: service_healthy

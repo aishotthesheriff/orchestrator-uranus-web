@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { wrapOpenAI } from "langsmith/wrappers";
 
 /**
  * One place that knows how to reach each text-model provider.
@@ -43,6 +44,10 @@ export function getLlmClient(provider: LlmProvider): OpenAI {
       timeout: LLM_REQUEST_TIMEOUT_MS,
     });
   }
+  // Every chat completion made through this client becomes an "llm" run on the current
+  // trace (a pass-through when tracing is off; see server/observability/langsmith.ts).
+  // The wrapper assumes OpenAI; ls_provider corrects that for the Hugging Face router.
+  client = wrapOpenAI(client, { metadata: { ls_provider: provider } });
   clients.set(provider, client);
   return client;
 }

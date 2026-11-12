@@ -1,349 +1,22 @@
 import type { ParsedTestRun, ParsedTestScenario, PceTestRun, PceTestScenario, GameState } from "@shared/schema";
 import { storage } from "../storage";
 import { getCurrentReferenceRelease } from "../reference/publishReference";
-import { ContentGenerationRouter, type FullTurnContentResult, type StageMetadata, type TurnGenerationContext, type MasterEnrichmentData } from "./contentRouter";
-import { buildTurnGenerationContext, getDefaultImageModelKey, getIngredients, executeJsonPrompt } from "../aiService";
-import { buildPcePrompt, flattenMasterEnrichment } from "./promptBuilder";
-import type { StageResult } from "./contentRouter";
-import type { NarrativePayload, ImagePromptPayload, ActionsPayload } from "./contentRouter";
-import { pceStageDuration, variableBuildDuration, promptBuildDuration } from "../metrics";
-import { STAGE_OBJECT_KEYS, parseStageJson } from "../llm/json";
-import { llmCallErrorInfo } from "../llm/clients";
+import type {
+  FullTurnContentResult,
+  MasterEnrichmentData,
+  PromptStage,
+  StageMetadata,
+  StageResult,
+  TurnGenerationContext
+} from "./contentRouter";
+import { buildTurnGenerationContext, getDefaultImageModelKey } from "../aiService";
+import { runPceGraph } from "./graph";
+import { verdictFromStages, type StructuralVerdict } from "./verdict";
 import { requestModelId, type ResolvedLlmModel } from "../llm/models";
+import { currentRootTraceRef, withSpan, type TraceRef } from "../observability/langsmith";
 
 const PROMPT_COST_PER_1K = Number(process.env.PCE_PROMPT_COST_PER_1K ?? 0.00015);
 const COMPLETION_COST_PER_1K = Number(process.env.PCE_COMPLETION_COST_PER_1K ?? 0.0006);
-
-/**
- * Inspector-specific stage functions that load prompts directly from database
- */
-async function runMasterStageFromDb(context: TurnGenerationContext): Promise<StageResult<MasterEnrichmentData>> {
-  const ingredients = getIngredients(context);
-  const stageTimer = pceStageDuration.startTimer({ stage: 'master' });
-
-  try {
-    const variableTimer = variableBuildDuration.startTimer({ stage: 'master' });
-    const variables = await context.promptVariables.master();
-    variableTimer();
-
-    const promptTimer = promptBuildDuration.startTimer({ stage: 'master' });
-    const prompts = await buildPcePrompt("master", variables, { validate: true, useDatabase: true });
-    promptTimer();
-
-    const { rawContent, metadata } = await executeJsonPrompt({
-      llm: context.llmModel,
-      stage: "master",
-      template: "master",
-      systemPrompt: prompts.system,
-      userPrompt: prompts.user || undefined,
-      metadata: {
-        theme: ingredients.selections.theme,
-        style: ingredients.selections.style,
-        imageModelKey: ingredients.imageModelKey
-      },
-      gameId: context.gameId,
-      turnNumber: context.turnNumber
-    });
-
-    let parsed: unknown;
-    try {
-      parsed = parseStageJson(rawContent, metadata);
-    } catch (error) {
-      metadata.error = `JSON parse error: ${(error as Error).message}`;
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    // The scene plan must carry at least one of the sections the later prompts are built
-    // from (see flattenMasterEnrichment). "{}", a bare array, or a fragment of the plan
-    // would leave those prompts without their variables.
-    // A plan whose JSON had to be repaired must have every section: closing an unfinished
-    // object can fold later sections into an earlier one.
-    const isSection = (section: string) => {
-      const value = (parsed as Record<string, unknown>)[section];
-      return !!value && typeof value === "object" && !Array.isArray(value);
-    };
-    const isPlan =
-      !!parsed && typeof parsed === "object" && !Array.isArray(parsed) &&
-      (metadata.jsonQuality === "repaired"
-        ? STAGE_OBJECT_KEYS.master.every(isSection)
-        : STAGE_OBJECT_KEYS.master.some(isSection));
-    if (!isPlan) {
-      metadata.error = "Master stage returned no usable plan (expected context, variables and guidance)";
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    const flattened = flattenMasterEnrichment(parsed);
-    const output: MasterEnrichmentData = {
-      enrichment: parsed as Record<string, unknown>,
-      flattened
-    };
-
-    stageTimer({ status: 'success' });
-    return {
-      ok: true,
-      output,
-      metadata: [metadata]
-    };
-  } catch (error) {
-    stageTimer({ status: 'failure' });
-    const metadata: StageMetadata = {
-      stage: "master",
-      template: "master",
-      ...llmCallErrorInfo(error),
-      error: error instanceof Error ? error.message : String(error),
-      durationMs: 0,
-      timestamp: new Date().toISOString()
-    };
-    return { ok: false, output: null, metadata: [metadata] };
-  }
-}
-
-async function runNarrativeStageFromDb(
-  context: TurnGenerationContext,
-  master: MasterEnrichmentData
-): Promise<StageResult<NarrativePayload>> {
-  const ingredients = getIngredients(context);
-  const stageTimer = pceStageDuration.startTimer({ stage: 'narrative' });
-
-  try {
-    const variableTimer = variableBuildDuration.startTimer({ stage: 'narrative' });
-    const variables = await context.promptVariables.narrative(master);
-    variableTimer();
-
-    const promptTimer = promptBuildDuration.startTimer({ stage: 'narrative' });
-    const prompts = await buildPcePrompt("narrative", variables, { validate: true, useDatabase: true });
-    promptTimer();
-
-    const { rawContent, metadata } = await executeJsonPrompt({
-      llm: context.llmModel,
-      stage: "narrative",
-      template: "narrative",
-      systemPrompt: prompts.system,
-      userPrompt: prompts.user || undefined,
-      metadata: {
-        theme: ingredients.selections.theme,
-        style: ingredients.selections.style
-      },
-      gameId: context.gameId,
-      turnNumber: context.turnNumber
-    });
-
-    let parsed: unknown;
-    try {
-      parsed = parseStageJson(rawContent, metadata);
-    } catch (error) {
-      metadata.error = `JSON parse error: ${(error as Error).message}`;
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    if (!parsed || typeof parsed !== "object" || parsed === null) {
-      metadata.error = "Narrative stage returned invalid payload";
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    const narration = typeof (parsed as any).narration === "string" ? (parsed as any).narration.trim() : "";
-    const toneHintsRaw = (parsed as any).toneHints;
-    const toneHints =
-      Array.isArray(toneHintsRaw) && toneHintsRaw.every(item => typeof item === "string")
-        ? toneHintsRaw
-        : undefined;
-
-    if (!narration) {
-      metadata.error = "Narrative stage returned empty narration";
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    stageTimer({ status: 'success' });
-    return {
-      ok: true,
-      output: { narration, toneHints },
-      metadata: [metadata]
-    };
-  } catch (error) {
-    stageTimer({ status: 'failure' });
-    const metadata: StageMetadata = {
-      stage: "narrative",
-      template: "narrative",
-      ...llmCallErrorInfo(error),
-      error: error instanceof Error ? error.message : String(error),
-      durationMs: 0,
-      timestamp: new Date().toISOString()
-    };
-    return { ok: false, output: null, metadata: [metadata] };
-  }
-}
-
-async function runImageStageFromDb(
-  context: TurnGenerationContext,
-  master: MasterEnrichmentData,
-  narrative: NarrativePayload
-): Promise<StageResult<ImagePromptPayload>> {
-  const ingredients = getIngredients(context);
-  const stageTimer = pceStageDuration.startTimer({ stage: 'image' });
-
-  try {
-    const variableTimer = variableBuildDuration.startTimer({ stage: 'image' });
-    const variables = await context.promptVariables.image(master, narrative);
-    variableTimer();
-
-    const promptTimer = promptBuildDuration.startTimer({ stage: 'image' });
-    const prompts = await buildPcePrompt("image", variables, { validate: true, useDatabase: true });
-    promptTimer();
-
-    const { rawContent, metadata } = await executeJsonPrompt({
-      llm: context.llmModel,
-      stage: "image",
-      template: "image",
-      systemPrompt: prompts.system,
-      userPrompt: prompts.user || undefined,
-      metadata: {
-        theme: ingredients.selections.theme,
-        style: ingredients.selections.style,
-        imageModelKey: ingredients.imageModelKey
-      },
-      gameId: context.gameId,
-      turnNumber: context.turnNumber
-    });
-
-    let parsed: unknown;
-    try {
-      parsed = parseStageJson(rawContent, metadata);
-    } catch (error) {
-      metadata.error = `JSON parse error: ${(error as Error).message}`;
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    if (!parsed || typeof parsed !== "object" || parsed === null) {
-      metadata.error = "Image stage returned invalid payload";
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    const imagePrompt = typeof (parsed as any).imagePrompt === "string" ? (parsed as any).imagePrompt.trim() : "";
-    const modelOverrides = (parsed as any).modelOverrides;
-
-    if (!imagePrompt) {
-      metadata.error = "Image stage returned empty imagePrompt";
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    stageTimer({ status: 'success' });
-    return {
-      ok: true,
-      output: { imagePrompt, modelOverrides },
-      metadata: [metadata]
-    };
-  } catch (error) {
-    stageTimer({ status: 'failure' });
-    const metadata: StageMetadata = {
-      stage: "image",
-      template: "image",
-      ...llmCallErrorInfo(error),
-      error: error instanceof Error ? error.message : String(error),
-      durationMs: 0,
-      timestamp: new Date().toISOString()
-    };
-    return { ok: false, output: null, metadata: [metadata] };
-  }
-}
-
-async function runActionsStageFromDb(
-  context: TurnGenerationContext,
-  master: MasterEnrichmentData,
-  narrative: NarrativePayload
-): Promise<StageResult<ActionsPayload>> {
-  const ingredients = getIngredients(context);
-  const stageTimer = pceStageDuration.startTimer({ stage: 'actions' });
-
-  try {
-    const variableTimer = variableBuildDuration.startTimer({ stage: 'actions' });
-    const variables = await context.promptVariables.actions(master, narrative);
-    variableTimer();
-
-    const promptTimer = promptBuildDuration.startTimer({ stage: 'actions' });
-    const prompts = await buildPcePrompt("actions", variables, { validate: true, useDatabase: true });
-    promptTimer();
-
-    const { rawContent, metadata } = await executeJsonPrompt({
-      llm: context.llmModel,
-      stage: "actions",
-      template: "actions",
-      systemPrompt: prompts.system,
-      userPrompt: prompts.user || undefined,
-      metadata: {
-        theme: ingredients.selections.theme,
-        style: ingredients.selections.style
-      },
-      gameId: context.gameId,
-      turnNumber: context.turnNumber,
-      maxTokens: 800
-    });
-
-    let parsed: unknown;
-    try {
-      parsed = parseStageJson(rawContent, metadata);
-    } catch (error) {
-      metadata.error = `JSON parse error: ${(error as Error).message}`;
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    if (!parsed || typeof parsed !== "object" || parsed === null) {
-      metadata.error = "Actions stage returned invalid payload";
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    const actions = Array.isArray((parsed as any).actions) ? (parsed as any).actions : [];
-    const normalized = actions
-      .filter((action: any) => action && typeof action === "object")
-      .map((action: any) => ({
-        action: typeof action.action === "string" ? action.action : String(action.action || ""),
-        summary: typeof action.summary === "string" ? action.summary : undefined,
-        risk: typeof action.risk === "string" ? action.risk : undefined,
-        intent: typeof action.intent === "string" ? action.intent : undefined
-      }));
-
-    // Same rule as the live game: a turn with no actions cannot continue.
-    if (!normalized.length) {
-      metadata.error = "Actions stage produced no valid actions";
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    stageTimer({ status: 'success' });
-    return {
-      ok: true,
-      output: { actions: normalized },
-      metadata: [metadata]
-    };
-  } catch (error) {
-    stageTimer({ status: 'failure' });
-    const metadata: StageMetadata = {
-      stage: "actions",
-      template: "actions",
-      ...llmCallErrorInfo(error),
-      error: error instanceof Error ? error.message : String(error),
-      durationMs: 0,
-      timestamp: new Date().toISOString()
-    };
-    return { ok: false, output: null, metadata: [metadata] };
-  }
-}
-
-const inspectorRouter = new ContentGenerationRouter({
-  master: runMasterStageFromDb,
-  narrative: runNarrativeStageFromDb,
-  image: runImageStageFromDb,
-  actions: runActionsStageFromDb
-});
 
 export interface RunPceTestOptions {
   scenarioId: string;
@@ -377,6 +50,8 @@ interface StageResultsEnvelope {
   checks: NormalizedCheck[];
   triggeredEvent: NormalizedEvent | null;
   executedAt: string;
+  /** Where this run is in LangSmith, when tracing is on. */
+  trace?: TraceRef;
 }
 
 interface NormalizedCheck {
@@ -438,25 +113,44 @@ export async function runPceTest(options: RunPceTestOptions): Promise<ParsedTest
 
   const start = Date.now();
   let stageResults: FullTurnContentResult;
+  let trace: TraceRef | undefined;
   
   try {
-    if (mode === 'full') {
-      // Standard full pipeline execution
-      stageResults = await inspectorRouter.generateFullTurnContent(context);
-    } else if (mode === 'single-stage') {
-      if (!options.targetStage) {
-        throw new Error('targetStage is required for single-stage mode');
+    stageResults = await withSpan(
+      "pce.inspector",
+      {
+        inputs: {
+          scenarioId: parsedScenario.id,
+          scenario: parsedScenario.name,
+          playerAction: parsedScenario.playerAction,
+          mode,
+          targetStage: options.targetStage ?? null,
+          usesMockData: !!actualMockData?.masterEnrichment || !!actualMockData?.narrative
+        },
+        metadata: { scenarioId: parsedScenario.id, promptSource: "database", source: "pce-inspector" },
+        tags: ["pce-inspector"],
+        outputs: (r) => ({
+          narration: r.narrative.output?.narration ?? null,
+          actions: (r.actions.output?.actions ?? []).map((a) => a.action),
+          imagePrompt: r.image.output?.imagePrompt ?? null,
+          modelCalls: r.promptChain.length
+        })
+      },
+      async () => {
+        trace = currentRootTraceRef();
+        if (mode === 'full') {
+          // The whole turn, on the draft prompts, with retry and fallback as in a live turn.
+          return runPceGraph(context, { promptSource: "database" });
+        }
+        if (mode === 'single-stage') {
+          if (!options.targetStage) {
+            throw new Error('targetStage is required for single-stage mode');
+          }
+          return executeSingleStage(options.targetStage, context, actualMockData);
+        }
+        throw new Error(`Invalid mode: ${mode}`);
       }
-      // Single stage execution
-      stageResults = await executeSingleStage(
-        inspectorRouter,
-        options.targetStage,
-        context,
-        actualMockData
-      );
-    } else {
-      throw new Error(`Invalid mode: ${mode}`);
-    }
+    );
   } catch (error: any) {
     const durationMs = Date.now() - start;
     const templateIds = await getActiveTemplateIds();
@@ -478,7 +172,8 @@ export async function runPceTest(options: RunPceTestOptions): Promise<ParsedTest
       },
       checks: normalizedChecks,
       triggeredEvent: normalizedEvent,
-      executedAt: new Date().toISOString()
+      executedAt: new Date().toISOString(),
+      trace
     };
 
     const failedRun = await storage.createPceTestRun({
@@ -515,7 +210,8 @@ export async function runPceTest(options: RunPceTestOptions): Promise<ParsedTest
     result: stageResults,
     checks: normalizedChecks,
     triggeredEvent: normalizedEvent,
-    executedAt: new Date().toISOString()
+    executedAt: new Date().toISOString(),
+    trace
   };
 
   const status = determineRunStatus(stageResults);
@@ -541,169 +237,49 @@ export async function runPceTest(options: RunPceTestOptions): Promise<ParsedTest
   return parseTestRun(created);
 }
 
+/** Error thrown when a single-stage run cannot produce its target (or a stage it depends on). */
+const SINGLE_STAGE_FAILURE: Record<PromptStage, string> = {
+  master: "Master enrichment failed",
+  narrative: "Narrative generation failed",
+  image: "Image prompt generation failed",
+  actions: "Actions generation failed"
+};
+
 /**
- * Execute a single stage with optional mock upstream data
+ * Run one stage on the draft prompts. Upstream stages come from `mockData` when given
+ * and are run otherwise. Each stage runs once: no retry or fallback, so a prompt problem
+ * shows up as it is.
  */
 async function executeSingleStage(
-  router: ContentGenerationRouter,
-  stage: 'master' | 'narrative' | 'image' | 'actions',
+  stage: PromptStage,
   context: TurnGenerationContext,
   mockData?: { masterEnrichment?: any; narrative?: string }
 ): Promise<FullTurnContentResult> {
-  const promptChain: StageMetadata[] = [];
-
-  switch (stage) {
-    case 'master': {
-      // Master has no upstream dependencies - use DB-loaded stage function
-      const masterResult = await runMasterStageFromDb(context);
-      promptChain.push(...masterResult.metadata);
-
-      if (!masterResult.ok || !masterResult.output) {
-        throw new Error('Master enrichment failed');
+  // Mock data may be a saved stage output ({ enrichment, flattened }) or a bare plan.
+  const master: MasterEnrichmentData | undefined = mockData?.masterEnrichment
+    ? {
+        enrichment: mockData.masterEnrichment.enrichment ?? mockData.masterEnrichment,
+        flattened: mockData.masterEnrichment.flattened ?? {}
       }
+    : undefined;
+  const narrative = mockData?.narrative ? { narration: mockData.narrative } : undefined;
 
-      return {
-        master: masterResult,
-        narrative: { ok: false, output: null, metadata: [] },
-        image: { ok: false, output: null, metadata: [] },
-        actions: { ok: false, output: null, metadata: [] },
-        promptChain,
-        fallbackUsed: false
-      };
+  const result = await runPceGraph(context, {
+    promptSource: "database",
+    target: stage,
+    upstream: { master, narrative },
+    recover: false,
+    mode: "lenient"
+  });
+
+  const needed: PromptStage[] = stage === "master" ? ["master"] : stage === "narrative" ? ["master", "narrative"] : ["master", "narrative", stage];
+  for (const name of needed) {
+    const stageResult = result[name] as StageResult<unknown>;
+    if (!stageResult.ok || !stageResult.output) {
+      throw new Error(SINGLE_STAGE_FAILURE[name]);
     }
-
-    case 'narrative': {
-      // Narrative requires master enrichment
-      let masterEnrichment: StageResult<MasterEnrichmentData>;
-      
-      if (mockData?.masterEnrichment) {
-        // Normalize mock data to MasterEnrichmentData format
-        const normalizedMock: MasterEnrichmentData = {
-          enrichment: mockData.masterEnrichment.enrichment ?? mockData.masterEnrichment,
-          flattened: mockData.masterEnrichment.flattened ?? {}
-        };
-        masterEnrichment = { ok: true, output: normalizedMock, metadata: [] };
-      } else {
-        masterEnrichment = await runMasterStageFromDb(context);
-      }
-
-      if (!masterEnrichment.ok || !masterEnrichment.output) {
-        throw new Error('Master enrichment failed');
-      }
-
-      const narrativeResult = await runNarrativeStageFromDb(context, masterEnrichment.output);
-      promptChain.push(...(mockData?.masterEnrichment ? [] : masterEnrichment.metadata));
-      promptChain.push(...narrativeResult.metadata);
-
-      if (!narrativeResult.ok || !narrativeResult.output) {
-        throw new Error('Narrative generation failed');
-      }
-
-      return {
-        master: masterEnrichment,
-        narrative: narrativeResult,
-        image: { ok: false, output: null, metadata: [] },
-        actions: { ok: false, output: null, metadata: [] },
-        promptChain,
-        fallbackUsed: false
-      };
-    }
-
-    case 'image': {
-      // Image requires both master enrichment and narrative
-      let masterEnrichment: StageResult<MasterEnrichmentData>;
-      
-      if (mockData?.masterEnrichment) {
-        // Normalize mock data to MasterEnrichmentData format
-        const normalizedMock: MasterEnrichmentData = {
-          enrichment: mockData.masterEnrichment.enrichment ?? mockData.masterEnrichment,
-          flattened: mockData.masterEnrichment.flattened ?? {}
-        };
-        masterEnrichment = { ok: true, output: normalizedMock, metadata: [] };
-      } else {
-        masterEnrichment = await runMasterStageFromDb(context);
-      }
-
-      if (!masterEnrichment.ok || !masterEnrichment.output) {
-        throw new Error('Master enrichment failed');
-      }
-
-      const narrativeData = mockData?.narrative
-        ? { ok: true, output: { narration: mockData.narrative }, metadata: [] }
-        : await runNarrativeStageFromDb(context, masterEnrichment.output);
-
-      if (!narrativeData.ok || !narrativeData.output) {
-        throw new Error('Narrative generation failed');
-      }
-
-      const imageResult = await runImageStageFromDb(context, masterEnrichment.output, narrativeData.output);
-      promptChain.push(...(mockData?.masterEnrichment ? [] : masterEnrichment.metadata));
-      promptChain.push(...(mockData?.narrative ? [] : narrativeData.metadata));
-      promptChain.push(...imageResult.metadata);
-
-      if (!imageResult.ok || !imageResult.output) {
-        throw new Error('Image prompt generation failed');
-      }
-
-      return {
-        master: masterEnrichment,
-        narrative: narrativeData,
-        image: imageResult,
-        actions: { ok: false, output: null, metadata: [] },
-        promptChain,
-        fallbackUsed: false
-      };
-    }
-
-    case 'actions': {
-      // Actions requires both master enrichment and narrative
-      let masterEnrichment: StageResult<MasterEnrichmentData>;
-      
-      if (mockData?.masterEnrichment) {
-        // Normalize mock data to MasterEnrichmentData format
-        const normalizedMock: MasterEnrichmentData = {
-          enrichment: mockData.masterEnrichment.enrichment ?? mockData.masterEnrichment,
-          flattened: mockData.masterEnrichment.flattened ?? {}
-        };
-        masterEnrichment = { ok: true, output: normalizedMock, metadata: [] };
-      } else {
-        masterEnrichment = await runMasterStageFromDb(context);
-      }
-
-      if (!masterEnrichment.ok || !masterEnrichment.output) {
-        throw new Error('Master enrichment failed');
-      }
-
-      const narrativeData = mockData?.narrative
-        ? { ok: true, output: { narration: mockData.narrative }, metadata: [] }
-        : await runNarrativeStageFromDb(context, masterEnrichment.output);
-
-      if (!narrativeData.ok || !narrativeData.output) {
-        throw new Error('Narrative generation failed');
-      }
-
-      const actionsResult = await runActionsStageFromDb(context, masterEnrichment.output, narrativeData.output);
-      promptChain.push(...(mockData?.masterEnrichment ? [] : masterEnrichment.metadata));
-      promptChain.push(...(mockData?.narrative ? [] : narrativeData.metadata));
-      promptChain.push(...actionsResult.metadata);
-
-      if (!actionsResult.ok || !actionsResult.output) {
-        throw new Error('Actions generation failed');
-      }
-
-      return {
-        master: masterEnrichment,
-        narrative: narrativeData,
-        image: { ok: false, output: null, metadata: [] },
-        actions: actionsResult,
-        promptChain,
-        fallbackUsed: false
-      };
-    }
-
-    default:
-      throw new Error(`Invalid stage: ${stage}`);
   }
+  return result;
 }
 
 export async function buildContextFromScenario(
@@ -770,14 +346,8 @@ export function estimateCost(promptTokens: number, completionTokens: number, llm
 
 export type QualificationStage = "master" | "narrative" | "image" | "actions";
 
-/**
- * How a qualification run went, best to worst:
- *  clean     every stage returned valid JSON on the first try
- *  repaired  completed on the model's own output, but needed JSON repair and/or a retry
- *  fallback  completed only because the fallback model stepped in for at least one stage
- *  failed    the turn could not be completed
- */
-export type QualificationVerdict = "clean" | "repaired" | "fallback" | "failed";
+/** How a qualification run went. See server/pce/verdict.ts for what each value means. */
+export type QualificationVerdict = StructuralVerdict;
 
 export interface QualificationStageReport {
   stage: QualificationStage;
@@ -828,6 +398,8 @@ export interface QualificationResult {
   narration?: string;
   imagePrompt?: string;
   actions?: string[];
+  /** Where this run is in LangSmith, when tracing is on. */
+  trace?: TraceRef;
 }
 
 /**
@@ -854,27 +426,37 @@ export async function runModelQualification(options: {
     options.llmFallback ?? null
   );
 
-  const notRun = <T,>(): StageResult<T> => ({ ok: false, output: null, metadata: [] });
-  let master: StageResult<MasterEnrichmentData> = notRun();
-  let narrative: StageResult<NarrativePayload> = notRun();
-  let image: StageResult<ImagePromptPayload> = notRun();
-  let actions: StageResult<ActionsPayload> = notRun();
+  const model = requestModelId(options.llm);
+  let trace: TraceRef | undefined;
 
   const start = Date.now();
-  master = await inspectorRouter.generateMasterEnrichment(context);
-  if (master.ok && master.output?.enrichment) {
-    narrative = await inspectorRouter.generateNarrative(context, master.output);
-    if (narrative.ok && narrative.output) {
-      [actions, image] = await Promise.all([
-        inspectorRouter.generateActions(context, master.output, narrative.output),
-        inspectorRouter.generateImagePrompt(context, master.output, narrative.output)
-      ]);
+  // Lenient: a stage that fails ends the run without throwing, and what did run is reported.
+  const result = await withSpan(
+    "pce.qualify",
+    {
+      inputs: {
+        scenarioId: parsedScenario.id,
+        scenario: parsedScenario.name,
+        playerAction: parsedScenario.playerAction,
+        model,
+        fallbackModel: options.llmFallback ? requestModelId(options.llmFallback) : null
+      },
+      metadata: { scenarioId: parsedScenario.id, promptSource: "database", source: "model-qualification", model },
+      tags: ["qualify"],
+      outputs: (r) => ({
+        narration: r.narrative.output?.narration ?? null,
+        actions: (r.actions.output?.actions ?? []).map((a) => a.action),
+        imagePrompt: r.image.output?.imagePrompt ?? null,
+        modelCalls: r.promptChain.length
+      })
+    },
+    async () => {
+      trace = currentRootTraceRef();
+      return runPceGraph(context, { promptSource: "database", mode: "lenient" });
     }
-  }
+  );
   const turnMs = Date.now() - start;
-
-  const promptChain = [...master.metadata, ...narrative.metadata, ...actions.metadata, ...image.metadata];
-  const result: FullTurnContentResult = { master, narrative, image, actions, promptChain, fallbackUsed: false };
+  const { master, narrative, actions, image, promptChain } = result;
 
   const sum = (values: Array<number | null | undefined>): number | null => {
     const known = values.filter((v): v is number => typeof v === "number");
@@ -923,17 +505,10 @@ export async function runModelQualification(options: {
   }
 
   const ok = stages.every((s) => s.ran && s.ok);
-  const verdict: QualificationVerdict = !ok
-    ? "failed"
-    : stages.some((s) => s.recovery === "fallback")
-    ? "fallback"
-    : stages.every((s) => s.attempts === 1 && s.jsonQuality === "raw")
-    ? "clean"
-    : "repaired";
+  const verdict: QualificationVerdict = verdictFromStages(stages);
   const tokenStats = calculateTokensFromResult(promptChain);
   const hasPrice = options.llm.priceInput !== null && options.llm.priceOutput !== null;
   const costUsd = hasPrice ? estimateCost(tokenStats.promptTokens, tokenStats.completionTokens, options.llm) : null;
-  const model = requestModelId(options.llm);
 
   const templateIds = await getActiveTemplateIds();
   const releaseVersion = (await getCurrentReferenceRelease())?.version ?? undefined;
@@ -945,7 +520,8 @@ export async function runModelQualification(options: {
     result,
     checks: normalizedChecks,
     triggeredEvent: normalizedEvent,
-    executedAt: new Date().toISOString()
+    executedAt: new Date().toISOString(),
+    trace
   };
   const firstError = stages.find((s) => s.error)?.error;
   const created = await storage.createPceTestRun({
@@ -983,7 +559,8 @@ export async function runModelQualification(options: {
     stages,
     narration: narrative.output?.narration,
     imagePrompt: image.output?.imagePrompt,
-    actions: actionLabels
+    actions: actionLabels,
+    trace
   };
 }
 

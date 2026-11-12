@@ -1,5 +1,6 @@
 import { ImageGenerator, ImageRequest, ImageResponse } from "../types";
 import { InferenceClient } from "@huggingface/inference";
+import { resolveGenerationParams } from "../generationParams";
 
 function parseSize(size: string): { width: number; height: number } {
   const [w, h] = size.split("x").map((v) => parseInt(v, 10));
@@ -22,10 +23,12 @@ export class HuggingFaceImageGenerator implements ImageGenerator {
         provider,
         model: req.modelName,
         inputs: req.prompt,
-        parameters: { 
-          width, 
+        parameters: {
+          width,
           height,
-          num_inference_steps: 5  // Add inference steps parameter
+          // Steps (and guidance, if the model sets it) come from the catalog row: 5 steps
+          // suits FLUX Schnell and the turbo models but ruins SDXL, which needs about 30.
+          ...resolveGenerationParams(req.providerParams),
         },
       });
 

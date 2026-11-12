@@ -1,6 +1,7 @@
 import express from "express";
 import { requireAdmin } from "../middleware/adminAuth";
 import { storage } from "../storage";
+import { validateImageModelInput } from "../image/validation";
 
 export const imageModelsAdmin = express.Router();
 
@@ -18,6 +19,8 @@ imageModelsAdmin.get("/", async (_req, res) => {
 
 imageModelsAdmin.post("/", async (req, res) => {
   try {
+    const invalid = validateImageModelInput(req.body ?? {});
+    if (invalid) return res.status(400).json({ error: invalid });
     const row = await storage.upsertImageModel(req.body);
     res.json(row);
   } catch (e) {
@@ -28,6 +31,8 @@ imageModelsAdmin.post("/", async (req, res) => {
 imageModelsAdmin.put("/:modelKey", async (req, res) => {
   try {
     const modelKey = req.params.modelKey;
+    const invalid = validateImageModelInput(req.body ?? {});
+    if (invalid) return res.status(400).json({ error: invalid });
     const row = await storage.upsertImageModel({ ...req.body, modelKey });
     res.json(row);
   } catch (e) {

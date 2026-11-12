@@ -15,6 +15,8 @@ import { log } from '../../logger';
 import type { ImageJob } from '@shared/schema';
 import type { JobLease } from '../types';
 import { Server as SocketIOServer } from 'socket.io';
+import { annotateSpan, withSpan } from '../../observability/langsmith';
+import { HandledJobFailure, runTracedJob } from './jobTracing';
 
 export class ImageWorker {
   private workerId: string;
@@ -128,7 +130,28 @@ export class ImageWorker {
     await lease.extend(config.leaseDurationMs);
   }
 
+  /** Continues the turn's trace when the job was enqueued from inside one. */
   private async processJob(lease: JobLease<ImageJob>) {
+    const payload = lease.job.payload as { id: string };
+    await runTracedJob(
+      lease,
+      {
+        rootName: 'image',
+        childName: 'turn.image',
+        inputs: { imageJobId: payload.id },
+        metadata: {
+          imageJobId: payload.id,
+          gameId: lease.job.metadata?.gameId,
+          thread_id: lease.job.metadata?.gameId,
+          turnNumber: lease.job.metadata?.turnNumber
+        },
+        tags: ['image']
+      },
+      () => this.processJobTraced(lease)
+    );
+  }
+
+  private async processJobTraced(lease: JobLease<ImageJob>) {
     const payload = lease.job.payload as { id: string };
     const endTimer = imageJobDuration.startTimer();
     const totalTimer = imageProcessingDuration.startTimer({ operation: 'total', cache: 'miss' });
@@ -192,9 +215,15 @@ export class ImageWorker {
       if (!skipCache) {
       // Try cache check first
       const cacheTimer = imageProcessingDuration.startTimer({ operation: 'cache_lookup', cache: 'miss' });
-      result = await checkImageCache(imagePrompt.trim(), gameState, userPreferences, {
-        turnNumber: job.turnNumber
-      });
+      result = await withSpan(
+        'image.cache_lookup',
+        {
+          runType: 'retriever',
+          inputs: { imagePrompt: imagePrompt.trim(), turnNumber: job.turnNumber },
+          outputs: (r) => ({ hit: !!r, templateName: r?.templateName ?? null })
+        },
+        () => checkImageCache(imagePrompt.trim(), gameState, userPreferences, { turnNumber: job.turnNumber })
+      );
       cacheHit = !!result;
       cacheTimer({ cache: cacheHit ? 'hit' : 'miss' });
       }
@@ -294,6 +323,7 @@ export class ImageWorker {
         });
 
         imageJobsCompleted.inc();
+        annotateSpan({ cacheHit, imageUrl: result.imageUrl, imageTemplate: result.templateName });
         
         // Record end-to-end latency
         if (jobCreatedAt) {
@@ -345,6 +375,7 @@ export class ImageWorker {
       });
 
       imageJobsFailed.inc();
+      throw new HandledJobFailure(errorMessage);
     } finally {
       endTimer();
     }

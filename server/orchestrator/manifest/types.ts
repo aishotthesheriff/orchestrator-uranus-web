@@ -18,6 +18,8 @@ export interface JobSection {
 export interface RequestSection {
   traceId: string;
   requestId?: string;
+  /** Root run of this turn's LangSmith trace, when tracing is on. */
+  langsmith?: { runId: string; traceId: string };
   issuedBy?: string;
   action: {
     type: string;
@@ -53,9 +55,20 @@ export interface PrecomputeSection {
   llmCalls: Array<{
     model: string;
     promptTemplate: string;
+    /** Hash of the rendered prompt that was sent. */
     promptHash: string;
     latencyMs: number;
     cache: 'hit' | 'miss';
+    stage?: string;
+    modelKey?: string | null;
+    provider?: string;
+    /** Hash of the unrendered template, and where it was loaded from. */
+    templateHash?: string;
+    templateSource?: string;
+    /** Set on attempts after the first: a retry of the same model, or the fallback model. */
+    recovery?: 'retry' | 'fallback';
+    usage?: { promptTokens: number | null; completionTokens: number | null };
+    error?: string;
   }>;
   turnContent?: {
     narration: string;
@@ -124,6 +137,13 @@ export interface TurnExecutionManifest {
   request: RequestSection;
   precompute?: PrecomputeSection;
   apply?: ApplySection;
+  /** Scores from live-turn sampling, present only on turns that were sampled. Not part of the manifest hash. */
+  evals?: {
+    sampledAt: string;
+    verdict: string;
+    judgeModel: string;
+    scores: Array<{ key: string; score: number | null; comment?: string }>;
+  };
   postconditions?: {
     gameComplete: boolean;
     failureResolved: string | null;

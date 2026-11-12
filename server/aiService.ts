@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { wrapOpenAI } from "langsmith/wrappers";
 import type { GameState, ActionChip, ModStoryThemes, ModVisualStyles, ImagePromptSource } from "@shared/schema";
 import { storage } from "./storage.js";
 import { getCurrentReference } from "./reference/referenceLoader";
@@ -13,35 +14,23 @@ import {
   type ImageSettings,
   type SceneFingerprint
 } from "./cacheUtils.js";
-import { buildMetaPrompt, buildPcePrompt, flattenMasterEnrichment, getTemplateLoadMetrics, type SeparatedPrompts } from "./pce/promptBuilder.js";
 import { buildModelInstructionSet } from "./pce/modelInstructions.js";
 import { resolvePceSelections, type PceSelection } from "./pce/settings.js";
-import { getSocketIO } from "./socketManager.js";
-import {
-  ContentGenerationRouter,
-  type ActionsPayload,
-  type FullTurnContentResult,
-  type ImagePromptPayload,
-  type MasterEnrichmentData,
-  type NarrativePayload,
-  type PromptStage,
-  type StageMetadata,
-  type StageResult,
-  type TurnGenerationContext
+import { withSpan } from "./observability/langsmith.js";
+import { executeJsonPrompt, logLlmCall } from "./llm/jsonPrompt.js";
+
+// Kept as exports of this module for existing importers.
+export { executeJsonPrompt, logLlmCall };
+import type {
+  ImagePromptPayload,
+  MasterEnrichmentData,
+  NarrativePayload,
+  StageMetadata,
+  TurnGenerationContext
 } from "./pce/contentRouter.js";
-import { 
-  llmCallDuration,
-  pceStageDuration,
-  variableBuildDuration,
-  promptBuildDuration
-} from "./metrics.js";
-import { describeLlmError, getLlmClient, llmCallErrorInfo, maxTokensParam, tagLlmCallError } from "./llm/clients.js";
-import { STAGE_OBJECT_KEYS, parseStageJson, recoverStageOutput } from "./llm/json.js";
+import { runPceGraph } from "./pce/graph/index.js";
 import {
-  BUILTIN_LLM_MODEL,
-  adhocLlmModel,
   getThemeForcedLlmModelKeys,
-  requestModelId,
   resolveLlmFallback,
   resolveLlmModel,
   type ResolvedLlmModel
@@ -52,10 +41,11 @@ import {
 let _openai: OpenAI | null = null;
 function getOpenAI(): OpenAI {
   if (!_openai) {
-    _openai = new OpenAI({
+    // Wrapped so utility calls (intent mapping, interview answers) are traced too.
+    _openai = wrapOpenAI(new OpenAI({
       baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
       apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY
-    });
+    }));
   }
   return _openai;
 }
@@ -72,7 +62,6 @@ function getOpenAIImages(): OpenAI {
 }
 
 
-let lastTemplateLoadCountLogged = 0;
 
 // Helper functions to replace cache functions
 async function getItemById(id: string) {
@@ -244,70 +233,6 @@ function addInterviewResponsesToVariables(variables: Record<string, any>, state:
   return enhanced;
 }
 
-export async function logLlmCall(
-  functionName: string,
-  prompt: string,
-  response: string,
-  metadata: any = {},
-  executionTimeMs: number,
-  gameId?: string,
-  turnNumber?: number
-) {
-  try {
-    const baseMetadata =
-      metadata && typeof metadata === "object" ? { ...metadata } : {};
-    const templateMetricsSnapshot = getTemplateLoadMetrics();
-    let metadataWithMetrics = baseMetadata;
-
-    if (templateMetricsSnapshot.totalLoads > lastTemplateLoadCountLogged) {
-      metadataWithMetrics = {
-        ...baseMetadata,
-        templateLoadMetrics: {
-          cacheHits: templateMetricsSnapshot.cacheHits,
-          cacheMisses: templateMetricsSnapshot.cacheMisses,
-          totalLoads: templateMetricsSnapshot.totalLoads,
-          lastLoadDurationMs: templateMetricsSnapshot.lastLoadDurationMs,
-          lastLoadTimestamp: templateMetricsSnapshot.lastLoadTimestamp,
-          lastLoadWasCacheHit: templateMetricsSnapshot.lastLoadWasCacheHit
-        }
-      };
-      lastTemplateLoadCountLogged = templateMetricsSnapshot.totalLoads;
-    }
-
-    // Always log to database
-    await storage.createLlmLog({
-      functionName,
-      prompt,
-      response,
-      metadata: metadataWithMetrics,
-      executionTimeMs,
-      gameId: gameId || null,
-      turnNumber: turnNumber || null,
-      promptTemplateId: null,
-    });
-    
-    // Conditionally emit log data to browser console via Socket.IO (if CONSOLE_LLM_LOG is enabled)
-    if (process.env.CONSOLE_LLM_LOG === 'true') {
-      const io = getSocketIO();
-      if (io) {
-        const logData = {
-          functionName,
-          prompt,
-          response,
-          metadata: metadataWithMetrics,
-          executionTimeMs,
-          gameId: gameId || null,
-          turnNumber: turnNumber || null,
-          timestamp: new Date().toISOString(),
-        };
-        // Emit to all connected clients (broadcast)
-        io.emit('llmLog', logData);
-      }
-    }
-  } catch (error) {
-    console.error("Error logging LLM call:", error);
-  }
-}
 
 
 
@@ -720,178 +645,7 @@ export function buildActionsVariables(
   };
 }
 
-interface PromptExecutionOptions {
-  stage: PromptStage;
-  template: string;
-  systemPrompt?: string;  // NEW: system prompt
-  userPrompt?: string;    // NEW: user prompt
-  prompt?: string;         // DEPRECATED: single prompt (backward compat)
-  /** Story model to call. Defaults to the built-in model. */
-  llm?: ResolvedLlmModel;
-  model?: string;          // DEPRECATED: bare OpenAI model name; prefer `llm`
-  maxTokens?: number;
-  temperature?: number;
-  topP?: number;
-  frequencyPenalty?: number;
-  presencePenalty?: number;
-  metadata?: Record<string, unknown>;
-  gameId?: string;
-  turnNumber?: number;
-  logName?: string;
-}
 
-export async function executeJsonPrompt(
-  promptOrOptions: string | PromptExecutionOptions,
-  options?: PromptExecutionOptions
-): Promise<{ rawContent: string; metadata: StageMetadata }> {
-  // Handle both old (string) and new (options) signatures
-  let opts: PromptExecutionOptions;
-  if (typeof promptOrOptions === "string") {
-    // Legacy: single prompt string
-    opts = { ...options!, prompt: promptOrOptions };
-  } else {
-    opts = promptOrOptions;
-  }
-
-  // Story model: an explicit catalog/ad-hoc model wins; a bare `model` name is treated as
-  // an OpenAI model (legacy callers); otherwise the built-in default.
-  const llm: ResolvedLlmModel = opts.llm
-    ?? (opts.model ? adhocLlmModel({ provider: "openai", modelName: opts.model }) : BUILTIN_LLM_MODEL);
-  const model = requestModelId(llm);
-  const startTime = Date.now();
-
-  // Build messages array
-  const messages: Array<{ role: "system" | "user"; content: string }> = [];
-
-  // System prompt (required)
-  if (opts.systemPrompt) {
-    messages.push({ role: "system", content: opts.systemPrompt });
-  } else if (opts.prompt) {
-    // Backward compatibility: use prompt as system message
-    messages.push({ role: "system", content: opts.prompt });
-  } else {
-    throw new Error("Either systemPrompt or prompt must be provided");
-  }
-
-  // User prompt (optional - only add if provided and not empty)
-  if (opts.userPrompt && opts.userPrompt.trim()) {
-    messages.push({ role: "user", content: opts.userPrompt });
-  }
-
-  // A catalog entry may raise the output limit (reasoning models spend tokens before answering).
-  const maxTokens = Math.max(opts.maxTokens ?? 600, llm.params.maxTokens ?? 0);
-  const requestParams: any = {
-    model,
-    messages,
-    [maxTokensParam(llm.provider)]: maxTokens
-  };
-  // Models without a JSON mode reject response_format; they rely on the prompt alone.
-  if (llm.supportsJsonMode) {
-    requestParams.response_format = { type: "json_object" };
-  }
-
-  // Apply optional request parameter overrides
-  const temperature = opts.temperature ?? llm.params.temperature;
-  if (temperature !== undefined) {
-    requestParams.temperature = temperature;
-  }
-  if (opts.topP !== undefined) {
-    requestParams.top_p = opts.topP;
-  }
-  if (opts.frequencyPenalty !== undefined) {
-    requestParams.frequency_penalty = opts.frequencyPenalty;
-  }
-  if (opts.presencePenalty !== undefined) {
-    requestParams.presence_penalty = opts.presencePenalty;
-  }
-
-  // Instrument LLM call duration
-  const llmTimer = llmCallDuration.startTimer({
-    model,
-    stage: opts.stage || "unknown",
-    cache: "na" // PCE stages don't use cache yet
-  });
-
-  // Build full prompt string for logging
-  const fullPrompt = opts.userPrompt
-    ? `SYSTEM:\n${opts.systemPrompt || opts.prompt}\n\nUSER:\n${opts.userPrompt}`
-    : opts.systemPrompt || opts.prompt || "";
-  const logName = opts.logName ?? `pce.${opts.stage}`;
-  const modelInfo = { model, modelKey: llm.key, provider: llm.provider };
-
-  try {
-    const response: any = await getLlmClient(llm.provider).chat.completions.create(requestParams);
-    llmTimer();
-
-    const choice = response.choices?.[0];
-    const content: string = choice?.message?.content?.trim() ?? "";
-    const finishReason: string | null = choice?.finish_reason ?? null;
-    // Measured on what the model actually returned, before the empty-response substitution.
-    const jsonQuality = recoverStageOutput(content, { stage: opts.stage, finishReason }).quality;
-    const emptyResponse = content.length === 0;
-    const rawContent = content || "{}";
-    const executionTime = Date.now() - startTime;
-    const timestamp = new Date().toISOString();
-    const usage = response.usage
-      ? {
-          promptTokens: response.usage.prompt_tokens ?? null,
-          completionTokens: response.usage.completion_tokens ?? null
-        }
-      : undefined;
-
-    await logLlmCall(
-      logName,
-      fullPrompt,
-      rawContent,
-      {
-        ...modelInfo,
-        stage: opts.stage,
-        template: opts.template,
-        usage,
-        finishReason,
-        jsonQuality,
-        ...opts.metadata
-      },
-      executionTime,
-      opts.gameId,
-      opts.turnNumber
-    );
-
-    const metadata: StageMetadata = {
-      stage: opts.stage,
-      template: opts.template,
-      ...modelInfo,
-      prompt: fullPrompt,
-      rawResponse: rawContent,
-      durationMs: executionTime,
-      timestamp,
-      usage,
-      finishReason,
-      maxTokens,
-      ...(emptyResponse ? { emptyResponse: true } : {}),
-      jsonQuality,
-      extras: opts.metadata
-    };
-
-    return { rawContent, metadata };
-  } catch (error) {
-    llmTimer(); // Record duration even on error
-    // Lets the stage runner record which model failed, and the router fall back.
-    tagLlmCallError(error, { ...modelInfo, maxTokens });
-    // Record the failed call too, so a model that errors is visible in LLM Logs.
-    const { status, message } = describeLlmError(error);
-    await logLlmCall(
-      logName,
-      fullPrompt,
-      `ERROR: ${message}`,
-      { ...modelInfo, stage: opts.stage, template: opts.template, error: message, upstreamStatus: status, ...opts.metadata },
-      Date.now() - startTime,
-      opts.gameId,
-      opts.turnNumber
-    ).catch(() => undefined);
-    throw error;
-  }
-}
 
 interface BuiltTurnContext {
   context: TurnGenerationContext;
@@ -957,415 +711,6 @@ export function getIngredients(context: TurnGenerationContext): TurnPromptIngred
   return extras.ingredients;
 }
 
-export async function runMasterStage(context: TurnGenerationContext): Promise<StageResult<MasterEnrichmentData>> {
-  const ingredients = getIngredients(context);
-  const stageTimer = pceStageDuration.startTimer({ stage: 'master' });
-
-  try {
-    console.log("[PCE] runMasterStage starting", {
-      gameId: context.gameId,
-      turnNumber: context.turnNumber,
-      hasIngredients: !!ingredients
-    });
-
-    // Instrument variable building
-    const variableTimer = variableBuildDuration.startTimer({ stage: 'master' });
-    const variables = await context.promptVariables.master();
-    variableTimer();
-    console.log("[PCE] Master variables built", {
-      gameId: context.gameId,
-      variableKeys: Object.keys(variables),
-      variableCount: Object.keys(variables).length
-    });
-
-    // Instrument prompt building
-    const promptTimer = promptBuildDuration.startTimer({ stage: 'master' });
-    const prompts = await buildPcePrompt("master", variables, { validate: true });
-    promptTimer();
-    console.log("[PCE] Master prompt built", {
-      gameId: context.gameId,
-      systemPromptLength: prompts.system.length,
-      userPromptLength: prompts.user.length
-    });
-
-    const { rawContent, metadata } = await executeJsonPrompt({
-      llm: context.llmModel,
-      stage: "master",
-      template: "master",
-      systemPrompt: prompts.system,
-      userPrompt: prompts.user || undefined, // Only include if not empty
-      metadata: {
-        theme: ingredients.selections.theme,
-        style: ingredients.selections.style,
-        imageModelKey: ingredients.imageModelKey
-      },
-      gameId: context.gameId,
-      turnNumber: context.turnNumber
-    });
-
-    console.log("[PCE] Master stage LLM response received", {
-      gameId: context.gameId,
-      rawContentLength: rawContent.length,
-      hasRawContent: !!rawContent
-    });
-
-    let parsed: unknown;
-    try {
-      parsed = parseStageJson(rawContent, metadata);
-      console.log("[PCE] Master stage JSON parsed successfully", {
-        gameId: context.gameId,
-        parsedType: typeof parsed,
-        isObject: typeof parsed === "object" && parsed !== null
-      });
-    } catch (error) {
-      console.error("[PCE] Master stage JSON parse failed", {
-        gameId: context.gameId,
-        error: (error as Error).message,
-        rawContentPreview: rawContent.substring(0, 200)
-      });
-      metadata.error = `JSON parse error: ${(error as Error).message}`;
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    // The scene plan must carry at least one of the sections the later prompts are built
-    // from (see flattenMasterEnrichment). "{}", a bare array, or a fragment of the plan
-    // would leave those prompts without their variables.
-    // A plan whose JSON had to be repaired must have every section: closing an unfinished
-    // object can fold later sections into an earlier one.
-    const isSection = (section: string) => {
-      const value = (parsed as Record<string, unknown>)[section];
-      return !!value && typeof value === "object" && !Array.isArray(value);
-    };
-    const isPlan =
-      !!parsed && typeof parsed === "object" && !Array.isArray(parsed) &&
-      (metadata.jsonQuality === "repaired"
-        ? STAGE_OBJECT_KEYS.master.every(isSection)
-        : STAGE_OBJECT_KEYS.master.some(isSection));
-    if (!isPlan) {
-      metadata.error = "Master stage returned no usable plan (expected context, variables and guidance)";
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    const flattened = flattenMasterEnrichment(parsed);
-    const output: MasterEnrichmentData = {
-      enrichment: parsed as Record<string, unknown>,
-      flattened
-    };
-
-    console.log("[PCE] Master stage completed successfully", {
-      gameId: context.gameId,
-      hasEnrichment: !!output.enrichment,
-      enrichmentKeys: output.enrichment ? Object.keys(output.enrichment) : []
-    });
-
-    stageTimer({ status: 'success' });
-    return {
-      ok: true,
-      output,
-      metadata: [metadata]
-    };
-  } catch (error) {
-    stageTimer({ status: 'failure' });
-    console.error("[PCE] Master stage exception caught", {
-      gameId: context.gameId,
-      turnNumber: context.turnNumber,
-      error: error instanceof Error ? error.message : String(error),
-      errorStack: error instanceof Error ? error.stack : undefined
-    });
-    const timestamp = new Date().toISOString();
-    const metadata: StageMetadata = {
-      stage: "master",
-      template: "master",
-      ...llmCallErrorInfo(error),
-      prompt: "",
-      rawResponse: null,
-      fallbackUsed: true,
-      error: error instanceof Error ? error.message : String(error),
-      timestamp
-    };
-    return { ok: false, output: null, metadata: [metadata] };
-  }
-}
-
-export async function runNarrativeStage(
-  context: TurnGenerationContext,
-  master: MasterEnrichmentData
-): Promise<StageResult<NarrativePayload>> {
-  const ingredients = getIngredients(context);
-  const stageTimer = pceStageDuration.startTimer({ stage: 'narrative' });
-
-  try {
-    // Instrument variable building
-    const variableTimer = variableBuildDuration.startTimer({ stage: 'narrative' });
-    const variables = await context.promptVariables.narrative(master);
-    variableTimer();
-
-    // Instrument prompt building
-    const promptTimer = promptBuildDuration.startTimer({ stage: 'narrative' });
-    const prompts = await buildPcePrompt("narrative", variables, { validate: true });
-    promptTimer();
-
-    const { rawContent, metadata } = await executeJsonPrompt({
-      llm: context.llmModel,
-      stage: "narrative",
-      template: "narrative",
-      systemPrompt: prompts.system,
-      userPrompt: prompts.user || undefined,
-      metadata: {
-        theme: ingredients.selections.theme,
-        style: ingredients.selections.style
-      },
-      gameId: context.gameId,
-      turnNumber: context.turnNumber
-    });
-
-    let parsed: unknown;
-    try {
-      parsed = parseStageJson(rawContent, metadata);
-    } catch (error) {
-      metadata.error = `JSON parse error: ${(error as Error).message}`;
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    if (!parsed || typeof parsed !== "object" || parsed === null) {
-      metadata.error = "Narrative stage returned invalid payload";
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    const narration = typeof (parsed as any).narration === "string" ? (parsed as any).narration.trim() : "";
-    const toneHintsRaw = (parsed as any).toneHints;
-    const toneHints =
-      Array.isArray(toneHintsRaw) && toneHintsRaw.every(item => typeof item === "string")
-        ? toneHintsRaw
-        : undefined;
-
-    if (!narration) {
-      metadata.error = "Narrative stage missing 'narration' field";
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    const output: NarrativePayload = {
-      narration,
-      toneHints
-    };
-
-    stageTimer({ status: 'success' });
-    return {
-      ok: true,
-      output,
-      metadata: [metadata]
-    };
-  } catch (error) {
-    stageTimer({ status: 'failure' });
-    const timestamp = new Date().toISOString();
-    const metadata: StageMetadata = {
-      stage: "narrative",
-      template: "narrative",
-      ...llmCallErrorInfo(error),
-      prompt: "",
-      rawResponse: null,
-      fallbackUsed: true,
-      error: error instanceof Error ? error.message : String(error),
-      timestamp
-    };
-    return { ok: false, output: null, metadata: [metadata] };
-  }
-}
-
-export async function runImageStage(
-  context: TurnGenerationContext,
-  master: MasterEnrichmentData,
-  narrative: NarrativePayload
-): Promise<StageResult<ImagePromptPayload>> {
-  const ingredients = getIngredients(context);
-  const stageTimer = pceStageDuration.startTimer({ stage: 'image' });
-
-  try {
-    // Instrument variable building
-    const variableTimer = variableBuildDuration.startTimer({ stage: 'image' });
-    const variables = await context.promptVariables.image(master, narrative);
-    variableTimer();
-
-    // Instrument prompt building
-    const promptTimer = promptBuildDuration.startTimer({ stage: 'image' });
-    const prompts = await buildPcePrompt("image", variables, { validate: true });
-    promptTimer();
-
-    const { rawContent, metadata } = await executeJsonPrompt({
-      llm: context.llmModel,
-      stage: "image",
-      template: "image",
-      systemPrompt: prompts.system,
-      userPrompt: prompts.user || undefined,
-      metadata: {
-        theme: ingredients.selections.theme,
-        style: ingredients.selections.style,
-        imageModelKey: ingredients.imageModelKey
-      },
-      gameId: context.gameId,
-      turnNumber: context.turnNumber
-    });
-
-    let parsed: unknown;
-    try {
-      parsed = parseStageJson(rawContent, metadata);
-    } catch (error) {
-      metadata.error = `JSON parse error: ${(error as Error).message}`;
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    if (!parsed || typeof parsed !== "object" || parsed === null) {
-      metadata.error = "Image stage returned invalid payload";
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    const imagePrompt = typeof (parsed as any).imagePrompt === "string" ? (parsed as any).imagePrompt.trim() : "";
-    const modelOverrides = (parsed as any).modelOverrides;
-
-    if (!imagePrompt) {
-      metadata.error = "Image stage missing 'imagePrompt' field";
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    const output: ImagePromptPayload = {
-      imagePrompt,
-      modelOverrides:
-        modelOverrides && typeof modelOverrides === "object" ? (modelOverrides as ImagePromptPayload["modelOverrides"]) : undefined
-    };
-
-    stageTimer({ status: 'success' });
-    return {
-      ok: true,
-      output,
-      metadata: [metadata]
-    };
-  } catch (error) {
-    stageTimer({ status: 'failure' });
-    const timestamp = new Date().toISOString();
-    const metadata: StageMetadata = {
-      stage: "image",
-      template: "image",
-      ...llmCallErrorInfo(error),
-      prompt: "",
-      rawResponse: null,
-      fallbackUsed: true,
-      error: error instanceof Error ? error.message : String(error),
-      timestamp
-    };
-    return { ok: false, output: null, metadata: [metadata] };
-  }
-}
-
-export async function runActionsStage(
-  context: TurnGenerationContext,
-  master: MasterEnrichmentData,
-  narrative: NarrativePayload
-): Promise<StageResult<ActionsPayload>> {
-  const ingredients = getIngredients(context);
-  const stageTimer = pceStageDuration.startTimer({ stage: 'actions' });
-
-  try {
-    // Instrument variable building
-    const variableTimer = variableBuildDuration.startTimer({ stage: 'actions' });
-    const variables = await context.promptVariables.actions(master, narrative);
-    variableTimer();
-
-    // Instrument prompt building
-    const promptTimer = promptBuildDuration.startTimer({ stage: 'actions' });
-    const prompts = await buildPcePrompt("actions", variables, { validate: true });
-    promptTimer();
-
-    const { rawContent, metadata } = await executeJsonPrompt({
-      llm: context.llmModel,
-      stage: "actions",
-      template: "actions",
-      systemPrompt: prompts.system,
-      userPrompt: prompts.user || undefined,
-      metadata: {
-        theme: ingredients.selections.theme,
-        style: ingredients.selections.style
-      },
-      gameId: context.gameId,
-      turnNumber: context.turnNumber,
-      maxTokens: 800
-    });
-
-    let parsed: unknown;
-    try {
-      parsed = parseStageJson(rawContent, metadata);
-    } catch (error) {
-      metadata.error = `JSON parse error: ${(error as Error).message}`;
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    if (!parsed || typeof parsed !== "object" || parsed === null) {
-      metadata.error = "Actions stage returned invalid payload";
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    const actions = Array.isArray((parsed as any).actions) ? (parsed as any).actions : [];
-    const normalized = actions
-      .filter((action: any) => action && typeof action === "object")
-      .map((action: any) => ({
-        action: typeof action.action === "string" ? action.action : "",
-        summary: typeof action.summary === "string" ? action.summary : "",
-        risk: typeof action.risk === "string" ? action.risk : "Safe",
-        intent: typeof action.intent === "string" ? action.intent : "other",
-        usesItemId:
-          action.usesItemId && typeof action.usesItemId === "string" ? action.usesItemId : undefined
-      }))
-      .filter((action: ActionChip) => action.action && action.summary && action.risk && action.intent) as ActionChip[];
-
-    if (!normalized.length) {
-      metadata.error = "Actions stage produced no valid actions";
-      metadata.fallbackUsed = true;
-      return { ok: false, output: null, metadata: [metadata] };
-    }
-
-    const output: ActionsPayload = {
-      actions: normalized
-    };
-
-    stageTimer({ status: 'success' });
-    return {
-      ok: true,
-      output,
-      metadata: [metadata]
-    };
-  } catch (error) {
-    stageTimer({ status: 'failure' });
-    const timestamp = new Date().toISOString();
-    const metadata: StageMetadata = {
-      stage: "actions",
-      template: "actions",
-      ...llmCallErrorInfo(error),
-      prompt: "",
-      rawResponse: null,
-      fallbackUsed: true,
-      error: error instanceof Error ? error.message : String(error),
-      timestamp
-    };
-    return { ok: false, output: null, metadata: [metadata] };
-  }
-}
-
-
-const contentGenerationRouter = new ContentGenerationRouter({
-  master: runMasterStage,
-  narrative: runNarrativeStage,
-  image: runImageStage,
-  actions: runActionsStage
-});
 
 export interface TurnContentResult extends PceSelection {
   narration: string;
@@ -1389,6 +734,45 @@ export async function generateTurnContent(
   triggeredEvent: { name: string; segment: string; skill: string } | null = null,
   options: { intro?: boolean } = {}
 ): Promise<TurnContentResult> {
+  return withSpan(
+    "pce",
+    {
+      inputs: {
+        gameId: state.id,
+        turnNumber: state.turnNumber,
+        playerAction,
+        intro: options.intro ?? false,
+        checks,
+        triggeredEvent,
+        theme: userPreferences.theme,
+        style: userPreferences.style,
+        llmModelKey: userPreferences.llmModelKey
+      },
+      metadata: { gameId: state.id, thread_id: state.id, turnNumber: state.turnNumber },
+      tags: ["pce"],
+      outputs: (r) => ({
+        narration: r.narration,
+        actions: (r.actions ?? []).map((a) => a.action),
+        imagePrompt: r.imagePrompt,
+        theme: r.theme,
+        style: r.style,
+        imageModelKey: r.imageModelKey,
+        modelCalls: r.promptChain.length,
+        recovered: r.promptChain.some((m) => !!m.recovery)
+      })
+    },
+    () => generateTurnContentUntraced(state, playerAction, checks, userPreferences, triggeredEvent, options)
+  );
+}
+
+async function generateTurnContentUntraced(
+  state: GameState,
+  playerAction: string,
+  checks: any[],
+  userPreferences: { theme?: string; style?: string; imageModelKey?: string; llmModelKey?: string; skipImageCache?: boolean },
+  triggeredEvent: { name: string; segment: string; skill: string } | null,
+  options: { intro?: boolean }
+): Promise<TurnContentResult> {
   const built = await buildTurnGenerationContext(
     state,
     playerAction,
@@ -1399,7 +783,7 @@ export async function generateTurnContent(
   );
 
   const { context, ingredients } = built;
-  const result = await contentGenerationRouter.generateFullTurnContent(context);
+  const result = await runPceGraph(context);
   const narrativeOutput = result.narrative.output;
   const imageOutput = result.image.output;
   const actionsOutput = result.actions.output;
@@ -1515,40 +899,31 @@ export async function generateActions(
     null
   );
 
-  const masterStage = await runMasterStage(built.context);
-  if (!masterStage.ok || !masterStage.output) {
-    const errorContext = {
-      stage: 'master',
-      gameId: state.id,
-      turnNumber: state.turnNumber,
-      error: !masterStage.ok ? 'Stage failed' : 'Unknown error',
-      output: masterStage.output
-    };
-    console.error("[PCE_ACTIONS] Master stage failed", errorContext);
-    throw new Error(`PCE actions generation failed: master stage failed. ${JSON.stringify(errorContext)}`);
-  }
-
-  // Use the provided pre-generated narrative (required - no fallback)
-  console.log("[PCE_ACTIONS] Using pre-generated narrative", {
-    gameId: state.id,
-    turnNumber: state.turnNumber,
-    narrationLength: preGeneratedNarrative.narration.length
+  // Plan the scene, then write actions for the narration that was supplied. Each stage
+  // runs once (no retry or fallback), as this function always has.
+  const result = await runPceGraph(built.context, {
+    target: "actions",
+    upstream: { narrative: preGeneratedNarrative },
+    recover: false,
+    mode: "lenient"
   });
 
-  const actionsStage = await runActionsStage(built.context, masterStage.output, preGeneratedNarrative);
-  if (!actionsStage.ok || !actionsStage.output) {
-    const errorContext = {
-      stage: 'actions',
-      gameId: state.id,
-      turnNumber: state.turnNumber,
-      error: !actionsStage.ok ? 'Stage failed' : 'Unknown error',
-      output: actionsStage.output
-    };
-    console.error("[PCE_ACTIONS] Actions stage failed", errorContext);
-    throw new Error(`PCE actions generation failed: actions stage failed. ${JSON.stringify(errorContext)}`);
+  for (const stage of ["master", "actions"] as const) {
+    const stageResult = result[stage];
+    if (!stageResult.ok || !stageResult.output) {
+      const errorContext = {
+        stage,
+        gameId: state.id,
+        turnNumber: state.turnNumber,
+        error: !stageResult.ok ? 'Stage failed' : 'Unknown error',
+        output: stageResult.output
+      };
+      console.error(`[PCE_ACTIONS] ${stage} stage failed`, errorContext);
+      throw new Error(`PCE actions generation failed: ${stage} stage failed. ${JSON.stringify(errorContext)}`);
+    }
   }
 
-  return actionsStage.output.actions;
+  return result.actions.output!.actions;
 }
 
 export async function mapCustomActionToIntent(customText: string): Promise<string> {
@@ -1703,6 +1078,38 @@ export async function generateImage(
   gameState: GameState,
   userPreferences: { theme?: string; style?: string; imageModelKey?: string; llmModelKey?: string; skipImageCache?: boolean },
   options: ImageGenerationOptions = {}
+): Promise<ImageGenerationResult | null> {
+  // Traced by hand rather than through the client wrapper: the response is image data,
+  // which must not be uploaded. Only the prompt, model and resulting location are recorded.
+  return withSpan(
+    "image.generate",
+    {
+      runType: "tool",
+      inputs: {
+        imagePrompt,
+        gameId: gameState.id,
+        turnNumber: options.turnNumber ?? gameState.turnNumber,
+        imageModelKey: userPreferences.imageModelKey,
+        style: userPreferences.style
+      },
+      outputs: (r) => ({
+        generated: !!r,
+        imageUrl: r?.imageUrl?.startsWith("data:") ? "[inline image data omitted]" : r?.imageUrl ?? null,
+        promptUsed: r?.promptUsed,
+        templateName: r?.templateName,
+        promptSource: r?.promptSource,
+        modelKey: r?.modelKey
+      })
+    },
+    () => generateImageUntraced(imagePrompt, gameState, userPreferences, options)
+  );
+}
+
+async function generateImageUntraced(
+  imagePrompt: string,
+  gameState: GameState,
+  userPreferences: { theme?: string; style?: string; imageModelKey?: string; llmModelKey?: string; skipImageCache?: boolean },
+  options: ImageGenerationOptions
 ): Promise<ImageGenerationResult | null> {
   const startTime = Date.now();
 

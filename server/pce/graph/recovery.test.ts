@@ -1,16 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  ContentGenerationRouter,
-  type MasterEnrichmentData,
-  type RouterHandlers,
-  type StageMetadata,
-  type StageResult,
-  type TurnGenerationContext,
-} from "./contentRouter";
-import { BUILTIN_LLM_MODEL, adhocLlmModel, type ResolvedLlmModel } from "../llm/models";
+import type {
+  MasterEnrichmentData,
+  StageMetadata,
+  StageResult,
+  TurnGenerationContext,
+} from "../contentRouter";
+import { BUILTIN_LLM_MODEL, adhocLlmModel, type ResolvedLlmModel } from "../../llm/models";
+import { withRecovery } from "./recovery";
 
-// The router's recovery steps (retry the same model, then the fallback model) are tested
-// with scripted stage handlers: each call consumes the next scripted outcome.
+// The recovery steps (retry the same model, then the fallback model) are tested with a
+// scripted stage: each call consumes the next scripted outcome.
 
 const primary = adhocLlmModel({ provider: "huggingface", modelName: "org/primary" });
 const fallback = adhocLlmModel({ provider: "huggingface", modelName: "org/fallback" });
@@ -61,11 +60,10 @@ function scripted(outcomes: Outcome[]) {
       metadata: [meta("master", ctx.llmModel, { rawResponse: null, error: "503 upstream", providerError: true })],
     };
   };
-  const unused = async () => {
-    throw new Error("not used in these tests");
+  const router = {
+    generateMasterEnrichment: (ctx: TurnGenerationContext) => withRecovery("master", ctx, master),
   };
-  const handlers: RouterHandlers = { master, narrative: unused as any, image: unused as any, actions: unused as any };
-  return { router: new ContentGenerationRouter(handlers), calls };
+  return { router, calls };
 }
 
 const context = (overrides: Partial<TurnGenerationContext> = {}): TurnGenerationContext =>
@@ -75,7 +73,7 @@ beforeEach(() => {
   vi.spyOn(console, "warn").mockImplementation(() => undefined);
 });
 
-describe("ContentGenerationRouter recovery", () => {
+describe("stage recovery", () => {
   it("makes a single call when the stage succeeds", async () => {
     const { router, calls } = scripted([{ kind: "ok" }]);
     const result = await router.generateMasterEnrichment(context());

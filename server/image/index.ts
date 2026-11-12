@@ -8,6 +8,7 @@ type ModelPresetResolved = {
   inferenceProvider: "openai" | "huggingface";
   modelName: string;
   hfProvider?: InferenceProviderOrPolicy;
+  providerParams?: unknown;
 };
 
 async function resolveModelPreset(modelKey: string): Promise<ModelPresetResolved> {
@@ -21,6 +22,7 @@ async function resolveModelPreset(modelKey: string): Promise<ModelPresetResolved
         inferenceProvider: row.provider as any,
         modelName: row.model_name ?? row.modelName,
         hfProvider: (hfProvider ?? undefined) as InferenceProviderOrPolicy | undefined,
+        providerParams: row.provider_params ?? row.providerParams ?? undefined,
       };
     }
   } catch (_) {}
@@ -35,6 +37,7 @@ async function resolveModelPreset(modelKey: string): Promise<ModelPresetResolved
         inferenceProvider: fromDb.provider as any,
         modelName: fromDb.modelName,
         hfProvider: (hfProvider ?? undefined) as InferenceProviderOrPolicy | undefined,
+        providerParams: fromDb.providerParams ?? undefined,
       };
     }
   } catch (_) {}
@@ -67,7 +70,8 @@ export async function generateWithModelKey(
       ...req, 
       inferenceProvider: preset.inferenceProvider, 
       modelName: preset.modelName,
-      hfProvider: preset.hfProvider
+      hfProvider: preset.hfProvider,
+      providerParams: preset.providerParams
     });
     timer();
     return result;

@@ -2,9 +2,11 @@ import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 import { performance } from "perf_hooks";
+import { createHash } from "crypto";
 import { templateLoadDuration } from "../metrics.js";
 import { getCurrentReference } from "../reference/referenceLoader.js";
 import { storage } from "../storage.js";
+import { withSpan } from "../observability/langsmith.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -93,9 +95,27 @@ export interface BuildMetaPromptOptions {
 /**
  * Separated prompts interface for system/user separation
  */
+/** Where a template was loaded from: the published release, the database draft, or a bundled file. */
+export type PromptTemplateSource = "reference" | "database" | "file";
+
+/** Identifies the exact template a prompt was rendered from. */
+export interface PromptTemplateInfo {
+  /** prompt_templates.name, e.g. "pce_master". */
+  name: string;
+  source: PromptTemplateSource;
+  /** Hash of the unrendered system + user template: changes whenever the wording does. */
+  hash: string;
+}
+
 export interface SeparatedPrompts {
   system: string;
   user: string;
+  /** Present on prompts built by buildPcePrompt. */
+  template?: PromptTemplateInfo;
+}
+
+function hashTemplate(system: string, user: string): string {
+  return createHash("sha256").update(system).update("\n---\n").update(user).digest("hex");
 }
 
 /**
@@ -527,18 +547,21 @@ export async function buildMetaPromptFromTemplate(
  * Loads PCE prompt template (from reference system or file fallback)
  * @param useDatabase If true, loads directly from database instead of reference system
  */
-async function loadPceTemplate(templateName: PceTemplateName, useDatabase: boolean = false): Promise<SeparatedPrompts> {
+async function loadPceTemplate(
+  templateName: PceTemplateName,
+  useDatabase: boolean = false
+): Promise<SeparatedPrompts & { source: PromptTemplateSource }> {
   if (useDatabase) {
     // Try database first
     const dbPrompt = await loadPcePromptFromDatabase(templateName);
     if (dbPrompt) {
-      return dbPrompt;
+      return { ...dbPrompt, source: "database" };
     }
   } else {
     // Try reference system first
     const referencePrompt = await loadPcePromptFromReference(templateName);
     if (referencePrompt) {
-      return referencePrompt;
+      return { ...referencePrompt, source: "reference" };
     }
   }
 
@@ -548,7 +571,8 @@ async function loadPceTemplate(templateName: PceTemplateName, useDatabase: boole
   const template = await loadTemplateInternal(templateName);
   return {
     system: stripTemplateAnnotations(template),
-    user: "" // Empty user prompt for file-based templates
+    user: "", // Empty user prompt for file-based templates
+    source: "file"
   };
 }
 
@@ -563,11 +587,27 @@ export async function buildPcePrompt(
   options?: BuildMetaPromptOptions & { useDatabase?: boolean }
 ): Promise<SeparatedPrompts> {
   const prompts = await loadPceTemplate(templateName, options?.useDatabase ?? false);
-
-  return {
-    system: renderTemplateString(prompts.system, variables, options),
-    user: prompts.user ? renderTemplateString(prompts.user, variables, options) : ""
+  const template: PromptTemplateInfo = {
+    name: PCE_PROMPT_NAMES[templateName],
+    source: prompts.source,
+    hash: hashTemplate(prompts.system, prompts.user)
   };
+
+  // On a trace this run shows which template version and which variables produced the prompt.
+  return withSpan(
+    "prompt.render",
+    {
+      runType: "prompt",
+      inputs: { template: template.name, variables },
+      metadata: { templateName: template.name, templateSource: template.source, templateHash: template.hash },
+      outputs: (rendered) => ({ system: rendered.system, user: rendered.user })
+    },
+    async () => ({
+      system: renderTemplateString(prompts.system, variables, options),
+      user: prompts.user ? renderTemplateString(prompts.user, variables, options) : "",
+      template
+    })
+  );
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

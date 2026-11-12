@@ -1,0 +1,107 @@
+# GAME DESIGN — Quest to Uranus (MVP)
+**Genre:** AI Dungeon
+**Tone:** “Hitchhiker’s Guide” cosmic irony × “Beavis & Butt‑Head” juvenile misunderstandings — **PG‑13**. Clever‑but‑dumb, never explicit; violence stays Looney‑Tunes.
+
+## Core Fantasy
+You are a slightly overqualified captain steering an underqualified ship to Uranus, bedeviled by cosmic bureaucracy, uppity appliances, and physics with a sense of humor.
+
+## Session Shape (Snackable)
+- **Turns per session:** 8–12 (≈10–12 minutes).
+- **Narration length/turn:** 4–8 sentences + inline check(s) + final `Δ` stat line.
+- **Escalation:** DCs +1 after turn 9 unless Morale ≤ 30. Mini‑hooks every ~3 turns.
+
+## Segments
+1) **Departure** → 2) **Belt** → 3) **Outer Darkness** → 4) **Approach to Uranus**  
+Segments gate events and tweak chip flavor; arrival triggers a finale vignette.
+
+## Player Verbs (mapped to intents)
+`repair`, `negotiate`, `cook`, `explore`, `improvise`, `research`, `command`, `other`  
+LLM maps free‑text to one of these; sim enforces consequences.
+
+## Ship Stats
+- **Hull, Oxygen, Fuel, Food, Morale**: 0–100 (fail states at 0 as listed below).
+- **Weirdness**: 0–5 (higher = more surreal events; at 5, Reality Auditors arrive).
+
+### Fail/End States (comedic)
+- **Hull = 0:** “Ship folds into modern art.”
+- **Oxygen = 0:** “Everyone discovers mindfulness too late.”
+- **Morale = 0:** “Crew quits to start a space bakery.”
+- **Weirdness = 5:** “Cosmic HR freezes reality for an audit.”  
+Each ending presents a Retry hook (“Back 1 turn?”) or “New Voyage”.
+
+## Skills & Checks
+`Bureaucracy, Engineering, Piloting, Culinary, Diplomacy, Deception, Vibes`  
+Checks appear as: `[Check: <Skill> DC<nn> → Roll <n> ✅/❌]`  
+- **Rolls:** d20 seeded by `(save.seed, state.day, intent)` → reproducible.  
+- **Advantage:** roll twice, take higher (granted by item/beat).  
+- **Crits (optional flavor):** 1 = comedic backfire line; 20 = over‑the‑top flourish (no extra math).
+
+## Absurdity Dial (0–3)
+- **0:** dry wit, rare slapstick, events −6%.
+- **1:** balanced, occasional juvenile riff.
+- **2 (default):** frequent bureaucracy & silly schemes; 1 clear innuendo/scene.
+- **3:** maximal chaos; events +8%; still PG‑13 & sim‑bound.
+
+## Items (permanent, cooldown; max 3 equipped)
+| ID | Name | Effect (summary) |
+|---|---|---|
+| `red_tape` | Red Tape Dispenser | **+2 Bureaucracy**; on *authority* tags → **Weirdness −1** (once/scene) |
+| `emergency_cheesecake` | Emergency Cheesecake | On *crew/gross* → **Morale +1**; **Advantage on Culinary** |
+| `universal_allen_key` | Universal Allen Key | **+2 Engineering** |
+| `nebula_freshener` | Nebula Freshener | On *travel* → **Oxygen +1** |
+| `quantum_whoopee_cushion` | Quantum Whoopee Cushion | **+2 Vibes**; on *authority/auditor* → **Weirdness +1** |
+| `bean_bribe_pouch` | Bean Bribe Pouch | **+2 Diplomacy**; on *crew* → **Morale +1** |
+
+- Items trigger **once per matching scene** (respecting cooldown).  
+- UI surfaces `Item: <name> +bonus` callouts when applied.
+
+## NPCs & Relationships
+**NPCs:** Pilot Lyra, Engineer Grom, Doctor Moss, Coffee‑9000.  
+State per NPC: `affinity −3..+3`, `status` ∈ {Rivalry, Crush, Indifferent}.  
+- **Beats:** If a skill relevant to an NPC fires (or event tags match), inject **one** micro‑banter/assist/complication.  
+- **Assist:** at Warm (≥ +2) → +2 on next related check.  
+- **Complication:** at Cold (≤ −2) → −2 or small side‑quest gag.  
+- Beat cadence: ≤ every 3–4 turns when eligible.
+
+## Events (MVP 6)
+| ID | Segment | Tags | Trigger | DC Focus | Pass | Fail |
+|---|---|---|---|---|---|---|
+| `coffee_mutiny` | Any | crew, morale, absurd | Weirdness ≥2 or Food <50 | Diplomacy | Morale +2 | Morale −2, Weirdness +1 |
+| `paperwork_singularity` | Any | bureaucracy, cosmic | Every 5th day | Bureaucracy | Oxygen +2 | Hull −1 |
+| `cosmic_hoa` | Belt+ | authority, travel | ~12% chance | Deception | Fuel fine waived, Morale +1 | Fuel −5, Morale −1 |
+| `quantum_mold` | Outer | science, gross | Food >60 | Culinary | Food +5, Weirdness +1 | Food −5, Weirdness +1 |
+| `auditor_visit` | Approach | authority, meta | Weirdness = 5 | Vibes | Weirdness −2 | Freeze one system 1 turn |
+| `stowaway_snail` | Any | crew, pedantry | Day % 7 == 3 | Diplomacy | +2 next Bureaucracy (1 turn) | Time +1 day |
+
+## Running Gag Palette
+Paperwork Singularity • Coffee Machine Union • Cosmic HOA • Quantum Farts • Bureaucrat Snail • Nebula Parking Boot.
+
+## Narrative Formatting Rules
+1) Use witty omniscient narrator; **never** second‑person commands to the player.  
+2) Include **1–2** inline checks when appropriate.  
+3) End each turn with a **Δ line**: `Δ Hull −1, Morale +1, Weirdness +1`.  
+4) Keep **PG‑13**: innuendo allowed; avoid explicit body/acts; mild swears only.  
+5) If user pushes beyond: trigger **Cosmic HR** card + present 2 safe chips.
+
+## Quick‑Action Chips (Hybrid Input)
+- **Presentation:** up to **6** swipeable chips beneath transcript; **Shuffle** (1s cooldown); long‑press → edit.  
+- **Generation pipeline:** deterministic seeds → event beat → item hook → single LLM tone pass → safety → cap 6.  
+- Each chip carries `{intent, summary, risk, usesItemId?}` for deterministic sim.
+
+## Memory & Continuity (Narrative)
+- Engine writes a **1–3 sentence synopsis** per turn.  
+- Extract **salient facts & gags** → embed → pgvector → recall top‑k into context each turn.  
+- Encourage **callback jokes** (no repetition within 2 turns).
+
+## Finale Menu (on arrival with ≥ one core stat ≥ 30)
+- **Scientific Triumph**, **Bureaucratic Loophole**, **Coffee‑Fueled Diplomacy** — weave top gags from memory into epilogue.
+
+## Safety Rails (PG‑13)
+- No slurs/hate; no explicit sexual content or graphic violence.  
+- Innuendo OK; cut to implication.  
+- If boundary breached: **Cosmic HR** deflects with 1‑liner + 2 safe chips.
+
+## Sample Micro‑Turn
+> The helm asks if “Uranus” should be pronounced professionally. The crew giggles anyway.  
+> [Check: Bureaucracy DC12 → Roll 9 ❌] You file Form 27‑B/UR‑A‑NUS demanding maturity; it’s rejected for “insufficient gravitas.”  
+> **Δ** Morale +1 (snorts), Weirdness +1 (the form was scented), Oxygen −1 (laughing fit).

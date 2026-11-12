@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Portal Transition Effect</title>
+<style>
+  html,body{margin:0;height:100%;font-family:Arial,Helvetica,sans-serif;overflow:hidden;background:#000;color:#fff;}
+  #portalCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;opacity:1;transition:opacity .6s;}
+  #ui{z-index:20;position:absolute;top:20px;left:20px;}
+  button{padding:12px 24px;font-size:1rem;margin-right:10px;cursor:pointer;}
+  .content{
+    position:absolute;top:0;left:0;width:100%;height:100%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:2rem;opacity:0;transition:opacity .6s;
+  }
+  #currentContent{opacity:1;z-index:5;background:linear-gradient(45deg,#1a1a2e,#16213e);}
+  #nextContent{z-index:5;background:linear-gradient(45deg,#0f3460,#0e1621);}
+</style>
+</head>
+<body>
+
+<canvas id="portalCanvas"></canvas>
+
+<div id="ui">
+  <button id="nextBtn">Enter Portal →</button>
+</div>
+
+<div id="currentContent" class="content">
+  <div>🌌 Current Realm</div>
+</div>
+
+<div id="nextContent" class="content">
+  <div>🔮 Next Dimension</div>
+</div>
+
+<script>
+// ------------------------------------------------------------
+// 1. Canvas & helpers
+// ------------------------------------------------------------
+const canvas = document.getElementById('portalCanvas');
+const ctx = canvas.getContext('2d');
+let w, h, cx, cy;
+function resize() {
+  w = canvas.width = window.innerWidth;
+  h = canvas.height = window.innerHeight;
+  cx = w / 2;
+  cy = h / 2;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ------------------------------------------------------------
+// 2. Particles for swirling vortex
+// ------------------------------------------------------------
+const PARTICLE_COUNT = 800;
+const particles = [];
+
+class Particle {
+  constructor() {
+    this.reset();
+  }
+  reset() {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = Math.random() * 200 + 50;
+    this.x = cx + Math.cos(angle) * dist;
+    this.y = cy + Math.sin(angle) * dist;
+    this.vx = 0;
+    this.vy = 0;
+    this.size = Math.random() * 3 + 1;
+    this.life = 1;
+    this.maxLife = Math.random() * 0.5 + 0.5;
+    this.hue = 200 + Math.random() * 60; // Blue/purple portal glow
+  }
+  update(dt, intensity) {
+    // Swirl towards center
+    const dx = cx - this.x;
+    const dy = cy - this.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist > 5) {
+      const pull = (1 - dist / 300) * intensity * 100 * dt;
+      this.vx += (dx / dist) * pull;
+      this.vy += (dy / dist) * pull;
+      // Rotational vortex
+      const rotForce = intensity * 200 * dt / dist;
+      this.vx += Math.sin(angle) * rotForce;
+      this.vy -= Math.cos(angle) * rotForce;
+    }
+    // Update position
+    this.x += this.vx;
+    this.y += this.vy;
+    this.vx *= 0.95;
+    this.vy *= 0.95;
+    // Fade life
+    this.life -= dt / this.maxLife;
+    if (this.life <= 0) this.reset();
+  }
+}
+
+// Initialize particles
+for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(new Particle());
+
+// ------------------------------------------------------------
+// 3. Portal rings (concentric glowing circles)
+// ------------------------------------------------------------
+const rings = [];
+for (let i = 0; i < 5; i++) {
+  rings.push({
+    radius: 50 + i * 40,
+    thickness: 3,
+    speed: 0.5 + i * 0.3,
+    phase: Math.random() * Math.PI * 2
+  });
+}
+
+// ------------------------------------------------------------
+// 4. Transition phases
+// ------------------------------------------------------------
+const PHASES = {
+  IDLE: 0,
+  OPEN: 1,
+  ACTIVE: 2,
+  CLOSE: 3,
+  DONE: 4
+};
+let phase = PHASES.IDLE;
+let phaseTimer = 0;
+
+// Durations (seconds)
+const DUR = {
+  OPEN: 0.6,
+  ACTIVE: 2.0,
+  CLOSE: 0.6
+};
+let intensity = 0; // 0 to 1
+
+// ------------------------------------------------------------
+// 5. Mouse interaction (optional swirl control)
+// ------------------------------------------------------------
+let mouseX = cx, mouseY = cy;
+canvas.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+});
+
+// ------------------------------------------------------------
+// 6. Animation loop
+// ------------------------------------------------------------
+let last = 0;
+function animate(t = 0) {
+  const dt = Math.min((t - last) / 1000, 0.1);
+  last = t;
+
+  // Fade background
+  ctx.fillStyle = 'rgba(0, 10, 30, 0.3)';
+  ctx.fillRect(0, 0, w, h);
+
+  // Update center for mouse influence (subtle)
+  cx = lerp(cx, mouseX, 0.05);
+  cy = lerp(cy, mouseY, 0.05);
+
+  // Phase logic
+  phaseTimer += dt;
+  switch (phase) {
+    case PHASES.OPEN:
+      intensity = Math.min(phaseTimer / DUR.OPEN, 1);
+      if (phaseTimer >= DUR.OPEN) {
+        phase = PHASES.ACTIVE;
+        phaseTimer = 0;
+      }
+      break;
+    case PHASES.ACTIVE:
+      intensity = 1;
+      if (phaseTimer >= DUR.ACTIVE) {
+        phase = PHASES.CLOSE;
+        phaseTimer = 0;
+      }
+      break;
+    case PHASES.CLOSE:
+      intensity = 1 - Math.min(phaseTimer / DUR.CLOSE, 1);
+      if (phaseTimer >= DUR.CLOSE) {
+        phase = PHASES.DONE;
+        endTransition();
+      }
+      break;
+  }
+
+  if (intensity > 0) {
+    // Update particles
+    particles.forEach(p => p.update(dt, intensity));
+
+    // Draw particles
+    particles.forEach(p => {
+      const alpha = p.life * intensity;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.globalAlpha = alpha;
+      const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, p.size * 3);
+      grad.addColorStop(0, `hsla(${p.hue}, 100%, 60%, ${alpha})`);
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+      ctx.restore();
+    });
+
+    // Draw swirling rings
+    rings.forEach(ring => {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(performance.now() * 0.001 * ring.speed + ring.phase);
+      const alpha = intensity * 0.6;
+      const grad = ctx.createRadialGradient(0, 0, ring.radius - ring.thickness, 0, 0, ring.radius + ring.thickness);
+      grad.addColorStop(0, `hsla(${220 + ring.radius * 0.5}, 100%, 50%, ${alpha})`);
+      grad.addColorStop(0.5, `hsla(${220 + ring.radius * 0.5}, 100%, 70%, ${alpha * 0.5})`);
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = ring.thickness;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.arc(0, 0, ring.radius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    });
+
+    // Central glow
+    const glowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 150 * intensity);
+    glowGrad.addColorStop(0, 'hsla(220, 100%, 60%, 0.8)');
+    glowGrad.addColorStop(0.5, 'hsla(220, 100%, 40%, 0.4)');
+    glowGrad.addColorStop(1, 'rgba(0,20,60,0)');
+    ctx.fillStyle = glowGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 150 * intensity, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+
+// ------------------------------------------------------------
+// 7. Helpers
+// ------------------------------------------------------------
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
+// ------------------------------------------------------------
+// 8. Phase control
+// ------------------------------------------------------------
+function nextPhase() {
+  phaseTimer = 0;
+}
+function endTransition() {
+  canvas.style.opacity = '0';
+  document.getElementById('nextContent').style.opacity = '1';
+  document.getElementById('currentContent').style.opacity = '0';
+}
+
+// ------------------------------------------------------------
+// 9. UI trigger
+// ------------------------------------------------------------
+document.getElementById('nextBtn').addEventListener('click', () => {
+  const btn = document.getElementById('nextBtn');
+  btn.disabled = true;
+  btn.textContent = 'Transitioning…';
+
+  // Hide current content
+  document.getElementById('currentContent').style.opacity = '0';
+
+  // Reset for portal
+  phase = PHASES.OPEN;
+  phaseTimer = 0;
+  intensity = 0;
+  canvas.style.opacity = '1';
+
+  // Re-enable after
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.textContent = 'Enter Portal →';
+  }, (DUR.OPEN + DUR.ACTIVE + DUR.CLOSE) * 1000 + 600);
+});
+</script>
+</body>
+</html>

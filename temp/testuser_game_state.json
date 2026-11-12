@@ -1,0 +1,23 @@
+{
+    "id": "667babba-3de7-46cc-9be3-eb5f5fd788f2",
+    "day": 1,
+    "npcs": [
+    ],
+    "stats": {
+        "food": 100,
+        "fuel": 100,
+        "hull": 100,
+        "morale": 100,
+        "oxygen": 100,
+        "weirdness": 0
+    },
+    "segment": "Launch from Earth",
+    "username": "testuser",
+    "absurdity": 2,
+    "recentTurn": null,
+    "turnNumber": 0,
+    "runningGags": [
+    ],
+    "equippedItems": [
+    ]
+}

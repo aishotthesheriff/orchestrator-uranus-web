@@ -1,0 +1,27 @@
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Docker volumes
+postgres_data/
+
+# Reference releases
+/releases/
+
+# Log files
+/logs/
+logs/
+*.log
+
+# Docker files (keep .env.example)
+# Dockerfile
+# docker-compose.yml
+# .dockerignore

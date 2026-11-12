@@ -1,0 +1,24 @@
+# Heroku configuration file for Container Runtime
+# This file provides additional configuration for Heroku Container Registry deployments
+# See: https://devcenter.heroku.com/articles/build-docker-images-heroku-yml
+
+build:
+  docker:
+    web: Dockerfile
+
+run:
+  web: npm start
+
+# Optional: Release phase for running migrations or setup tasks
+# Uncomment if you have database migrations or setup scripts
+# release:
+#   command: npm run migrate || true
+
+# Resource limits (optional, defaults are usually fine)
+# These are configured via Heroku dashboard or CLI, not in heroku.yml
+# For reference, standard dyno sizes:
+# - Free/Hobby: 512MB RAM, shared CPU
+# - Standard-1X: 512MB RAM, dedicated CPU
+# - Standard-2X: 1GB RAM, dedicated CPU
+# - Performance-M: 2.5GB RAM, dedicated CPU
+

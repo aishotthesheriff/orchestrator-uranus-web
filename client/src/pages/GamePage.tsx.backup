@@ -1,0 +1,790 @@
+import { useState, useRef, useEffect } from 'react';
+import { Settings, Send, RotateCcw, Loader2, Code2, User, Play, Trash2, Image as ImageIcon } from 'lucide-react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { apiRequest, queryClient } from '@/lib/queryClient';
+import { Link, useLocation } from 'wouter';
+import StatBar from '@/components/StatBar';
+import WeirdnessMeter from '@/components/WeirdnessMeter';
+import TurnCard from '@/components/TurnCard';
+import ActionChip from '@/components/ActionChip';
+import NPCCard from '@/components/NPCCard';
+import ItemCard from '@/components/ItemCard';
+import DisplayModeToggle from '@/components/DisplayModeToggle';
+import VideoSplashScreen from '@/components/VideoSplashScreen';
+import ImageSplashScreen from '@/components/ImageSplashScreen';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Slider } from '@/components/ui/slider';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import type { GameState } from '@shared/schema';
+import spaceBackground from '@assets/generated_images/cosmic_space_background_ada85e22.png';
+import TerminalGamePage from '@/pages/TerminalGamePage';
+
+interface Item {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  skillBonus: any | null;
+  sceneEffect: any | null;
+  tags: string | null;
+  active: number;
+}
+
+export default function GamePage() {
+  const [username, setUsername] = useState<string | null>(null);
+  const [usernameInput, setUsernameInput] = useState('');
+  const [gameId, setGameId] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showGameSelect, setShowGameSelect] = useState(false);
+  const [showVideoSplash, setShowVideoSplash] = useState(false);
+  const [showImageSplash, setShowImageSplash] = useState(false);
+  const [pendingGameData, setPendingGameData] = useState<GameState | null>(null);
+  const [absurdity, setAbsurdity] = useState(2);
+  const [displayMode, setDisplayMode] = useState<'modern' | 'terminal'>(() => {
+    return (localStorage.getItem('quest-to-uranus-displayMode') as 'modern' | 'terminal') || 'modern';
+  });
+  const [customAction, setCustomAction] = useState('');
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [imagePromptUsed, setImagePromptUsed] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+
+  // Fetch items from API
+  const { data: items = [] } = useQuery<Item[]>({
+    queryKey: ['/api/items'],
+  });
+
+  // Fetch user's games
+  const { data: userGames, refetch: refetchGames } = useQuery<GameState[]>({
+    queryKey: [`/api/games/user/${username}`],
+    enabled: !!username && !gameId,
+    refetchInterval: false
+  });
+
+  // Fetch game state
+  const { data: gameState, isLoading } = useQuery<GameState>({
+    queryKey: [`/api/game/${gameId}`],
+    enabled: !!gameId,
+    refetchInterval: false
+  });
+
+  // Start new game mutation
+  const startGameMutation = useMutation({
+    mutationFn: async () => {
+      if (!username) throw new Error('No username set');
+      const response = await apiRequest('POST', '/api/game/start', { 
+        absurdity, 
+        username,
+        displayMode 
+      });
+      return await response.json();
+    },
+    onSuccess: (data: GameState) => {
+      setPendingGameData(data);
+      queryClient.setQueryData([`/api/game/${data.id}`], data);
+      setShowGameSelect(false);
+      setShowImageSplash(true);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to start game",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Take action mutation
+  const actionMutation = useMutation({
+    mutationFn: async ({ action, customText }: { action: string; customText?: string }) => {
+      const response = await apiRequest('POST', '/api/game/action', { 
+        gameId, 
+        action,
+        customText 
+      });
+      return await response.json();
+    },
+    onSuccess: (data: GameState) => {
+      queryClient.setQueryData([`/api/game/${gameId}`], data);
+      setCustomAction('');
+      setShowCustomInput(false);
+
+      // Check for game end
+      if (data.isComplete) {
+        if (data.failureReason) {
+          toast({
+            title: "Mission Failed",
+            description: data.failureReason,
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Mission Complete!",
+            description: "You made it to Uranus!"
+          });
+        }
+      }
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to process action",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Delete game mutation
+  const deleteGameMutation = useMutation({
+    mutationFn: async (gameIdToDelete: string) => {
+      await apiRequest('DELETE', `/api/game/${gameIdToDelete}`);
+    },
+    onSuccess: () => {
+      refetchGames();
+      toast({
+        title: "Game Deleted",
+        description: "Voyage has been scrubbed"
+      });
+    }
+  });
+
+  const generateImageMutation = useMutation({
+    mutationFn: async ({ templateName, gameId: gId }: { templateName: string; gameId: string }) => {
+      const response = await apiRequest('POST', '/api/generate-image', { 
+        templateName, 
+        gameId: gId 
+      });
+      return await response.json();
+    },
+    onSuccess: (data: { imageUrl: string; promptUsed: string }) => {
+      setGeneratedImage(data.imageUrl);
+      setImagePromptUsed(data.promptUsed);
+      toast({
+        title: "Image Generated",
+        description: "Scene has been visualized"
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Image Generation Failed",
+        description: "Unable to generate image. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Initialize username from localStorage
+  useEffect(() => {
+    const storedUsername = localStorage.getItem('quest-to-uranus-username');
+    if (storedUsername) {
+      setUsername(storedUsername);
+      setShowGameSelect(true);
+    }
+  }, []);
+
+  const handleUsernameSubmit = () => {
+    if (usernameInput.trim()) {
+      const cleanUsername = usernameInput.trim();
+      setUsername(cleanUsername);
+      localStorage.setItem('quest-to-uranus-username', cleanUsername);
+      setShowVideoSplash(true);
+      toast({
+        title: "Welcome, Captain!",
+        description: `Logged in as ${cleanUsername}`
+      });
+    }
+  };
+
+  const handleVideoSplashComplete = () => {
+    setShowVideoSplash(false);
+    setShowGameSelect(true);
+  };
+
+  const handleImageSplashComplete = () => {
+    setShowImageSplash(false);
+    if (pendingGameData) {
+      setGameId(pendingGameData.id);
+      refetchGames();
+      toast({
+        title: "New Voyage Started",
+        description: "Your journey to Uranus begins!"
+      });
+      setPendingGameData(null);
+    }
+  };
+
+  const handleDisplayModeChange = (mode: 'modern' | 'terminal') => {
+    setDisplayMode(mode);
+    localStorage.setItem('quest-to-uranus-displayMode', mode);
+  };
+
+  const handleResumeGame = (id: string) => {
+    setGameId(id);
+    setShowGameSelect(false);
+  };
+
+  const handleNewGame = () => {
+    startGameMutation.mutate();
+  };
+
+  // Auto-scroll to top when new turn is added
+  useEffect(() => {
+    if (scrollRef.current && gameState?.turns.length) {
+      scrollRef.current.scrollTop = 0; // Scroll to top for newest messages
+    }
+  }, [gameState?.turns.length]);
+
+  const handleActionClick = (action: string) => {
+    if (!gameId || actionMutation.isPending) return;
+    actionMutation.mutate({ action });
+  };
+
+  const handleCustomAction = () => {
+    if (!gameId || !customAction.trim() || actionMutation.isPending) return;
+    actionMutation.mutate({ action: customAction, customText: customAction });
+  };
+
+  const handleBackToMenu = () => {
+    setGameId(null);
+    setShowGameSelect(true);
+  };
+
+  const toggleItem = (itemId: string) => {
+    if (!gameState) return;
+
+    const equipped = gameState.equippedItems;
+    const isEquipped = equipped.includes(itemId);
+
+    if (isEquipped) {
+      // Unequip
+      const newEquipped = equipped.filter(id => id !== itemId);
+      queryClient.setQueryData([`/api/game/${gameId}`], {
+        ...gameState,
+        equippedItems: newEquipped
+      });
+    } else if (equipped.length < 3) {
+      // Equip (max 3)
+      queryClient.setQueryData([`/api/game/${gameId}`], {
+        ...gameState,
+        equippedItems: [...equipped, itemId]
+      });
+    } else {
+      toast({
+        title: "Maximum Items Equipped",
+        description: "You can only equip 3 items at once.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const itemIcon = (itemId: string) => {
+    return items.find((i: Item) => i.id === itemId)?.icon || '';
+  };
+
+  // Show video splash after username entry
+  if (showVideoSplash) {
+    return <VideoSplashScreen onComplete={handleVideoSplashComplete} />;
+  }
+
+  // Show image splash when starting new game
+  if (showImageSplash) {
+    return <ImageSplashScreen onComplete={handleImageSplashComplete} />;
+  }
+
+  // Route to Terminal mode if game is active and displayMode is 'terminal'
+  if (gameId && gameState && displayMode === 'terminal') {
+    return <TerminalGamePage gameId={gameId} initialGameState={gameState} />;
+  }
+
+  // Username entry screen
+  if (!username) {
+    return (
+      <div className="min-h-screen terminal-mode-amber terminal-screen-curved flex items-center justify-center p-4" style={{ 
+        position: 'relative',
+        background: 'var(--terminal-bg)',
+        color: 'var(--terminal-fg)',
+        fontFamily: "'Courier New', 'Consolas', monospace",
+        overflow: 'hidden',
+        textShadow: '0 0 5px var(--terminal-glow)'
+      }}>
+        <div className="w-full max-w-2xl space-y-4">
+          <div className="terminal-border p-8 relative z-20">
+            <div className="space-y-6">
+              <div className="text-center space-y-4">
+                <h1 className="text-5xl font-bold font-mono terminal-text-bright tracking-wider">
+                  OCCUPY URANUS!
+                </h1>
+                <div className="terminal-text-dim text-sm font-mono">
+                  CLASSIFIED MISSION • AUTHORIZATION REQUIRED
+                </div>
+              </div>
+              
+              <div className="space-y-4 mt-8">
+                <div className="space-y-2">
+                  <label htmlFor="username-input" className="block text-sm font-mono terminal-text-dim mb-4">
+                    Enter Code Name:
+                  </label>
+                  <div className="flex items-center gap-3 terminal-text relative">
+                    <span className="font-mono terminal-prompt text-xl">&gt;</span>
+                    <div className="flex-1 relative">
+                      <input
+                        id="username-input"
+                        data-testid="input-username"
+                        type="text"
+                        className="terminal-input w-full text-xl font-mono bg-transparent border-none outline-none pr-2"
+                        value={usernameInput}
+                        onChange={(e) => setUsernameInput(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleUsernameSubmit()}
+                        autoFocus
+                        style={{ caretColor: 'transparent' }}
+                      />
+                      <span 
+                        className="terminal-cursor absolute top-0 pointer-events-none"
+                        style={{ 
+                          left: `${usernameInput.length * 0.6}em`,
+                          height: '1.2em'
+                        }}
+                      ></span>
+                    </div>
+                  </div>
+                  <div className="h-px bg-[var(--terminal-fg)] opacity-30"></div>
+                </div>
+                
+                <button
+                  onClick={handleUsernameSubmit}
+                  disabled={!usernameInput.trim()}
+                  className="w-full py-3 px-6 font-mono text-lg terminal-border terminal-text-bright hover-elevate active-elevate-2 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity"
+                  data-testid="button-submit-username"
+                >
+                  [ INITIALIZE MISSION ]
+                </button>
+              </div>
+              
+              <div className="mt-6 text-center terminal-text-dim text-xs font-mono">
+                <div className="terminal-spinner inline-block">SYSTEM STATUS: READY</div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-center terminal-text-dim text-xs font-mono">
+            (C) ETH LOVES URANUS 2025-2069
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Game selection screen
+  if (showGameSelect) {
+    return (
+      <div 
+        className="min-h-screen bg-cover bg-center bg-fixed"
+        style={{ backgroundImage: `url(${spaceBackground})` }}
+      >
+        <div className="min-h-screen bg-background/95 backdrop-blur-sm">
+          <div className="container mx-auto px-4 py-8 max-w-4xl">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-2xl font-mono">Captain {username}</CardTitle>
+                    <CardDescription>Select a voyage or start a new one</CardDescription>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      localStorage.removeItem('quest-to-uranus-username');
+                      setUsername(null);
+                      setUsernameInput('');
+                    }}
+                    data-testid="button-change-captain"
+                  >
+                    Change Captain
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Display Mode Selection */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Display Mode</label>
+                  <DisplayModeToggle
+                    value={displayMode}
+                    onChange={handleDisplayModeChange}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {displayMode === 'modern' 
+                      ? 'Modern UI with graphics and visual elements'
+                      : 'Retro terminal with CRT effects and command-line interface'
+                    }
+                  </p>
+                </div>
+
+                <Button
+                  onClick={handleNewGame}
+                  disabled={startGameMutation.isPending}
+                  className="w-full"
+                  size="lg"
+                  data-testid="button-new-game"
+                >
+                  {startGameMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Play className="w-4 h-4 mr-2" />
+                  )}
+                  Start New Voyage
+                </Button>
+
+                {userGames && userGames.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-muted-foreground">Saved Voyages</h3>
+                    {userGames.map((game) => (
+                      <Card key={game.id} className="hover-elevate">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-sm font-mono font-medium">
+                                  Day {game.day} - {game.segment}
+                                </span>
+                                {game.isComplete && (
+                                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary font-mono">
+                                    {game.failureReason ? 'Failed' : 'Complete'}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Turn {game.turnNumber} • Absurdity {game.absurdity}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => handleResumeGame(game.id)}
+                                data-testid={`button-resume-${game.id}`}
+                              >
+                                <Play className="w-3 h-3 mr-1" />
+                                {game.isComplete ? 'View' : 'Resume'}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => deleteGameMutation.mutate(game.id)}
+                                disabled={deleteGameMutation.isPending}
+                                data-testid={`button-delete-${game.id}`}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+
+                {userGames && userGames.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p className="text-sm">No saved voyages yet. Start your first journey!</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading state
+  if (isLoading || !gameState) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Main game view
+  return (
+    <div 
+      className="min-h-screen bg-cover bg-center bg-fixed"
+      style={{ backgroundImage: `url(${spaceBackground})` }}
+    >
+      <div className="min-h-screen bg-background/95 backdrop-blur-sm">
+        <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
+          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-bold font-mono" data-testid="game-title">
+                Quest to Uranus
+              </h1>
+              <div className="text-sm text-muted-foreground font-mono" data-testid="game-meta">
+                Day {gameState.day} • {gameState.segment}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link href="/dev">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  data-testid="button-dev-tools"
+                >
+                  <Code2 className="w-5 h-5" />
+                </Button>
+              </Link>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleBackToMenu}
+                data-testid="button-back-to-menu"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Back to Menu
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setShowSettings(true)}
+                data-testid="button-settings"
+              >
+                <Settings className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        <div className="container mx-auto px-4 py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+            <aside className="order-2 lg:order-1 space-y-6">
+              <div className="p-6 rounded-lg border bg-card space-y-4" data-testid="stats-panel">
+                <h2 className="text-lg font-bold font-mono">Ship Status</h2>
+                <StatBar label="Hull" value={gameState.stats.hull} max={100} icon="🚀" color="bg-blue-600" />
+                <StatBar label="Oxygen" value={gameState.stats.oxygen} max={100} icon="💨" color="bg-cyan-600" dailyConsumption={3} />
+                <StatBar label="Fuel" value={gameState.stats.fuel} max={100} icon="⛽" color="bg-amber-600" dailyConsumption={4} />
+                <StatBar label="Food" value={gameState.stats.food} max={100} icon="🍔" color="bg-green-600" dailyConsumption={3} />
+                <StatBar label="Morale" value={gameState.stats.morale} max={100} icon="❤️" color="bg-pink-600" dailyConsumption={2} />
+                <div className="pt-2">
+                  <WeirdnessMeter value={gameState.stats.weirdness} />
+                </div>
+              </div>
+
+              <div className="p-6 rounded-lg border bg-card space-y-4" data-testid="crew-panel">
+                <h2 className="text-lg font-bold font-mono">Crew</h2>
+                <div className="space-y-3">
+                  {gameState.npcs.map(npc => (
+                    <NPCCard 
+                      key={npc.id}
+                      name={npc.name}
+                      role={npc.role}
+                      affinity={npc.affinity}
+                      status={npc.status}
+                      lastInteraction={npc.lastInteraction}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-6 rounded-lg border bg-card space-y-4" data-testid="items-panel">
+                <h2 className="text-lg font-bold font-mono">
+                  Items ({gameState.equippedItems.length}/3 equipped)
+                </h2>
+                <div className="space-y-2">
+                  {items.map((item: Item) => (
+                    <ItemCard 
+                      key={item.id}
+                      name={item.name}
+                      description={item.description}
+                      icon={item.icon}
+                      equipped={gameState.equippedItems.includes(item.id)}
+                      onToggle={() => toggleItem(item.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            </aside>
+
+            <main className="order-1 lg:order-2 space-y-6">
+              <div 
+                ref={scrollRef}
+                className="p-6 rounded-lg border bg-card min-h-[600px] max-h-[600px] overflow-y-auto"
+                data-testid="narrative-feed"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg font-bold font-mono">Captain's Log</h2>
+                  {gameState.turns.length > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => generateImageMutation.mutate({ 
+                        templateName: 'general_scene',
+                        gameId: gameId! 
+                      })}
+                      disabled={generateImageMutation.isPending}
+                      data-testid="button-generate-image"
+                    >
+                      {generateImageMutation.isPending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <ImageIcon className="w-4 h-4 mr-2" />
+                          Visualize Scene
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+
+                {/* Automatic turn-based image */}
+                {gameState.turns.length > 0 && gameState.turns[gameState.turns.length - 1].imageUrl && (
+                  <div className="mb-6 rounded-lg overflow-hidden border" data-testid="auto-generated-image-container">
+                    <img 
+                      src={gameState.turns[gameState.turns.length - 1].imageUrl} 
+                      alt="Auto-generated scene visualization" 
+                      className="w-full h-auto"
+                      data-testid="auto-generated-image"
+                    />
+                    <div className="p-2 bg-muted text-xs text-muted-foreground font-mono">
+                      Auto-generated: {gameState.turns[gameState.turns.length - 1].imageTemplate || 'general_scene'}
+                    </div>
+                  </div>
+                )}
+
+                {/* Manual button-generated image */}
+                {generatedImage && (
+                  <div className="mb-6 rounded-lg overflow-hidden border" data-testid="manual-generated-image-container">
+                    <img 
+                      src={generatedImage} 
+                      alt="Manual scene visualization" 
+                      className="w-full h-auto"
+                      data-testid="manual-generated-image"
+                    />
+                    <div className="p-2 bg-muted text-xs text-muted-foreground font-mono">
+                      Manual: {imagePromptUsed || 'Unknown template'}
+                    </div>
+                  </div>
+                )}
+
+                {gameState.turns.length === 0 ? (
+                  <p className="text-muted-foreground italic">
+                    Select an action below to begin your journey to Uranus...
+                  </p>
+                ) : (
+                  <>
+                    {actionMutation.isPending && (
+                      <div className="mb-6 p-4 border rounded-lg bg-muted" data-testid="loading-indicator">
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <div className="flex flex-col gap-1">
+                            <span className="text-sm font-mono">Processing action...</span>
+                            <span className="text-xs text-muted-foreground">Generating scene visualization...</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {gameState.turns.slice().reverse().map((turn) => (
+                      <TurnCard key={turn.turnNumber} {...turn} />
+                    ))}
+                  </>
+                )}
+              </div>
+
+              {!gameState.isComplete && (
+                <div className="p-4 rounded-lg border bg-card" data-testid="actions-panel">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-bold font-mono">Actions</h2>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setShowCustomInput(!showCustomInput)}
+                      data-testid="button-custom-action"
+                    >
+                      {showCustomInput ? 'Show Suggestions' : 'Custom Action'}
+                    </Button>
+                  </div>
+
+                  {showCustomInput ? (
+                    <div className="flex gap-2">
+                      <Input 
+                        placeholder="Describe your action..."
+                        value={customAction}
+                        onChange={(e) => setCustomAction(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleCustomAction()}
+                        disabled={actionMutation.isPending}
+                        data-testid="input-custom-action"
+                      />
+                      <Button 
+                        onClick={handleCustomAction}
+                        disabled={!customAction.trim() || actionMutation.isPending}
+                        data-testid="button-submit-custom"
+                      >
+                        <Send className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-3" data-testid="action-chips">
+                      {gameState.currentActions.map((action, i) => (
+                        <ActionChip 
+                          key={i}
+                          {...action}
+                          itemIcon={action.usesItemId ? itemIcon(action.usesItemId) : undefined}
+                          onClick={() => handleActionClick(action.action)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {gameState.isComplete && (
+                <div className="p-6 rounded-lg border-2 border-primary bg-card text-center space-y-4">
+                  <h2 className="text-2xl font-bold font-mono">
+                    {gameState.failureReason ? 'Mission Failed' : 'Mission Complete!'}
+                  </h2>
+                  <p className="text-lg">
+                    {gameState.failureReason || 'You successfully reached Uranus!'}
+                  </p>
+                  <Button onClick={handleBackToMenu} data-testid="button-back-to-menu-complete">
+                    Back to Menu
+                  </Button>
+                </div>
+              )}
+            </main>
+          </div>
+        </div>
+
+        <Dialog open={showSettings} onOpenChange={setShowSettings}>
+          <DialogContent data-testid="settings-modal">
+            <DialogHeader>
+              <DialogTitle className="font-mono">Game Settings</DialogTitle>
+              <DialogDescription>
+                Absurdity level is set at game start. Start a new voyage to change it.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6 py-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium">Absurdity Dial</label>
+                  <span className="text-sm font-mono font-bold text-primary">{gameState.absurdity}</span>
+                </div>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <div>0: Dry wit, minimal chaos</div>
+                  <div>1: Balanced humor</div>
+                  <div>2: Frequent bureaucracy (default)</div>
+                  <div>3: Maximum cosmic chaos</div>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
+  );
+}

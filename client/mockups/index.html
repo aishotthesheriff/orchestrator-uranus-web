@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Warp Drive Effect Mockups</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'Arial', 'Helvetica', sans-serif;
+    background: #000;
+    color: #fff;
+    overflow-x: hidden;
+  }
+
+  body {
+    background: radial-gradient(ellipse at center, #1a1a2e 0%, #000 100%);
+    position: relative;
+  }
+
+  /* Animated starfield background */
+  #starfield {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .container {
+    position: relative;
+    z-index: 10;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 60px;
+    padding-top: 40px;
+  }
+
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+  }
+
+  .subtitle {
+    font-size: 1.2rem;
+    color: #aaa;
+    margin-top: 10px;
+  }
+
+  .mockup-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+  }
+
+  .mockup-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 25px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+  }
+
+  .mockup-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(102, 126, 234, 0.5);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+  }
+
+  .mockup-card h2 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: #667eea;
+  }
+
+  .mockup-card p {
+    color: #ccc;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+  }
+
+  .mockup-link {
+    display: inline-block;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+  }
+
+  .mockup-link:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
+  }
+
+  .mockup-link:active {
+    transform: scale(0.98);
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 60px;
+    padding: 30px 0;
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 768px) {
+    h1 {
+      font-size: 2rem;
+    }
+    
+    .mockup-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+  <canvas id="starfield"></canvas>
+
+  <div class="container">
+    <header>
+      <h1>🌌 Warp Drive Effects</h1>
+      <p class="subtitle">Interactive HTML5/Canvas prototypes for space transition animations</p>
+    </header>
+
+    <div class="mockup-grid">
+      <div class="mockup-card">
+        <h2>⭐ Star Streak Tunnel</h2>
+        <p>Creates a 3D tunnel effect with stars streaking toward the viewer. Stars accelerate when warp is active with horizontal scanlines and color shifts to blue/purple.</p>
+        <a href="star-streak-tunnel.html" class="mockup-link" target="_blank">View Effect →</a>
+      </div>
+
+      <div class="mockup-card">
+        <h2>🌊 Space Distortion Wave</h2>
+        <p>Waves of gravitational lensing distortion roll across the screen. Background starfield warps and bends during warp, creating a sense of space-time distortion.</p>
+        <a href="space-distortion-wave.html" class="mockup-link" target="_blank">View Effect →</a>
+      </div>
+
+      <div class="mockup-card">
+        <h2>🚀 Hyperspace Jump</h2>
+        <p>Multi-phase sequence: Normal → Fade Out → Flash → Warp → Fade In. A complete hyperspace jump sequence with intense white/blue flash during jump.</p>
+        <a href="hyperspace-jump.html" class="mockup-link" target="_blank">View Effect →</a>
+      </div>
+
+      <div class="mockup-card">
+        <h2>📺 Static to Warp</h2>
+        <p>Begins with TV static/glitch pattern that coalesces into streaks moving toward center, then transitions into full star streak tunnel effect. Combines retro CRT aesthetic with warp.</p>
+        <a href="static-to-warp.html" class="mockup-link" target="_blank">View Effect →</a>
+      </div>
+
+      <div class="mockup-card">
+        <h2>🎨 Cosmic Ribbon</h2>
+        <p>Colorful energy ribbons flow from screen edges toward center. Multiple ribbons with animated particles/stars traveling along them, with glowing, pulsing effects.</p>
+        <a href="cosmic-ribbon.html" class="mockup-link" target="_blank">View Effect →</a>
+      </div>
+
+      <div class="mockup-card">
+        <h2>🌀 Grok Portal</h2>
+        <p>A portal effect featuring swirling energy and dimensional transitions.</p>
+        <a href="grok-portal.html" class="mockup-link" target="_blank">View Effect →</a>
+      </div>
+
+      <div class="mockup-card">
+        <h2>⚡ Grok Warp</h2>
+        <p>A warp transition effect with content switching and hyperspace visuals.</p>
+        <a href="grok-warp.html" class="mockup-link" target="_blank">View Effect →</a>
+      </div>
+
+      <div class="mockup-card">
+        <h2>🔫 Rick Portal</h2>
+        <p>Rick & Morty Portal Gun transition effect with chaotic swirling green particles, wavy organic rings, and portal targeting that follows mouse movement. Wubba Lubba Dub Dub!</p>
+        <a href="rick-portal.html" class="mockup-link" target="_blank">View Effect →</a>
+      </div>
+
+      <div class="mockup-card">
+        <h2>⭐ Star Wars Hyperspace</h2>
+        <p>Classic Star Wars hyperspace jump effect with centered starfield projection. Multi-phase sequence: fade out → radial flash → star streaks warping toward center → fade in to destination.</p>
+        <a href="rick2-portal.html" class="mockup-link" target="_blank">View Effect →</a>
+      </div>
+
+      <div class="mockup-card">
+        <h2>⭐ Star Wars (Centered)</h2>
+        <p>Star Wars hyperspace effect variant with centered projection and enhanced starfield. Features twinkling stars, radial flash transition, and smooth star streak animation during warp sequence.</p>
+        <a href="star-wars.html" class="mockup-link" target="_blank">View Effect →</a>
+      </div>
+
+      <div class="mockup-card">
+        <h2>🔊 Star Wars with Sound</h2>
+        <p>Hyperspace jump effect with embedded audio support. Includes jump sound effects and looping warp audio, with a sound toggle button for user control.</p>
+        <a href="star2-wars.html" class="mockup-link" target="_blank">View Effect →</a>
+      </div>
+
+      <div class="mockup-card">
+        <h2>🎬 3D Cinematic Hyperspace</h2>
+        <p>Three.js-powered 3D hyperspace effect with bloom post-processing and embedded sound. Features a 3D point cloud starfield with smooth warp acceleration and cinematic visual effects.</p>
+        <a href="warp3d.html" class="mockup-link" target="_blank">View Effect →</a>
+      </div>
+    </div>
+
+    <footer>
+      <p>All effects are standalone HTML files • Most use pure HTML5 Canvas (warp3d.html uses Three.js)</p>
+    </footer>
+  </div>
+
+  <script>
+    // Simple animated starfield background
+    const canvas = document.getElementById('starfield');
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      initStars();
+    }
+
+    function initStars() {
+      stars = [];
+      const count = 100;
+      for (let i = 0; i < count; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 1.5,
+          speed: Math.random() * 0.5 + 0.1,
+          opacity: Math.random()
+        });
+      }
+    }
+
+    function animateStars() {
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      stars.forEach(star => {
+        star.y += star.speed;
+        if (star.y > canvas.height) {
+          star.y = 0;
+          star.x = Math.random() * canvas.width;
+        }
+
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+        ctx.fill();
+      });
+
+      requestAnimationFrame(animateStars);
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    animateStars();
+  </script>
+</body>
+</html>

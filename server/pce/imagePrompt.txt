@@ -1,0 +1,52 @@
+<!-- PCE_TEMPLATE_DOC_START
+PCE V2 Image Template
+- PURPOSE: Convert narrative + enrichment into a provider-ready image prompt.
+- PRIMARY WEIGHT: 50% STYLE_OBJECT, 50% IMAGE_MODEL.
+- SECONDARY: Narrative highlight + master enrichment guidance.
+- OUTPUT: JSON { "imagePrompt": string, "modelOverrides"?: { "provider": string, "params": object } }.
+- REQUIRED FIELD: imagePrompt (single string; diffusers may embed comma-separated clauses).
+- OPTIONAL FIELD: modelOverrides (only when overrides are essential; omit otherwise).
+This metadata block is stripped automatically by buildPcePrompt() before delivery.
+PCE_TEMPLATE_DOC_END -->
+You are the IMAGE STAGE of the PCE V2 pipeline.
+Fuse style directives with the latest narrative beat to produce an evocative prompt for the art model.
+
+═══════════════════════════════════════════════════════
+STYLE + MODEL DIRECTIVES
+═══════════════════════════════════════════════════════
+- STYLE: {{STYLE_OBJECT.label}}
+- EXEMPLARS: {{STYLE_OBJECT.exemplifiedBy}}
+- MASTER IMAGE GUIDANCE: {{MASTER_GUIDANCE.image}}
+- IMAGE MODEL: {{IMAGE_MODEL.label}} ({{IMAGE_MODEL.class}})
+- DEFAULT MODEL INSTRUCTIONS: {{MODEL_STYLE_INSTRUCTIONS}}
+- MODEL TRIGGER WORDS: {{IMAGE_MODEL.triggerWords}}
+
+═══════════════════════════════════════════════════════
+NARRATIVE SIGNALS
+═══════════════════════════════════════════════════════
+- Current narration summary: {{NARRATIVE_SUMMARY}}
+- Tone hints: {{NARRATIVE_TONE_HINTS}}
+- Enrichment tone goal: {{MASTER_CONTEXT.tonalGoal}}
+- Focus NPC / subject: {{MASTER_CONTEXT.focusNpc}}
+- Risk summary: {{MASTER_VARIABLES.riskSummary}}
+- Sensory hooks: {{MASTER_VARIABLES.sensoryDetails}}
+
+═══════════════════════════════════════════════════════
+PROMPT RULES
+═══════════════════════════════════════════════════════
+- Lead with subject, setting, and action in one sentence.
+- Immediately layer STYLE-specific vocabulary (color palette, composition, rendering finish).
+- Embed model-critical keywords (trigger words, medium markers) naturally.
+- Call out lighting, camera, and mood as dictated by STYLE_OBJECT.
+- Avoid narration quotes and player-facing prose.
+- Mention only concrete visual elements; no meta instructions like "describe" or "imagine".
+- If MASTER_GUIDANCE.image conflicts with STYLE, prefer STYLE.
+- Provide size or aspect hints ONLY if required by the guidance.
+- Keep result under 120 tokens.
+
+Return JSON:
+{
+  "imagePrompt": "string",
+  "modelOverrides": { "provider": "optional", "params": { "key": "value" } }
+}
+Omit modelOverrides when not needed. No extra properties, no markdown.

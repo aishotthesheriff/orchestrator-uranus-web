@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warp Drive - Cosmic Ribbon</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Courier New', monospace;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 20px #00ffff;
+        }
+
+        .title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            color: #00ffff;
+            font-size: 24px;
+            text-shadow: 0 0 10px #00ffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">COSMIC RIBBON</div>
+        <canvas id="warpCanvas"></canvas>
+        <div class="controls">
+            <button id="toggleBtn">Start Warp</button>
+            <button id="resetBtn">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('warpCanvas');
+        const ctx = canvas.getContext('2d');
+        let isActive = false;
+        let time = 0;
+        const ribbons = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initializeRibbons();
+        }
+
+        function initializeRibbons() {
+            ribbons.length = 0;
+            for (let i = 0; i < 8; i++) {
+                ribbons.push({
+                    // Start from edges
+                    startSide: Math.floor(Math.random() * 4), // 0: top, 1: right, 2: bottom, 3: left
+                    points: [],
+                    color: getRibbonColor(i),
+                    speed: Math.random() * 2 + 1,
+                    curve: Math.random() * 0.5 - 0.25
+                });
+                generateRibbonPath(ribbons[i]);
+            }
+        }
+
+        function getRibbonColor(index) {
+            const colors = [
+                [255, 100, 255], // Magenta
+                [100, 200, 255], // Cyan
+                [255, 200, 100], // Orange
+                [150, 100, 255], // Purple
+                [100, 255, 200], // Green-Cyan
+                [255, 150, 150], // Pink
+                [150, 255, 255], // Light Cyan
+                [255, 255, 150]  // Yellow
+            ];
+            return colors[index % colors.length];
+        }
+
+        function generateRibbonPath(ribbon) {
+            ribbon.points = [];
+            const numPoints = 50;
+            
+            let startX, startY, endX, endY;
+            
+            switch (ribbon.startSide) {
+                case 0: // Top
+                    startX = Math.random() * canvas.width;
+                    startY = 0;
+                    break;
+                case 1: // Right
+                    startX = canvas.width;
+                    startY = Math.random() * canvas.height;
+                    break;
+                case 2: // Bottom
+                    startX = Math.random() * canvas.width;
+                    startY = canvas.height;
+                    break;
+                case 3: // Left
+                    startX = 0;
+                    startY = Math.random() * canvas.height;
+                    break;
+            }
+            
+            endX = canvas.width / 2;
+            endY = canvas.height / 2;
+            
+            for (let i = 0; i <= numPoints; i++) {
+                const t = i / numPoints;
+                const x = startX + (endX - startX) * t;
+                const y = startY + (endY - startY) * t;
+                
+                // Add curve
+                const curveAmount = Math.sin(t * Math.PI) * 50 * ribbon.curve;
+                const angle = Math.atan2(endY - startY, endX - startX) + Math.PI / 2;
+                
+                ribbon.points.push({
+                    x: x + Math.cos(angle) * curveAmount,
+                    y: y + Math.sin(angle) * curveAmount
+                });
+            }
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        function drawRibbons() {
+            if (!isActive) return;
+            
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ribbons.forEach((ribbon, ribbonIndex) => {
+                const offset = (time * ribbon.speed * 10) % (ribbon.points.length - 1);
+                
+                for (let i = 0; i < ribbon.points.length - 1; i++) {
+                    const idx1 = Math.floor((i + offset) % ribbon.points.length);
+                    const idx2 = Math.floor((i + 1 + offset) % ribbon.points.length);
+                    
+                    const p1 = ribbon.points[idx1];
+                    const p2 = ribbon.points[idx2];
+                    
+                    // Gradient from edge to center
+                    const alpha = 1 - (i / ribbon.points.length) * 0.5;
+                    const [r, g, b] = ribbon.color;
+                    
+                    ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                    ctx.lineWidth = 3 + Math.sin(time * 2 + i * 0.1) * 2;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                    
+                    // Add glow effect
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = `rgba(${r}, ${g}, ${b}, ${alpha * 0.5})`;
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                }
+            });
+        }
+
+        function drawStars() {
+            // Animated star particles along ribbons
+            if (!isActive) return;
+            
+            ribbons.forEach(ribbon => {
+                for (let i = 0; i < 20; i++) {
+                    const t = (Math.random() + time * 0.1) % 1;
+                    const pointIdx = Math.floor(t * (ribbon.points.length - 1));
+                    const nextIdx = Math.min(pointIdx + 1, ribbon.points.length - 1);
+                    
+                    const p1 = ribbon.points[pointIdx];
+                    const p2 = ribbon.points[nextIdx];
+                    const localT = (t * (ribbon.points.length - 1)) % 1;
+                    
+                    const x = p1.x + (p2.x - p1.x) * localT;
+                    const y = p1.y + (p2.y - p1.y) * localT;
+                    
+                    const [r, g, b] = ribbon.color;
+                    const size = 2 + Math.random() * 3;
+                    
+                    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.8)`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Star trail
+                    ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, 0.3)`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x + (p2.x - p1.x) * 0.1, y + (p2.y - p1.y) * 0.1);
+                    ctx.stroke();
+                }
+            });
+        }
+
+        function animate() {
+            if (isActive) {
+                time += 0.01;
+            }
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawRibbons();
+            drawStars();
+            
+            // Add overall color overlay
+            if (isActive) {
+                ctx.fillStyle = `rgba(100, 150, 255, ${0.1 + Math.sin(time * 2) * 0.05})`;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        document.getElementById('toggleBtn').addEventListener('click', () => {
+            isActive = !isActive;
+            document.getElementById('toggleBtn').textContent = isActive ? 'Stop Warp' : 'Start Warp';
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            isActive = false;
+            time = 0;
+            initializeRibbons();
+            document.getElementById('toggleBtn').textContent = 'Start Warp';
+        });
+
+        animate();
+    </script>
+</body>
+</html>
+

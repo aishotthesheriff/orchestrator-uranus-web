@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warp Drive - Hyperspace Jump</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Courier New', monospace;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 20px #00ffff;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            color: #00ffff;
+            font-size: 24px;
+            text-shadow: 0 0 10px #00ffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">HYPERSPACE JUMP</div>
+        <canvas id="warpCanvas"></canvas>
+        <div class="controls">
+            <button id="jumpBtn">Initiate Jump</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('warpCanvas');
+        const ctx = canvas.getContext('2d');
+        let phase = 'normal'; // normal, fadeOut, flash, fadeIn
+        let phaseTime = 0;
+        let stars = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initializeStars();
+        }
+
+        function initializeStars() {
+            stars = [];
+            for (let i = 0; i < 300; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2 + 0.5,
+                    brightness: Math.random()
+                });
+            }
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        function drawStars(alpha = 1) {
+            ctx.fillStyle = '#fff';
+            stars.forEach(star => {
+                ctx.globalAlpha = star.brightness * alpha;
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        function animate() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (phase === 'normal') {
+                // Normal starfield
+                drawStars(1);
+                
+                // Twinkle effect
+                stars.forEach(star => {
+                    star.brightness = 0.5 + Math.sin(Date.now() * 0.001 + star.x * 0.01) * 0.5;
+                });
+            }
+            else if (phase === 'fadeOut') {
+                // Stars fade out
+                phaseTime += 0.02;
+                const fade = Math.max(0, 1 - phaseTime);
+                drawStars(fade);
+                
+                if (phaseTime >= 1) {
+                    phase = 'flash';
+                    phaseTime = 0;
+                }
+            }
+            else if (phase === 'flash') {
+                // White/blue flash
+                phaseTime += 0.05;
+                const flashIntensity = Math.sin(phaseTime * Math.PI);
+                const r = Math.floor(255 * flashIntensity);
+                const g = Math.floor(200 * flashIntensity);
+                const b = Math.floor(255 * flashIntensity);
+                
+                ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                if (phaseTime >= 1) {
+                    phase = 'warp';
+                    phaseTime = 0;
+                    initializeWarpStars();
+                }
+            }
+            else if (phase === 'warp') {
+                // Star streaks during warp
+                phaseTime += 0.02;
+                
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw warp stars
+                warpStars.forEach(star => {
+                    star.z -= star.speed;
+                    
+                    if (star.z <= 0) {
+                        star.x = (Math.random() - 0.5) * canvas.width;
+                        star.y = (Math.random() - 0.5) * canvas.height;
+                        star.z = 1000;
+                    }
+                    
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    const perspective = 300;
+                    const k = perspective / star.z;
+                    
+                    const x = centerX + star.x * k;
+                    const y = centerY + star.y * k;
+                    
+                    if (x >= 0 && x <= canvas.width && y >= 0 && y <= canvas.height) {
+                        const streakLength = 50 * k;
+                        ctx.strokeStyle = `rgba(150, 200, 255, ${Math.min(1, k * 2)})`;
+                        ctx.lineWidth = 2 * k;
+                        ctx.beginPath();
+                        ctx.moveTo(x, y);
+                        ctx.lineTo(x, y + streakLength);
+                        ctx.stroke();
+                    }
+                });
+                
+                if (phaseTime >= 2) {
+                    phase = 'fadeIn';
+                    phaseTime = 0;
+                    initializeStars();
+                }
+            }
+            else if (phase === 'fadeIn') {
+                // Stars fade back in
+                phaseTime += 0.02;
+                const fade = Math.min(1, phaseTime);
+                drawStars(fade);
+                
+                if (phaseTime >= 1) {
+                    phase = 'normal';
+                    phaseTime = 0;
+                    document.getElementById('jumpBtn').disabled = false;
+                    document.getElementById('jumpBtn').textContent = 'Initiate Jump';
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        let warpStars = [];
+        function initializeWarpStars() {
+            warpStars = [];
+            for (let i = 0; i < 500; i++) {
+                warpStars.push({
+                    x: (Math.random() - 0.5) * canvas.width,
+                    y: (Math.random() - 0.5) * canvas.height,
+                    z: Math.random() * 1000 + 100,
+                    speed: Math.random() * 10 + 15
+                });
+            }
+        }
+
+        document.getElementById('jumpBtn').addEventListener('click', () => {
+            if (phase !== 'normal') return;
+            
+            phase = 'fadeOut';
+            phaseTime = 0;
+            document.getElementById('jumpBtn').disabled = true;
+            document.getElementById('jumpBtn').textContent = 'Jumping...';
+        });
+
+        animate();
+    </script>
+</body>
+</html>
+

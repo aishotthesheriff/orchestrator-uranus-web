@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warp Drive - Star Streak Tunnel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Courier New', monospace;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 20px #00ffff;
+        }
+
+        .title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            color: #00ffff;
+            font-size: 24px;
+            text-shadow: 0 0 10px #00ffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">STAR STREAK TUNNEL</div>
+        <canvas id="warpCanvas"></canvas>
+        <div class="controls">
+            <button id="toggleBtn">Start Warp</button>
+            <button id="resetBtn">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('warpCanvas');
+        const ctx = canvas.getContext('2d');
+        let isActive = false;
+        let frame = 0;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        class Star {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = (Math.random() - 0.5) * canvas.width;
+                this.y = (Math.random() - 0.5) * canvas.height;
+                this.z = Math.random() * 2000 + 500;
+                this.size = Math.random() * 2 + 1;
+                this.speed = Math.random() * 5 + 10;
+            }
+
+            update() {
+                if (isActive) {
+                    this.z -= this.speed * 2;
+                } else {
+                    this.z -= this.speed * 0.3;
+                }
+                
+                if (this.z <= 0) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                
+                const perspective = 300;
+                const k = perspective / this.z;
+                
+                const x = centerX + this.x * k;
+                const y = centerY + this.y * k;
+                const radius = this.size * k;
+
+                if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) {
+                    return;
+                }
+
+                // Create streak effect
+                const streakLength = isActive ? 30 * k : 5;
+                const alpha = Math.min(1, k * 2);
+                
+                // Base color shifts blue/purple during warp
+                const hueShift = isActive ? frame * 2 : 0;
+                const r = isActive ? 100 + Math.sin((hueShift + 0) * Math.PI / 180) * 50 : 255;
+                const g = isActive ? 150 + Math.sin((hueShift + 120) * Math.PI / 180) * 50 : 255;
+                const b = isActive ? 255 : 255;
+
+                ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                ctx.lineWidth = radius;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x, y + streakLength);
+                ctx.stroke();
+
+                // Star point
+                ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        const stars = [];
+        for (let i = 0; i < 500; i++) {
+            stars.push(new Star());
+        }
+
+        function drawScanlines() {
+            if (!isActive) return;
+            
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            
+            for (let y = 0; y < canvas.height; y += 3) {
+                const offset = Math.sin((frame * 0.5 + y * 0.01)) * 2;
+                ctx.beginPath();
+                ctx.moveTo(0, y + offset);
+                ctx.lineTo(canvas.width, y + offset);
+                ctx.stroke();
+            }
+        }
+
+        function animate() {
+            frame++;
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            stars.forEach(star => {
+                star.update();
+                star.draw();
+            });
+
+            drawScanlines();
+
+            requestAnimationFrame(animate);
+        }
+
+        document.getElementById('toggleBtn').addEventListener('click', () => {
+            isActive = !isActive;
+            document.getElementById('toggleBtn').textContent = isActive ? 'Stop Warp' : 'Start Warp';
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            isActive = false;
+            stars.forEach(star => star.reset());
+            document.getElementById('toggleBtn').textContent = 'Start Warp';
+        });
+
+        animate();
+    </script>
+</body>
+</html>
+

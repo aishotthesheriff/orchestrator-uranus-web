@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cinematic Hyperspace Jump (Three.js + Bloom + Sound)</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: black;
+    color: white;
+    font-family: Arial, sans-serif;
+  }
+  #ui {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 20;
+    display: flex;
+    gap: 10px;
+  }
+  button {
+    padding: 10px 18px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  .content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    opacity: 0;
+    transition: opacity 0.8s;
+    z-index: 5;
+  }
+  #currentContent { opacity: 1; }
+  #destinationContent { opacity: 0; }
+</style>
+
+<!-- Preload local Three.js ES modules for faster loading -->
+<link rel="modulepreload" href="libs/three/three.module.js">
+<link rel="modulepreload" href="libs/three/Pass.js">
+<link rel="modulepreload" href="libs/three/EffectComposer.js">
+<link rel="modulepreload" href="libs/three/RenderPass.js">
+<link rel="modulepreload" href="libs/three/UnrealBloomPass.js">
+
+
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<div id="ui">
+  <button id="jumpBtn">Jump to Hyperspace →</button>
+  <button id="soundBtn">🔊 Sound: ON</button>
+</div>
+
+<div id="currentContent" class="content">
+  <div>Current Star System</div>
+</div>
+
+<div id="destinationContent" class="content">
+  <div>Destination System</div>
+</div>
+
+<script type="module">
+// Import Three.js ES modules
+import * as THREE from './libs/three/three.module.js';
+import { EffectComposer } from './libs/three/EffectComposer.js';
+import { RenderPass } from './libs/three/RenderPass.js';
+import { UnrealBloomPass } from './libs/three/UnrealBloomPass.js';
+
+// -----------------------
+// 1. Embedded Base64 Audio
+// -----------------------
+// Audio setup - gracefully handle missing/invalid audio
+let sfx = {
+  jump: null,
+  loop: null
+};
+let soundEnabled = true;
+
+// Try to create audio objects, but don't fail if audio is invalid
+try {
+  // Create silent audio placeholders (will be skipped if invalid)
+  sfx.jump = new Audio();
+  sfx.loop = new Audio();
+  sfx.loop.loop = true;
+  sfx.jump.volume = 0.7;
+  sfx.loop.volume = 0.4;
+  
+  // Test if audio is supported by trying to set a data URL
+  // If these fail, the audio functions will gracefully skip playback
+  sfx.jump.onerror = () => { sfx.jump = null; };
+  sfx.loop.onerror = () => { sfx.loop = null; };
+} catch (e) {
+  // Audio not supported or failed to initialize
+  sfx.jump = null;
+  sfx.loop = null;
+}
+
+function playJump() { 
+  if (soundEnabled && sfx.jump) { 
+    sfx.jump.currentTime = 0;
+    sfx.jump.play().catch(() => {}); // Ignore playback errors
+  }
+}
+function startLoop() { 
+  if (soundEnabled && sfx.loop) { 
+    sfx.loop.currentTime = 0;
+    sfx.loop.play().catch(() => {}); // Ignore playback errors
+  }
+}
+function stopLoop() { 
+  if (sfx.loop) { 
+    sfx.loop.pause();
+  }
+}
+
+// -----------------------
+// 2. Scene / Camera / Renderer
+// -----------------------
+const canvas = document.getElementById('bg');
+const renderer = new THREE.WebGLRenderer({ canvas });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x000000, 50, 2000);
+
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 5000);
+camera.position.z = 0;
+
+// -----------------------
+// 3. Stars (3D Point Cloud)
+// -----------------------
+const starCount = 5000;
+const starGeometry = new THREE.BufferGeometry();
+const starPositions = new Float32Array(starCount * 3);
+
+function randomSpread(radius) {
+  return (Math.random() - 0.5) * radius;
+}
+
+for (let i = 0; i < starCount * 3; i += 3) {
+  starPositions[i]   = randomSpread(2000);
+  starPositions[i+1] = randomSpread(2000);
+  starPositions[i+2] = Math.random() * -2000; // Start ahead in Z
+}
+starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+
+const starMaterial = new THREE.PointsMaterial({
+  color: 0xffffff,
+  size: 2,
+  sizeAttenuation: true
+});
+const stars = new THREE.Points(starGeometry, starMaterial);
+scene.add(stars);
+
+// -----------------------
+// 4. Post-Processing (Bloom)
+// -----------------------
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+
+const bloomPass = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  1.3,  // bloom strength
+  0.4,  // radius
+  0.85  // threshold
+);
+composer.addPass(bloomPass);
+
+// -----------------------
+// 5. Animation State
+// -----------------------
+let warpSpeed = 0;
+let targetWarpSpeed = 0;
+let jumped = false;
+
+// -----------------------
+// 6. Animation Loop
+// -----------------------
+function animate() {
+  requestAnimationFrame(animate);
+
+  // Smooth accelerate/decelerate camera
+  warpSpeed += (targetWarpSpeed - warpSpeed) * 0.02;
+
+  // Move stars relative to camera
+  starGeometry.attributes.position.array.forEach((v, idx) => {
+    if (idx % 3 === 2) { // Z coordinate
+      let z = starGeometry.attributes.position.array[idx];
+      z += warpSpeed;
+      if (z > 50) {
+        z = -2000; // recycle to distance
+      }
+      starGeometry.attributes.position.array[idx] = z;
+    }
+  });
+  starGeometry.attributes.position.needsUpdate = true;
+
+  composer.render();
+}
+animate();
+
+// -----------------------
+// 7. Resize Handling
+// -----------------------
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// -----------------------
+// 8. UI Logic
+// -----------------------
+const jumpBtn = document.getElementById('jumpBtn');
+const soundBtn = document.getElementById('soundBtn');
+const currentContent = document.getElementById('currentContent');
+const destinationContent = document.getElementById('destinationContent');
+
+soundBtn.addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+  soundBtn.textContent = soundEnabled ? '🔊 Sound: ON' : '🔇 Sound: OFF';
+  if (!soundEnabled) stopLoop();
+});
+
+jumpBtn.addEventListener('click', () => {
+  if (jumped) return;
+  jumped = true;
+  jumpBtn.textContent = 'Jumping…';
+  jumpBtn.disabled = true;
+
+  // fade out current content
+  currentContent.style.opacity = '0';
+
+  // 1) quick flash/jump sound
+  playJump();
+
+  // 2) then accelerate to warp
+  setTimeout(() => {
+    targetWarpSpeed = 60; // hyperspace speed
+    startLoop();
+  }, 200);
+
+  // 3) after warp duration, fade to destination
+  setTimeout(() => {
+    targetWarpSpeed = 0;
+    stopLoop();
+    destinationContent.style.opacity = '1';
+  }, 3500);
+});
+</script>
+
+</body>
+</html>

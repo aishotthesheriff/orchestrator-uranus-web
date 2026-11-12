@@ -1,0 +1,152 @@
+import { useEffect, useRef, useState } from "react";
+
+export default function CaptainShemPowerUp() {
+  const canvasRef = useRef(null);
+  const [booting, setBooting] = useState(true);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const cols = 80;
+    const rows = 25;
+    const cellW = canvas.width / cols;
+    const cellH = canvas.height / rows;
+    ctx.font = `${cellH * 0.9}px 'PxPlus_IBM_VGA8', monospace`;
+    ctx.textBaseline = "top";
+
+    const glyphs = ["░", "▒", "▓", "█", "·", ":", "*", "+", "•", " "];
+    const basePalette = [
+      [0, 255, 255],
+      [255, 102, 255],
+      [255, 170, 0],
+      [255, 255, 255],
+      [0, 170, 255],
+    ];
+
+    const phosphor = Array.from({ length: rows }, () =>
+      Array.from({ length: cols }, () => ({
+        glyph: glyphs[Math.floor(Math.random() * glyphs.length)],
+        color: basePalette[Math.floor(Math.random() * basePalette.length)],
+        intensity: Math.random(),
+        decay: Math.random() * 0.02 + 0.01,
+        hueShift: Math.random() * 360,
+      }))
+    );
+
+    function hslToRgb(h, s, l) {
+      s /= 100;
+      l /= 100;
+      const k = (n) => (n + h / 30) % 12;
+      const a = s * Math.min(l, 1 - l);
+      const f = (n) =>
+        l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+      return [255 * f(0), 255 * f(8), 255 * f(4)];
+    }
+
+    function draw() {
+      ctx.fillStyle = "rgba(0,0,0,0.15)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          const p = phosphor[y][x];
+          p.hueShift += 0.2;
+          if (p.hueShift > 360) p.hueShift -= 360;
+          p.intensity = Math.max(0, p.intensity - p.decay + Math.random() * 0.02);
+          if (p.intensity < 0.1 && Math.random() < 0.02) {
+            p.glyph = glyphs[Math.floor(Math.random() * glyphs.length)];
+            p.intensity = 1.0;
+          }
+          const [r, g, b] = hslToRgb(p.hueShift, 100, 60);
+          ctx.fillStyle = `rgba(${r},${g},${b},${p.intensity})`;
+          ctx.fillText(p.glyph, x * cellW, y * cellH);
+        }
+      }
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+
+    // ===== Audio boot sequence =====
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContext();
+    const humOsc = audioCtx.createOscillator();
+    humOsc.type = "sine";
+    humOsc.frequency.value = 60;
+    const humGain = audioCtx.createGain();
+    humGain.gain.setValueAtTime(0, audioCtx.currentTime);
+
+    const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    const noiseSource = audioCtx.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+    noiseSource.loop = true;
+    const noiseGain = audioCtx.createGain();
+    noiseGain.gain.value = 0;
+
+    humOsc.connect(humGain).connect(audioCtx.destination);
+    noiseSource.connect(noiseGain).connect(audioCtx.destination);
+
+    audioCtx.resume().then(() => {
+      const now = audioCtx.currentTime;
+      humGain.gain.linearRampToValueAtTime(0.08, now + 3.0);
+      noiseGain.gain.linearRampToValueAtTime(0.03, now + 3.0);
+      humOsc.start();
+      noiseSource.start();
+    });
+
+    // power-up fade
+    setTimeout(() => setBooting(false), 3000);
+
+    return () => {
+      window.removeEventListener("resize", resize);
+      humOsc.stop();
+      noiseSource.stop();
+      audioCtx.close();
+    };
+  }, []);
+
+  return (
+    <div className="relative w-full h-screen overflow-hidden bg-black font-['PxPlus_IBM_VGA8'] text-[#00ffff]">
+      <canvas ref={canvasRef} className="absolute inset-0" />
+
+      {/* Boot-up overlay fade */}
+      <div
+        className={`absolute inset-0 bg-black transition-opacity duration-[3000ms] ${
+          booting ? "opacity-100" : "opacity-0"
+        }`}
+      ></div>
+
+      {/* Foreground content */}
+      <div className="relative z-10 flex flex-col items-center justify-center h-full text-center select-none">
+        <h1 className="text-5xl font-bold drop-shadow-[0_0_15px_#00ffff] mb-4 animate-[flicker_3s_infinite]">
+          █▓▒ Captain Shem ▒▓█
+        </h1>
+        <div className="text-[#ffaa00] mb-6 text-lg">
+          [ MODE : <span className="text-[#00ffff]">MODERN</span> | TERMINAL ]
+        </div>
+        <button className="px-8 py-2 border-2 border-[#00ffff] text-[#00ffff] bg-[#001a1a] hover:bg-[#002f2f] hover:shadow-[0_0_30px_#00ffff] transition-all duration-300 ease-in-out font-bold tracking-wide animate-[pulseGlow_4s_infinite]">
+          ▶ START NEW VOYAGE
+        </button>
+        <p className="mt-4 text-[#ffaa00] text-sm">░▒▓ No saved voyages yet ▓▒░</p>
+        <div className="absolute bottom-4 w-full text-center text-[#00aaaa] text-xs opacity-70 animate-[scroll_20s_linear_infinite] whitespace-nowrap">
+          ░▒▓ ACiD + iCE + MiST = Brutalist Entropy 2025 ▓▒░
+        </div>
+      </div>
+
+      <style>{`
+        canvas { filter: blur(2px) contrast(1.6) brightness(1.3); animation: flicker 0.14s infinite; }
+        @keyframes pulseGlow { 0%,100%{box-shadow:0 0 10px #00ffff;}50%{box-shadow:0 0 35px #00ffff;} }
+        @keyframes flicker { 0%,19%,21%,23%,25%,54%,56%,100%{opacity:1;}20%,24%,55%{opacity:0.85;} }
+        @keyframes scroll { 0%{transform:translateX(100%);}100%{transform:translateX(-100%);} }
+      `}</style>
+    </div>
+  );
+}

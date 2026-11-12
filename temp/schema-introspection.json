@@ -1,0 +1,3413 @@
+{
+  "tables": [
+    {
+      "table_name": "app_settings",
+      "columns": [
+        {
+          "column_name": "key",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 1
+        },
+        {
+          "column_name": "value",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 2
+        },
+        {
+          "column_name": "description",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 3
+        },
+        {
+          "column_name": "active",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "1",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 4
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 5
+        }
+      ],
+      "primary_keys": [
+        "key"
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "index_name": "app_settings_pkey",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "key"
+          ],
+          "definition": "CREATE UNIQUE INDEX app_settings_pkey ON public.app_settings USING btree (key)"
+        }
+      ],
+      "unique_constraints": [],
+      "check_constraints": [
+        {
+          "constraint_name": "2200_16971_1_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16971_2_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16971_4_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16971_5_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        }
+      ]
+    },
+    {
+      "table_name": "events",
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "gen_random_uuid()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 1
+        },
+        {
+          "column_name": "name",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 2
+        },
+        {
+          "column_name": "segment",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 3
+        },
+        {
+          "column_name": "skill",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 4
+        },
+        {
+          "column_name": "dc",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 5
+        },
+        {
+          "column_name": "trigger_condition",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 6
+        },
+        {
+          "column_name": "pass_effect",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 7
+        },
+        {
+          "column_name": "fail_effect",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 8
+        },
+        {
+          "column_name": "tags",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 9
+        },
+        {
+          "column_name": "active",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "1",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 10
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 11
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 12
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "index_name": "events_pkey",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "id"
+          ],
+          "definition": "CREATE UNIQUE INDEX events_pkey ON public.events USING btree (id)"
+        }
+      ],
+      "unique_constraints": [],
+      "check_constraints": [
+        {
+          "constraint_name": "2200_16389_1_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16389_2_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16389_3_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16389_4_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16389_5_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16389_6_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16389_7_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16389_8_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16389_9_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16389_10_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16389_11_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16389_12_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        }
+      ]
+    },
+    {
+      "table_name": "games",
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "gen_random_uuid()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 1
+        },
+        {
+          "column_name": "username",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 2
+        },
+        {
+          "column_name": "seed",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 3
+        },
+        {
+          "column_name": "day",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "1",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 4
+        },
+        {
+          "column_name": "turn_number",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "0",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 5
+        },
+        {
+          "column_name": "segment",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "'Launch from Earth'::text",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 6
+        },
+        {
+          "column_name": "absurdity",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "2",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 7
+        },
+        {
+          "column_name": "stats",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 9
+        },
+        {
+          "column_name": "npcs",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 10
+        },
+        {
+          "column_name": "equipped_items",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 11
+        },
+        {
+          "column_name": "turns",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 12
+        },
+        {
+          "column_name": "current_actions",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 13
+        },
+        {
+          "column_name": "running_gags",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 14
+        },
+        {
+          "column_name": "event_history",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 15
+        },
+        {
+          "column_name": "interview_responses",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "'{}'::jsonb",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 16
+        },
+        {
+          "column_name": "is_complete",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "0",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 17
+        },
+        {
+          "column_name": "failure_reason",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 18
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 19
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 20
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "constraint_name": "fk_games_username",
+          "table_name": "games",
+          "column_name": "username",
+          "foreign_table_name": "users",
+          "foreign_column_name": "username"
+        }
+      ],
+      "indexes": [
+        {
+          "index_name": "games_pkey",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "id"
+          ],
+          "definition": "CREATE UNIQUE INDEX games_pkey ON public.games USING btree (id)"
+        },
+        {
+          "index_name": "idx_games_username",
+          "index_type": "btree",
+          "is_unique": false,
+          "columns": [
+            "username"
+          ],
+          "definition": "CREATE INDEX idx_games_username ON public.games USING btree (username)"
+        }
+      ],
+      "unique_constraints": [],
+      "check_constraints": [
+        {
+          "constraint_name": "2200_16400_1_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16400_2_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16400_3_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16400_4_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16400_5_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16400_6_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16400_7_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16400_9_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16400_10_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16400_11_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16400_12_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16400_13_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16400_14_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16400_15_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16400_16_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16400_17_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16400_19_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16400_20_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        }
+      ]
+    },
+    {
+      "table_name": "generated_images",
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "gen_random_uuid()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 1
+        },
+        {
+          "column_name": "template_name",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 2
+        },
+        {
+          "column_name": "prompt_hash",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 3
+        },
+        {
+          "column_name": "variables_hash",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 4
+        },
+        {
+          "column_name": "file_path",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 5
+        },
+        {
+          "column_name": "file_size",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 6
+        },
+        {
+          "column_name": "mime_type",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "'image/png'::text",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 7
+        },
+        {
+          "column_name": "scene_fingerprint",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 8
+        },
+        {
+          "column_name": "metadata",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 9
+        },
+        {
+          "column_name": "game_id",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 10
+        },
+        {
+          "column_name": "turn_number",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 11
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 12
+        },
+        {
+          "column_name": "accessed_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 13
+        },
+        {
+          "column_name": "access_count",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "1",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 14
+        },
+        {
+          "column_name": "prompt_source",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "'template'::text",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 15
+        },
+        {
+          "column_name": "prompt_text",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 16
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "index_name": "generated_images_pkey",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "id"
+          ],
+          "definition": "CREATE UNIQUE INDEX generated_images_pkey ON public.generated_images USING btree (id)"
+        },
+        {
+          "index_name": "idx_generated_images_accessed",
+          "index_type": "btree",
+          "is_unique": false,
+          "columns": [
+            "accessed_at"
+          ],
+          "definition": "CREATE INDEX idx_generated_images_accessed ON public.generated_images USING btree (accessed_at)"
+        },
+        {
+          "index_name": "idx_generated_images_prompt_vars",
+          "index_type": "btree",
+          "is_unique": false,
+          "columns": [
+            "prompt_hash",
+            "variables_hash"
+          ],
+          "definition": "CREATE INDEX idx_generated_images_prompt_vars ON public.generated_images USING btree (prompt_hash, variables_hash)"
+        },
+        {
+          "index_name": "idx_generated_images_template",
+          "index_type": "btree",
+          "is_unique": false,
+          "columns": [
+            "template_name"
+          ],
+          "definition": "CREATE INDEX idx_generated_images_template ON public.generated_images USING btree (template_name)"
+        }
+      ],
+      "unique_constraints": [],
+      "check_constraints": [
+        {
+          "constraint_name": "2200_16417_1_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16417_2_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16417_3_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16417_4_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16417_5_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16417_6_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16417_7_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16417_8_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16417_9_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16417_12_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16417_13_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16417_14_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16417_15_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        }
+      ]
+    },
+    {
+      "table_name": "image_jobs",
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "gen_random_uuid()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 1
+        },
+        {
+          "column_name": "game_id",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 2
+        },
+        {
+          "column_name": "turn_number",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 3
+        },
+        {
+          "column_name": "template_name",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 4
+        },
+        {
+          "column_name": "status",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "'pending'::text",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 5
+        },
+        {
+          "column_name": "image_url",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 6
+        },
+        {
+          "column_name": "image_template",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 7
+        },
+        {
+          "column_name": "error",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 8
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 9
+        },
+        {
+          "column_name": "completed_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 10
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "index_name": "idx_image_jobs_status",
+          "index_type": "btree",
+          "is_unique": false,
+          "columns": [
+            "status",
+            "created_at"
+          ],
+          "definition": "CREATE INDEX idx_image_jobs_status ON public.image_jobs USING btree (status, created_at)"
+        },
+        {
+          "index_name": "image_jobs_pkey",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "id"
+          ],
+          "definition": "CREATE UNIQUE INDEX image_jobs_pkey ON public.image_jobs USING btree (id)"
+        }
+      ],
+      "unique_constraints": [],
+      "check_constraints": [
+        {
+          "constraint_name": "2200_16870_1_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16870_2_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16870_3_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16870_4_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16870_5_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16870_9_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        }
+      ]
+    },
+    {
+      "table_name": "image_models",
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "gen_random_uuid()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 1
+        },
+        {
+          "column_name": "model_key",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 2
+        },
+        {
+          "column_name": "provider",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 3
+        },
+        {
+          "column_name": "model_name",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 4
+        },
+        {
+          "column_name": "hf_provider",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 5
+        },
+        {
+          "column_name": "active",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "1",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 6
+        },
+        {
+          "column_name": "display_name",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 7
+        },
+        {
+          "column_name": "description",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 8
+        },
+        {
+          "column_name": "sort_order",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "0",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 9
+        },
+        {
+          "column_name": "default_size",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 10
+        },
+        {
+          "column_name": "default_quality",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 11
+        },
+        {
+          "column_name": "default_background",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 12
+        },
+        {
+          "column_name": "default_moderation",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 13
+        },
+        {
+          "column_name": "allowed_sizes",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 14
+        },
+        {
+          "column_name": "capabilities",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 15
+        },
+        {
+          "column_name": "provider_params",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 16
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 18
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 19
+        },
+        {
+          "column_name": "trigger_words",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": 500,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 20
+        },
+        {
+          "column_name": "class",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 21
+        },
+        {
+          "column_name": "is_default",
+          "data_type": "boolean",
+          "udt_name": "bool",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "false",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 22
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "index_name": "idx_image_models_active_sort",
+          "index_type": "btree",
+          "is_unique": false,
+          "columns": [
+            "active",
+            "sort_order"
+          ],
+          "definition": "CREATE INDEX idx_image_models_active_sort ON public.image_models USING btree (active, sort_order)"
+        },
+        {
+          "index_name": "image_models_model_key_key",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "model_key"
+          ],
+          "definition": "CREATE UNIQUE INDEX image_models_model_key_key ON public.image_models USING btree (model_key)"
+        },
+        {
+          "index_name": "image_models_pkey",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "id"
+          ],
+          "definition": "CREATE UNIQUE INDEX image_models_pkey ON public.image_models USING btree (id)"
+        }
+      ],
+      "unique_constraints": [
+        "model_key"
+      ],
+      "check_constraints": [
+        {
+          "constraint_name": "2200_34032_1_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_34032_2_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_34032_3_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_34032_4_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_34032_6_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_34032_7_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_34032_9_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_34032_22_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        }
+      ]
+    },
+    {
+      "table_name": "image_prompts",
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "gen_random_uuid()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 1
+        },
+        {
+          "column_name": "name",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 2
+        },
+        {
+          "column_name": "prompt_template",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 3
+        },
+        {
+          "column_name": "inherit_visual_style",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "1",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 4
+        },
+        {
+          "column_name": "size",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "'1024x1024'::text",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 5
+        },
+        {
+          "column_name": "quality",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "'auto'::text",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 6
+        },
+        {
+          "column_name": "description",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 7
+        },
+        {
+          "column_name": "scene_types",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 8
+        },
+        {
+          "column_name": "tags",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 9
+        },
+        {
+          "column_name": "active",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "1",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 10
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 11
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 12
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "index_name": "image_prompts_pkey",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "id"
+          ],
+          "definition": "CREATE UNIQUE INDEX image_prompts_pkey ON public.image_prompts USING btree (id)"
+        }
+      ],
+      "unique_constraints": [],
+      "check_constraints": [
+        {
+          "constraint_name": "2200_16429_1_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16429_2_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16429_3_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16429_4_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16429_5_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16429_6_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16429_8_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16429_9_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16429_10_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16429_11_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16429_12_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        }
+      ]
+    },
+    {
+      "table_name": "interview_questions",
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 1
+        },
+        {
+          "column_name": "question",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 2
+        },
+        {
+          "column_name": "variable_name",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 3
+        },
+        {
+          "column_name": "description",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 4
+        },
+        {
+          "column_name": "display_order",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "0",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 5
+        },
+        {
+          "column_name": "tags",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 6
+        },
+        {
+          "column_name": "active",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "1",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 7
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 8
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 9
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "index_name": "interview_questions_pkey",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "id"
+          ],
+          "definition": "CREATE UNIQUE INDEX interview_questions_pkey ON public.interview_questions USING btree (id)"
+        }
+      ],
+      "unique_constraints": [],
+      "check_constraints": [
+        {
+          "constraint_name": "2200_16443_1_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16443_2_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16443_3_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16443_5_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16443_6_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16443_7_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16443_8_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16443_9_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        }
+      ]
+    },
+    {
+      "table_name": "items",
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 1
+        },
+        {
+          "column_name": "name",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 2
+        },
+        {
+          "column_name": "description",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 3
+        },
+        {
+          "column_name": "icon",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 4
+        },
+        {
+          "column_name": "skill_bonus_skill",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 5
+        },
+        {
+          "column_name": "skill_bonus_value",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 6
+        },
+        {
+          "column_name": "scene_effect_tags",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 7
+        },
+        {
+          "column_name": "scene_effect_effect",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 8
+        },
+        {
+          "column_name": "efficiency",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 9
+        },
+        {
+          "column_name": "tags",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 10
+        },
+        {
+          "column_name": "active",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "1",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 11
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 12
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 13
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "index_name": "items_pkey",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "id"
+          ],
+          "definition": "CREATE UNIQUE INDEX items_pkey ON public.items USING btree (id)"
+        }
+      ],
+      "unique_constraints": [],
+      "check_constraints": [
+        {
+          "constraint_name": "2200_16454_1_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16454_2_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16454_3_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16454_4_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16454_10_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16454_11_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16454_12_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16454_13_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        }
+      ]
+    },
+    {
+      "table_name": "llm_logs",
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "gen_random_uuid()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 1
+        },
+        {
+          "column_name": "prompt_template_id",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 2
+        },
+        {
+          "column_name": "game_id",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 3
+        },
+        {
+          "column_name": "turn_number",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 4
+        },
+        {
+          "column_name": "function_name",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 5
+        },
+        {
+          "column_name": "prompt",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 6
+        },
+        {
+          "column_name": "response",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 7
+        },
+        {
+          "column_name": "metadata",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 8
+        },
+        {
+          "column_name": "execution_time_ms",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 9
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 10
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "index_name": "llm_logs_pkey",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "id"
+          ],
+          "definition": "CREATE UNIQUE INDEX llm_logs_pkey ON public.llm_logs USING btree (id)"
+        }
+      ],
+      "unique_constraints": [],
+      "check_constraints": [
+        {
+          "constraint_name": "2200_16464_1_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16464_5_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16464_6_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16464_7_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16464_10_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        }
+      ]
+    },
+    {
+      "table_name": "mod_story_themes",
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "gen_random_uuid()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 1
+        },
+        {
+          "column_name": "story_theme_key",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 2
+        },
+        {
+          "column_name": "label",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 3
+        },
+        {
+          "column_name": "narrator_template",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 4
+        },
+        {
+          "column_name": "tags",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 5
+        },
+        {
+          "column_name": "active",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "1",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 6
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 7
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 8
+        },
+        {
+          "column_name": "rank",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 9
+        },
+        {
+          "column_name": "default",
+          "data_type": "boolean",
+          "udt_name": "bool",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "false",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 10
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "index_name": "idx_mod_story_themes_active",
+          "index_type": "btree",
+          "is_unique": false,
+          "columns": [
+            "active"
+          ],
+          "definition": "CREATE INDEX idx_mod_story_themes_active ON public.mod_story_themes USING btree (active)"
+        },
+        {
+          "index_name": "idx_mod_story_themes_story_theme_key",
+          "index_type": "btree",
+          "is_unique": false,
+          "columns": [
+            "story_theme_key"
+          ],
+          "definition": "CREATE INDEX idx_mod_story_themes_story_theme_key ON public.mod_story_themes USING btree (story_theme_key)"
+        },
+        {
+          "index_name": "mod_story_themes_default_true_unique",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "NULL"
+          ],
+          "definition": "CREATE UNIQUE INDEX mod_story_themes_default_true_unique ON public.mod_story_themes USING btree ((1)) WHERE (\"default\" = true)"
+        },
+        {
+          "index_name": "mod_story_themes_pkey",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "id"
+          ],
+          "definition": "CREATE UNIQUE INDEX mod_story_themes_pkey ON public.mod_story_themes USING btree (id)"
+        },
+        {
+          "index_name": "mod_story_themes_rank_key",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "rank"
+          ],
+          "definition": "CREATE UNIQUE INDEX mod_story_themes_rank_key ON public.mod_story_themes USING btree (rank)"
+        },
+        {
+          "index_name": "mod_story_themes_story_theme_key_key",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "story_theme_key"
+          ],
+          "definition": "CREATE UNIQUE INDEX mod_story_themes_story_theme_key_key ON public.mod_story_themes USING btree (story_theme_key)"
+        }
+      ],
+      "unique_constraints": [
+        "story_theme_key",
+        "rank"
+      ],
+      "check_constraints": [
+        {
+          "constraint_name": "2200_42284_1_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_42284_2_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_42284_3_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_42284_4_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_42284_5_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_42284_6_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_42284_10_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        }
+      ]
+    },
+    {
+      "table_name": "mod_visual_styles",
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "gen_random_uuid()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 1
+        },
+        {
+          "column_name": "category",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 2
+        },
+        {
+          "column_name": "visual_style_key",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 3
+        },
+        {
+          "column_name": "label",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 4
+        },
+        {
+          "column_name": "exemplified_by",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 5
+        },
+        {
+          "column_name": "modifiers_diffusion",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 6
+        },
+        {
+          "column_name": "modifiers_transformer",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 7
+        },
+        {
+          "column_name": "active",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "1",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 8
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 9
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 10
+        },
+        {
+          "column_name": "rank",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 11
+        },
+        {
+          "column_name": "default",
+          "data_type": "boolean",
+          "udt_name": "bool",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "false",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 12
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "index_name": "idx_mod_visual_styles_active",
+          "index_type": "btree",
+          "is_unique": false,
+          "columns": [
+            "active"
+          ],
+          "definition": "CREATE INDEX idx_mod_visual_styles_active ON public.mod_visual_styles USING btree (active)"
+        },
+        {
+          "index_name": "idx_mod_visual_styles_category",
+          "index_type": "btree",
+          "is_unique": false,
+          "columns": [
+            "category"
+          ],
+          "definition": "CREATE INDEX idx_mod_visual_styles_category ON public.mod_visual_styles USING btree (category)"
+        },
+        {
+          "index_name": "mod_visual_styles_default_true_unique",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "NULL"
+          ],
+          "definition": "CREATE UNIQUE INDEX mod_visual_styles_default_true_unique ON public.mod_visual_styles USING btree ((1)) WHERE (\"default\" = true)"
+        },
+        {
+          "index_name": "mod_visual_styles_pkey",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "id"
+          ],
+          "definition": "CREATE UNIQUE INDEX mod_visual_styles_pkey ON public.mod_visual_styles USING btree (id)"
+        },
+        {
+          "index_name": "mod_visual_styles_rank_key",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "rank"
+          ],
+          "definition": "CREATE UNIQUE INDEX mod_visual_styles_rank_key ON public.mod_visual_styles USING btree (rank)"
+        },
+        {
+          "index_name": "mod_visual_styles_visual_style_key_key",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "visual_style_key"
+          ],
+          "definition": "CREATE UNIQUE INDEX mod_visual_styles_visual_style_key_key ON public.mod_visual_styles USING btree (visual_style_key)"
+        }
+      ],
+      "unique_constraints": [
+        "visual_style_key",
+        "rank"
+      ],
+      "check_constraints": [
+        {
+          "constraint_name": "2200_42265_1_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_42265_2_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_42265_3_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_42265_4_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_42265_5_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_42265_8_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_42265_12_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        }
+      ]
+    },
+    {
+      "table_name": "npc_templates",
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 1
+        },
+        {
+          "column_name": "name",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 2
+        },
+        {
+          "column_name": "role",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 3
+        },
+        {
+          "column_name": "bio",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 4
+        },
+        {
+          "column_name": "starting_affinity",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "0",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 5
+        },
+        {
+          "column_name": "tags",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 6
+        },
+        {
+          "column_name": "active",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "1",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 7
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 8
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 9
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "index_name": "npc_templates_pkey",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "id"
+          ],
+          "definition": "CREATE UNIQUE INDEX npc_templates_pkey ON public.npc_templates USING btree (id)"
+        }
+      ],
+      "unique_constraints": [],
+      "check_constraints": [
+        {
+          "constraint_name": "2200_16473_1_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16473_2_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16473_3_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16473_5_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16473_6_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16473_7_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16473_8_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16473_9_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        }
+      ]
+    },
+    {
+      "table_name": "prompt_templates",
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "gen_random_uuid()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 1
+        },
+        {
+          "column_name": "name",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 2
+        },
+        {
+          "column_name": "content",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 3
+        },
+        {
+          "column_name": "system_content",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 4
+        },
+        {
+          "column_name": "inherit_global_prompt",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "1",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 5
+        },
+        {
+          "column_name": "description",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 6
+        },
+        {
+          "column_name": "version",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "1",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 7
+        },
+        {
+          "column_name": "active",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "1",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 8
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 9
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 10
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "index_name": "prompt_templates_name_unique",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "name"
+          ],
+          "definition": "CREATE UNIQUE INDEX prompt_templates_name_unique ON public.prompt_templates USING btree (name)"
+        },
+        {
+          "index_name": "prompt_templates_pkey",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "id"
+          ],
+          "definition": "CREATE UNIQUE INDEX prompt_templates_pkey ON public.prompt_templates USING btree (id)"
+        }
+      ],
+      "unique_constraints": [
+        "name"
+      ],
+      "check_constraints": [
+        {
+          "constraint_name": "2200_16484_1_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16484_2_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16484_3_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16484_5_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16484_7_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16484_8_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16484_9_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16484_10_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        }
+      ]
+    },
+    {
+      "table_name": "reference_releases",
+      "columns": [
+        {
+          "column_name": "version",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 1
+        },
+        {
+          "column_name": "published_by",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 2
+        },
+        {
+          "column_name": "notes",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 3
+        },
+        {
+          "column_name": "published_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 4
+        },
+        {
+          "column_name": "is_current",
+          "data_type": "integer",
+          "udt_name": "int4",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "0",
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "ordinal_position": 5
+        }
+      ],
+      "primary_keys": [
+        "version"
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "index_name": "reference_releases_pkey",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "version"
+          ],
+          "definition": "CREATE UNIQUE INDEX reference_releases_pkey ON public.reference_releases USING btree (version)"
+        }
+      ],
+      "unique_constraints": [],
+      "check_constraints": [
+        {
+          "constraint_name": "2200_16726_1_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16726_2_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16726_4_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16726_5_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        }
+      ]
+    },
+    {
+      "table_name": "session",
+      "columns": [
+        {
+          "column_name": "sid",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 1
+        },
+        {
+          "column_name": "sess",
+          "data_type": "json",
+          "udt_name": "json",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 2
+        },
+        {
+          "column_name": "expire",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 3
+        }
+      ],
+      "primary_keys": [
+        "sid"
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "index_name": "IDX_session_expire",
+          "index_type": "btree",
+          "is_unique": false,
+          "columns": [
+            "expire"
+          ],
+          "definition": "CREATE INDEX \"IDX_session_expire\" ON public.session USING btree (expire)"
+        },
+        {
+          "index_name": "session_pkey",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "sid"
+          ],
+          "definition": "CREATE UNIQUE INDEX session_pkey ON public.session USING btree (sid)"
+        }
+      ],
+      "unique_constraints": [],
+      "check_constraints": [
+        {
+          "constraint_name": "2200_42563_1_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_42563_2_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_42563_3_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        }
+      ]
+    },
+    {
+      "table_name": "turn_jobs",
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "gen_random_uuid()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 1
+        },
+        {
+          "column_name": "game_id",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 2
+        },
+        {
+          "column_name": "action_payload",
+          "data_type": "jsonb",
+          "udt_name": "jsonb",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 3
+        },
+        {
+          "column_name": "status",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "'pending'::text",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 4
+        },
+        {
+          "column_name": "error",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 5
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "now()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 6
+        },
+        {
+          "column_name": "completed_at",
+          "data_type": "timestamp without time zone",
+          "udt_name": "timestamp",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 7
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "index_name": "idx_turn_jobs_status",
+          "index_type": "btree",
+          "is_unique": false,
+          "columns": [
+            "status",
+            "created_at"
+          ],
+          "definition": "CREATE INDEX idx_turn_jobs_status ON public.turn_jobs USING btree (status, created_at)"
+        },
+        {
+          "index_name": "turn_jobs_pkey",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "id"
+          ],
+          "definition": "CREATE UNIQUE INDEX turn_jobs_pkey ON public.turn_jobs USING btree (id)"
+        }
+      ],
+      "unique_constraints": [],
+      "check_constraints": [
+        {
+          "constraint_name": "2200_16905_1_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16905_2_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16905_3_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16905_4_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16905_6_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        }
+      ]
+    },
+    {
+      "table_name": "users",
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "character varying",
+          "udt_name": "varchar",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": "gen_random_uuid()",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 1
+        },
+        {
+          "column_name": "username",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 2
+        },
+        {
+          "column_name": "password",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "NO",
+          "column_default": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 3
+        },
+        {
+          "column_name": "theme",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": "'DOGE'::text",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 4
+        },
+        {
+          "column_name": "mood",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": "'Humorous and Chaotic'::text",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 5
+        },
+        {
+          "column_name": "style",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": "'game_ega_vga'::text",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 6
+        },
+        {
+          "column_name": "image_model_key",
+          "data_type": "text",
+          "udt_name": "text",
+          "character_maximum_length": null,
+          "is_nullable": "YES",
+          "column_default": "'gpt-image-1-mini'::text",
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "ordinal_position": 7
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "index_name": "users_pkey",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "id"
+          ],
+          "definition": "CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id)"
+        },
+        {
+          "index_name": "users_username_unique",
+          "index_type": "btree",
+          "is_unique": true,
+          "columns": [
+            "username"
+          ],
+          "definition": "CREATE UNIQUE INDEX users_username_unique ON public.users USING btree (username)"
+        }
+      ],
+      "unique_constraints": [
+        "username"
+      ],
+      "check_constraints": [
+        {
+          "constraint_name": "2200_16499_1_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16499_2_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        },
+        {
+          "constraint_name": "2200_16499_3_not_null",
+          "constraint_type": "CHECK",
+          "columns": []
+        }
+      ]
+    }
+  ],
+  "sequences": [],
+  "views": []
+}

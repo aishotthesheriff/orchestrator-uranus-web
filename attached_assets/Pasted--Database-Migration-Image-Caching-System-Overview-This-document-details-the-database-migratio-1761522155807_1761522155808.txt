@@ -1,0 +1,372 @@
+# Database Migration: Image Caching System
+
+## Overview
+
+This document details the database migration required to implement the image caching system for the Uranus Dungeon Guide. The migration adds a new table to store generated image metadata and cache information.
+
+## Migration Details
+
+### New Table: `generated_images`
+
+**Purpose**: Store metadata for cached generated images, enabling intelligent reuse and performance optimization.
+
+**Schema**:
+```sql
+CREATE TABLE generated_images (
+  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+  template_name TEXT NOT NULL,
+  prompt_hash VARCHAR NOT NULL,
+  variables_hash VARCHAR NOT NULL,
+  file_path TEXT NOT NULL,
+  file_size INTEGER NOT NULL,
+  mime_type TEXT NOT NULL DEFAULT 'image/png',
+  scene_fingerprint JSONB NOT NULL,
+  metadata JSONB NOT NULL,
+  game_id VARCHAR,
+  turn_number INTEGER,
+  created_at TIMESTAMP DEFAULT NOW(),
+  accessed_at TIMESTAMP DEFAULT NOW(),
+  access_count INTEGER DEFAULT 1
+);
+```
+
+### Field Descriptions
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | VARCHAR | Primary key, auto-generated UUID |
+| `template_name` | TEXT | Name of the image prompt template used |
+| `prompt_hash` | VARCHAR | SHA-256 hash of the final compiled prompt |
+| `variables_hash` | VARCHAR | SHA-256 hash of the variable values used |
+| `file_path` | TEXT | Relative path to the image file on disk |
+| `file_size` | INTEGER | Size of the image file in bytes |
+| `mime_type` | TEXT | MIME type of the image (default: image/png) |
+| `scene_fingerprint` | JSONB | Complete scene context for similarity detection |
+| `metadata` | JSONB | Additional generation metadata and settings |
+| `game_id` | VARCHAR | ID of the game session (nullable) |
+| `turn_number` | INTEGER | Turn number when generated (nullable) |
+| `created_at` | TIMESTAMP | When the image was first generated |
+| `accessed_at` | TIMESTAMP | When the image was last accessed from cache |
+| `access_count` | INTEGER | Number of times this image has been served from cache |
+
+### Indexes
+
+**Recommended indexes for performance**:
+```sql
+-- Primary lookup for exact cache matches
+CREATE INDEX idx_generated_images_hashes ON generated_images(prompt_hash, variables_hash);
+
+-- Template-based queries and similarity detection
+CREATE INDEX idx_generated_images_template ON generated_images(template_name);
+
+-- Game context queries
+CREATE INDEX idx_generated_images_game ON generated_images(game_id);
+
+-- Access pattern analysis
+CREATE INDEX idx_generated_images_accessed ON generated_images(accessed_at);
+
+-- File cleanup operations
+CREATE INDEX idx_generated_images_created ON generated_images(created_at);
+```
+
+## Migration Steps
+
+### Step 1: Schema Update
+
+**File**: `shared/schema.ts`
+
+Add the new table definition:
+```typescript
+export const generatedImages = pgTable("generated_images", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  templateName: text("template_name").notNull(),
+  promptHash: varchar("prompt_hash").notNull(),
+  variablesHash: varchar("variables_hash").notNull(),
+  filePath: text("file_path").notNull(),
+  fileSize: integer("file_size").notNull(),
+  mimeType: text("mime_type").notNull().default("image/png"),
+  sceneFingerprint: jsonb("scene_fingerprint").notNull(),
+  metadata: jsonb("metadata").notNull(),
+  gameId: varchar("game_id"),
+  turnNumber: integer("turn_number"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  accessedAt: timestamp("accessed_at").notNull().defaultNow(),
+  accessCount: integer("access_count").notNull().default(1),
+});
+```
+
+### Step 2: Type Definitions
+
+Add TypeScript types for the new table:
+```typescript
+export const insertGeneratedImageSchema = createInsertSchema(generatedImages).omit({
+  id: true,
+  createdAt: true,
+  accessedAt: true,
+});
+
+export type InsertGeneratedImage = z.infer<typeof insertGeneratedImageSchema>;
+export type GeneratedImage = typeof generatedImages.$inferSelect;
+```
+
+### Step 3: Database Sync
+
+**Command**: 
+```bash
+npm run db:push
+```
+
+**Alternative** (if npm fails):
+```bash
+npx drizzle-kit push
+```
+
+**Force sync** (if data loss warnings appear):
+```bash
+npm run db:push --force
+```
+
+### Step 4: Storage Directory
+
+**Create directory structure**:
+```bash
+mkdir -p generated_images
+```
+
+**Directory permissions**:
+- Ensure the application has read/write permissions
+- Directory should be created in the project root
+- Images will be stored as: `generated_images/templateName_hash_uuid.png`
+
+## Data Migration Considerations
+
+### Backward Compatibility
+
+- **No data migration required**: This is a new feature addition
+- **Existing games unaffected**: No changes to existing game data
+- **Optional feature**: Image caching is transparent to existing functionality
+
+### Storage Requirements
+
+**Estimated storage per image**:
+- **File size**: ~200KB - 2MB per image (depending on size/quality settings)
+- **Database record**: ~2-5KB per record
+- **Total overhead**: ~5-10KB per cached image
+
+**Growth projections**:
+- **Conservative estimate**: 1MB per 10 cached images
+- **High usage**: 1GB for ~5000 cached images
+- **Storage monitoring**: Implement cleanup policies as needed
+
+## Verification Steps
+
+### 1. Schema Verification
+
+**Check table exists**:
+```sql
+SELECT table_name FROM information_schema.tables 
+WHERE table_name = 'generated_images';
+```
+
+**Verify columns**:
+```sql
+SELECT column_name, data_type, is_nullable 
+FROM information_schema.columns 
+WHERE table_name = 'generated_images';
+```
+
+### 2. Index Verification
+
+**Check indexes created**:
+```sql
+SELECT indexname, indexdef 
+FROM pg_indexes 
+WHERE tablename = 'generated_images';
+```
+
+### 3. Application Verification
+
+**Test database operations**:
+1. Start the application
+2. Generate an image in the game
+3. Check if `generated_images` table has a new record
+4. Verify file is created in `generated_images/` directory
+
+## Rollback Plan
+
+### If Migration Fails
+
+**Immediate rollback**:
+```sql
+DROP TABLE IF EXISTS generated_images;
+```
+
+**Clean up files**:
+```bash
+rm -rf generated_images/
+```
+
+### If Issues Arise After Migration
+
+**Disable caching temporarily**:
+1. Set environment variable: `DISABLE_IMAGE_CACHE=true`
+2. Application will skip cache operations
+3. Investigate and fix issues
+4. Re-enable caching when resolved
+
+## Performance Impact
+
+### Database Impact
+
+**Positive impacts**:
+- Reduces OpenAI API calls (cost savings)
+- Faster image generation for repeated scenes
+- Better user experience
+
+**Potential concerns**:
+- Additional database writes for cache storage
+- Disk space usage for image files
+- Index maintenance overhead
+
+### Monitoring Recommendations
+
+**Key metrics to track**:
+- Cache hit rate (target: >70%)
+- Average generation time improvement
+- Storage usage growth
+- Database query performance
+
+**Alerts to set up**:
+- Storage usage > 80% of available space
+- Cache hit rate < 50%
+- Database query time > 1 second
+
+## Security Considerations
+
+### File Storage
+
+**Access control**:
+- Images stored outside web root
+- No direct HTTP access to image files
+- Application-controlled access only
+
+**File naming**:
+- UUID-based filenames prevent enumeration
+- No sensitive data in filenames
+- Consistent naming pattern for cleanup
+
+### Database Security
+
+**Data sensitivity**:
+- No user-uploaded content
+- Generated images only
+- Metadata contains game state (not sensitive)
+
+**Access patterns**:
+- Read-heavy workload
+- Batch operations for cleanup
+- No real-time critical queries
+
+## Maintenance Tasks
+
+### Regular Cleanup
+
+**Manual cleanup** (as needed):
+```sql
+-- Remove old, unused images
+DELETE FROM generated_images 
+WHERE accessed_at < NOW() - INTERVAL '30 days' 
+AND access_count < 5;
+```
+
+**File cleanup**:
+```bash
+# Remove orphaned files (run after database cleanup)
+find generated_images/ -name "*.png" -mtime +30 -delete
+```
+
+### Monitoring Queries
+
+**Cache performance**:
+```sql
+-- Hit rate by template
+SELECT template_name, 
+       COUNT(*) as total_images,
+       AVG(access_count) as avg_accesses
+FROM generated_images 
+GROUP BY template_name 
+ORDER BY avg_accesses DESC;
+```
+
+**Storage usage**:
+```sql
+-- Total storage used
+SELECT SUM(file_size) as total_bytes,
+       COUNT(*) as total_images,
+       AVG(file_size) as avg_file_size
+FROM generated_images;
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**1. Permission errors**:
+```bash
+# Fix directory permissions
+chmod 755 generated_images/
+chown -R $USER:$USER generated_images/
+```
+
+**2. Database connection issues**:
+- Check database credentials
+- Verify table exists
+- Check for constraint violations
+
+**3. File system issues**:
+- Verify disk space available
+- Check write permissions
+- Monitor for file corruption
+
+### Debug Commands
+
+**Check cache status**:
+```bash
+# Count cached images
+ls generated_images/ | wc -l
+
+# Check total size
+du -sh generated_images/
+
+# List recent images
+ls -lt generated_images/ | head -10
+```
+
+**Database queries**:
+```sql
+-- Recent cache activity
+SELECT template_name, created_at, access_count 
+FROM generated_images 
+ORDER BY created_at DESC 
+LIMIT 10;
+
+-- Cache hit analysis
+SELECT 
+  DATE(created_at) as date,
+  COUNT(*) as new_images,
+  SUM(access_count) as total_accesses
+FROM generated_images 
+GROUP BY DATE(created_at) 
+ORDER BY date DESC;
+```
+
+## Conclusion
+
+This migration adds a robust image caching system that will significantly improve performance and reduce costs. The implementation is designed to be:
+
+- **Non-disruptive**: No impact on existing functionality
+- **Scalable**: Handles growth with proper indexing
+- **Maintainable**: Clear cleanup and monitoring procedures
+- **Secure**: Proper access controls and data handling
+
+The migration should be performed during a maintenance window, though it's designed to be safe to run on a live system.

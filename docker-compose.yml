@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: uranus_dungeon
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    image: uranus-dungeon:${IMAGE_TAG:-latest}
+    labels:
+      - "project=uranus-dungeon"
+      - "environment=${NODE_ENV:-development}"
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/uranus_dungeon
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      AI_INTEGRATIONS_OPENAI_BASE_URL: ${AI_INTEGRATIONS_OPENAI_BASE_URL}
+      AI_INTEGRATIONS_OPENAI_API_KEY: ${AI_INTEGRATIONS_OPENAI_API_KEY}
+      TEST_API_KEY: ${TEST_API_KEY}
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-5001}
+      SESSION_SECRET: ${SESSION_SECRET}
+      HF_TOKEN: ${HF_TOKEN}
+      RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
+      CSRF_ENABLED: ${CSRF_ENABLED:-true}
+      ADMIN_API_KEYS: ${ADMIN_API_KEYS}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-*}
+      CONSOLE_LLM_LOG: false
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${PORT:-5001}:${PORT:-5001}"
+    volumes:
+      - ./generated_images:/app/generated_images
+      - ./attached_assets:/app/attached_assets
+      - ./releases:/app/releases
+      - ./logs:/app/logs
+      - .:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+    driver: local

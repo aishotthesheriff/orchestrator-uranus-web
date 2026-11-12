@@ -1,0 +1,44 @@
+# Cursor AI Rules — Quest to Uranus
+
+## Core Expectations
+- Always read `docs_master/current/SYSTEM_OVERVIEW.md` and `AGENTS.md` before large changes to understand runtime responsibilities.
+- Assume TypeScript, React 18, Express, and Postgres; follow existing patterns rather than inventing new frameworks.
+- Prefer incremental, well-explained changes. If intent is unclear, ask for clarification before editing.
+- Whenever you sense an assertion on my part, you want to try and prove me wrong, before starting work, because it saves us time.
+
+## Code Quality
+- Keep TypeScript strict; ensure types round-trip cleanly across `client/`, `server/`, and `shared/`.
+- Use functional React components with hooks. Reuse logic with custom hooks (`@/hooks/*`) or helpers in `client/src/lib`.
+- Leverage Tailwind CSS utilities and Radix primitives; use `clsx`/`tailwind-merge` for conditional classes.
+- Favor composability and clear naming. Add concise comments only when intent is non-obvious.
+
+## Data & Validation
+- Access the database via `storage` (`server/storage.ts`) and its typed helpers. Avoid ad-hoc queries unless extending storage first.
+- Validate all external input with Zod schemas from `@shared/schema`.
+- Treat reference data (`releases/current`) as the source of truth for prompts, items, and defaults.
+
+## Async Pipelines
+- For turn or image flow changes, ensure consistency across:
+  - HTTP handlers in `server/routes.ts`
+  - Processors in `server/turnJobProcessor.ts` / `server/imageJobProcessor.ts`
+  - Transactions in `storage.processTurnWithTransaction`
+  - Client reactions inside `useGameLogic`
+- Maintain cache-first image behavior and preserve WebSocket notifications.
+
+## Security & Reliability
+- Keep Helmet, CSRF, sessions, and rate limiting intact (`server/index.ts`, `server/middleware/*`).
+- Log and handle errors gracefully; never swallow exceptions silently.
+- Update Prometheus metrics or health checks when altering background work.
+
+## Testing & Tooling
+- Use Vitest for tests. Mirror existing structure under `client/src` or `server/__tests__`.
+- Run lint/build scripts when feasible; point out any skipped steps in the summary.
+
+## Documentation
+- Update relevant files in `docs_master/` whenever behavior, APIs, or agents change.
+- Document any new routes in `API_GUIDE.md` and cross-link module docs when adding subsystems.
+- Summaries for code reviews should highlight kept/changed behaviour, risk, and validation steps.
+
+## Collaboration
+- Ask for approval before introducing new dependencies or large-scale refactors.
+- Reference this rulefile in pull request descriptions when explaining process alignment.

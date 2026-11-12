@@ -1,0 +1,95 @@
+# Cursor AI Rules for Uranus Dungeon Guide
+
+## Code Quality & Style
+
+- Always use TypeScript with strict type checking enabled
+- Use functional components with React hooks (prefer hooks over class components)
+- Follow existing code patterns and conventions in the codebase
+- Use meaningful variable and function names
+- Add JSDoc comments for complex functions and components
+- Keep functions focused and single-purpose when possible
+
+## React Best Practices
+
+- Use custom hooks (`@/hooks/*`) when logic is reusable
+- Prefer composition over inheritance
+- Use React Query (`@tanstack/react-query`) for data fetching and caching
+- Handle loading and error states appropriately
+- Use proper React patterns (useEffect dependencies, cleanup, etc.)
+- Leverage Radix UI components from `@radix-ui/*` for accessible UI components
+
+## Project Structure
+
+- Client code: `client/src/**/*`
+- Server code: `server/**/*`
+- Shared code: `shared/**/*`
+- Use path aliases: `@/*` for `client/src/*` and `@shared/*` for `shared/*`
+
+## Styling
+
+- Use Tailwind CSS classes for styling
+- Leverage `tailwind-merge` and `clsx` for conditional classes
+- Follow existing design patterns and component structure
+- Use `framer-motion` for animations when needed
+
+## Database & Backend
+
+- Use raw SQL queries with `pg` (node-postgres) via the `pool` from `server/db.ts`
+- Always validate input with Zod schemas (`zod` package)
+- Handle database errors gracefully
+- Use JWT-based auth via `server/middleware/jwt.ts` and HttpOnly cookies
+- Access the database through the `storage` instance from `server/storage.ts` which provides typed methods for all data operations
+- Map snake_case database columns to camelCase TypeScript interfaces in storage methods
+
+## Error Handling
+
+- Always include error handling in async operations
+- Provide user-friendly error messages
+- Log errors appropriately for debugging
+- Validate data at API boundaries using Zod
+
+## Code Modification Guidelines
+
+- Before modifying existing code, explain your understanding of its functionality and purpose
+- If unsure about any part of the code's purpose, ask for clarification before modifying or removing it
+- After suggesting changes, provide a summary of:
+  - What has been kept
+  - What has been modified
+  - Why changes were made
+- Always consider the context and potential upstream/downstream impact of each piece of code
+
+## Testing
+
+- Write tests for critical functionality
+- Use Vitest for testing
+- Test both client and server code as appropriate
+
+## Security
+
+- Never hardcode API keys or sensitive data
+- Use environment variables for configuration
+- Validate and sanitize user input
+- Follow security best practices for Express (helmet, rate limiting, etc.)
+
+## Performance
+
+- Optimize images and assets appropriately
+- Use React Query caching effectively
+- Avoid unnecessary re-renders
+- Consider code splitting for large components
+
+## Documentation
+
+- **Keep documentation up to date**: When modifying code, update relevant documentation files in `docs_master/` immediately
+- **Document new features**: When adding new functionality, create or update documentation before or alongside the implementation
+- **Document API changes**: When modifying APIs or endpoints, update `API_GUIDE.md` and related documentation
+- **Update examples**: If code examples in documentation become outdated, update them to reflect current implementation
+- **Check existing docs**: Before making changes, review `docs_master/` for relevant documentation that may need updates
+- **Document breaking changes**: Clearly document any breaking changes in behavior, APIs, or interfaces
+- **JSDoc for code**: Add JSDoc comments for exported functions, classes, and complex logic
+- **README updates**: Update README files when project setup, dependencies, or usage instructions change
+
+## Git
+
+- Write clear, descriptive commit messages
+- Reference issue numbers when applicable

@@ -1,0 +1,1746 @@
+[
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_atari",
+    "label": "Game | Atari",
+    "visual_modifiers": "(Atari 2600:1.4), (blocky sprites:1.3), (limited color palette:1.3), primitive pixels",
+    "exemplified_by": "Pac-Man, Pitfall!, Combat, Adventure"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_amiga",
+    "label": "Game | Amiga",
+    "visual_modifiers": "(Amiga:1.4), (16-bit computer graphics:1.3), (dithered shading:1.3), copper effects",
+    "exemplified_by": "Shadow of the Beast, Turrican, Lemmings, Defender of the Crown"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_ega_vga",
+    "label": "Game | Ega-Vga",
+    "visual_modifiers": "(EGA/VGA:1.4), (DOS game graphics:1.3), (16-color palette:1.3), CRT scanlines",
+    "exemplified_by": "King's Quest, Commander Keen, Prince of Persia, Doom"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_nes",
+    "label": "Game | Nes",
+    "visual_modifiers": "(8-bit graphics:1.4), (NES style:1.3), (limited colors:1.3), chunky pixels",
+    "exemplified_by": "Super Mario Bros, The Legend of Zelda, Mega Man, Metroid"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_genesis",
+    "label": "Game | Genesis",
+    "visual_modifiers": "(Sega Genesis:1.4), (16-bit graphics:1.3), (blast processing:1.2), heavy dithering",
+    "exemplified_by": "Sonic the Hedgehog, Streets of Rage, Golden Axe, Phantasy Star"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_snes",
+    "label": "Game | Snes",
+    "visual_modifiers": "(Super Nintendo:1.4), (16-bit graphics:1.3), (Mode 7 rotation:1.3), smooth dithering",
+    "exemplified_by": "Super Mario World, Chrono Trigger, Super Metroid, Final Fantasy VI"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_ps1",
+    "label": "Game | Ps1",
+    "visual_modifiers": "(PlayStation 1:1.4), (low poly models:1.3), (vertex shading:1.3), texture warping, wobbly geometry",
+    "exemplified_by": "Final Fantasy VII, Metal Gear Solid, Crash Bandicoot, Silent Hill"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_n64",
+    "label": "Game | N64",
+    "visual_modifiers": "(Nintendo 64:1.4), (low poly:1.3), (heavy fog effects:1.3), chunky models, blurred textures",
+    "exemplified_by": "Super Mario 64, The Legend of Zelda: Ocarina of Time, GoldenEye 007, Banjo-Kazooie"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_ps2",
+    "label": "Game | Ps2",
+    "visual_modifiers": "(PlayStation 2:1.4), (early 2000s graphics:1.3), (improved poly count:1.2), texture filtering, sharp edges",
+    "exemplified_by": "Grand Theft Auto: San Andreas, God of War, Shadow of the Colossus, Kingdom Hearts"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_xbox",
+    "label": "Game | Xbox",
+    "visual_modifiers": "(original Xbox:1.4), (6th gen graphics:1.3), (normal mapping:1.2), bump mapping, realistic lighting",
+    "exemplified_by": "Halo: Combat Evolved, Fable, Knights of the Old Republic, Ninja Gaiden"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_gamecube",
+    "label": "Game | Gamecube",
+    "visual_modifiers": "(GameCube:1.4), (stylized 3D:1.3), (cel shading:1.2), vibrant colors, clean textures",
+    "exemplified_by": "The Legend of Zelda: Wind Waker, Super Smash Bros. Melee, Metroid Prime, Luigi's Mansion"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_xbox360",
+    "label": "Game | Xbox360",
+    "visual_modifiers": "(Xbox 360:1.4), (HD graphics:1.3), (normal maps:1.3), shader effects, bloom lighting",
+    "exemplified_by": "Gears of War, BioShock, Mass Effect, Halo 3"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_ps3",
+    "label": "Game | Ps3",
+    "visual_modifiers": "(PlayStation 3:1.4), (HD era:1.3), (high poly:1.2), realistic materials, motion blur",
+    "exemplified_by": "The Last of Us, Uncharted 2, LittleBigPlanet, inFAMOUS"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_wii",
+    "label": "Game | Wii",
+    "visual_modifiers": "(Nintendo Wii:1.4), (motion control era:1.3), (stylized graphics:1.2), soft lighting, family friendly",
+    "exemplified_by": "Wii Sports, Super Mario Galaxy, The Legend of Zelda: Twilight Princess, Xenoblade Chronicles"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_ps4",
+    "label": "Game | Ps4",
+    "visual_modifiers": "(PlayStation 4:1.4), (8th gen graphics:1.3), (physically based rendering:1.3), volumetric lighting",
+    "exemplified_by": "Horizon Zero Dawn, Spider-Man, Bloodborne, Ghost of Tsushima"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_xboxone",
+    "label": "Game | Xboxone",
+    "visual_modifiers": "(Xbox One:1.4), (modern console:1.3), (PBR materials:1.3), detailed textures",
+    "exemplified_by": "Forza Horizon 4, Gears 5, Ori and the Blind Forest, Halo Infinite"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_ps5",
+    "label": "Game | Ps5",
+    "visual_modifiers": "(PlayStation 5:1.4), (ray tracing:1.3), (4K native:1.3), ultra realistic, next-gen lighting",
+    "exemplified_by": "Demon's Souls remake, Ratchet & Clank: Rift Apart, Returnal, Spider-Man: Miles Morales"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_pc_modern",
+    "label": "Game | Pc-Modern",
+    "visual_modifiers": "(modern PC gaming:1.4), (ultra settings:1.3), (ray traced reflections:1.3), extreme detail",
+    "exemplified_by": "Cyberpunk 2077 with ray tracing, Microsoft Flight Simulator, Red Dead Redemption 2 max settings"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_steam_deck",
+    "label": "Game | Steam-Deck",
+    "visual_modifiers": "(Steam Deck:1.4), (portable PC:1.3), (optimized graphics:1.2), handheld performance",
+    "exemplified_by": "Elden Ring on Steam Deck, Vampire Survivors, Hades, Stardew Valley"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_gameboy",
+    "label": "Game | Gameboy",
+    "visual_modifiers": "(Game Boy:1.4), (4 color palette:1.3), (green monochrome:1.3), dot matrix screen",
+    "exemplified_by": "Pokémon Red/Blue, Tetris, The Legend of Zelda: Link's Awakening, Kirby's Dream Land"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "game",
+    "name": "game_arcade",
+    "label": "Game | Arcade",
+    "visual_modifiers": "(arcade cabinet:1.4), (sprite art:1.3), (vibrant colors:1.3), CRT glow, attract mode",
+    "exemplified_by": "Street Fighter II, Pac-Man, Donkey Kong, Mortal Kombat, Galaga"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "photo",
+    "name": "photo_daguerreotype",
+    "label": "Photo | Daguerreotype",
+    "visual_modifiers": "(daguerreotype:1.4), (1850s process:1.3), (sepia tone:1.3), long exposure blur, mirror-like surface",
+    "exemplified_by": "Louis Daguerre's Boulevard du Temple, early portraits by Southworth & Hawes"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "photo",
+    "name": "photo_tintype",
+    "label": "Photo | Tintype",
+    "visual_modifiers": "(tintype:1.4), (wet plate collodion:1.3), (metallic surface:1.2), vignetting, 19th century",
+    "exemplified_by": "Civil War soldier portraits, traveling photographer portraits, Victorian family photos"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "photo",
+    "name": "photo_early_film",
+    "label": "Photo | Early-Film",
+    "visual_modifiers": "(early film:1.4), (gelatin silver:1.3), (grainy black and white:1.3), soft focus, 1920s-1930s",
+    "exemplified_by": "Ansel Adams early work, Dorothea Lange Depression-era, Alfred Stieglitz"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "photo",
+    "name": "photo_golden_age",
+    "label": "Photo | Golden-Age",
+    "visual_modifiers": "(film noir photography:1.4), (1940s-1950s:1.3), (high contrast:1.3), dramatic lighting, deep blacks",
+    "exemplified_by": "Robert Frank's The Americans, Weegee crime scene photos, Life magazine photography"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "photo",
+    "name": "photo_kodachrome",
+    "label": "Photo | Kodachrome",
+    "visual_modifiers": "(Kodachrome film:1.4), (1960s color:1.3), (saturated colors:1.3), warm tones, fine grain",
+    "exemplified_by": "National Geographic 1960s-70s, Steve McCurry, Kodachrome slide shows"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "photo",
+    "name": "photo_seventies",
+    "label": "Photo | Seventies",
+    "visual_modifiers": "(1970s film stock:1.4), (vintage color:1.3), (warm cast:1.2), slight grain, faded look",
+    "exemplified_by": "William Eggleston, Stephen Shore, family vacation slides"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "photo",
+    "name": "photo_eighties",
+    "label": "Photo | Eighties",
+    "visual_modifiers": "(1980s photography:1.4), (color film:1.3), (saturated colors:1.2), typical 80s lighting, bold contrast",
+    "exemplified_by": "Annie Leibovitz celebrity portraits, fashion photography, Cindy Sherman"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "photo",
+    "name": "photo_nineties",
+    "label": "Photo | Nineties",
+    "visual_modifiers": "(1990s film:1.4), (35mm:1.3), (natural colors:1.2), fine grain, balanced exposure",
+    "exemplified_by": "Wolfgang Tillmans, Nan Goldin, grunge era photography, rave culture photos"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "photo",
+    "name": "photo_early_digital",
+    "label": "Photo | Early-Digital",
+    "visual_modifiers": "(early digital camera:1.4), (low megapixel:1.3), (digital noise:1.3), limited dynamic range, 2000s",
+    "exemplified_by": "Early Canon Digital Rebel/Nikon D70 photos, early camera phone pictures"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "photo",
+    "name": "photo_modern",
+    "label": "Photo | Modern",
+    "visual_modifiers": "(modern digital photography:1.4), (high resolution:1.3), (clean image:1.2), computational processing",
+    "exemplified_by": "Contemporary Instagram photography, modern DSLR/mirrorless work, digital fashion photography"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "photo",
+    "name": "photo_ultra_high_res",
+    "label": "Photo | Ultra-High-Res",
+    "visual_modifiers": "(ultra high resolution:1.4), (large format digital:1.3), (extreme detail:1.3), 100+ megapixels",
+    "exemplified_by": "Phase One/Hasselblad H6D commercial work, Andreas Gursky large prints, museum archival photography"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "photo",
+    "name": "photo_flipphone",
+    "label": "Photo | Flipphone",
+    "visual_modifiers": "(flip phone camera:1.4), (1MP:1.3), (heavy noise:1.3), pixelated, low resolution",
+    "exemplified_by": "Motorola RAZR photos circa 2004, early mobile blogging, MySpace profile pictures"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "photo",
+    "name": "photo_early_smartphone",
+    "label": "Photo | Early-Smartphone",
+    "visual_modifiers": "(early smartphone:1.4), (5MP:1.3), (limited dynamic range:1.2), slight noise, 720p",
+    "exemplified_by": "iPhone 4 photos, early Instagram (2010-2012), filtered mobile photography"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "photo",
+    "name": "photo_smartphone",
+    "label": "Photo | Smartphone",
+    "visual_modifiers": "(modern smartphone:1.4), (computational photography:1.3), (HDR processing:1.3), AI enhancement",
+    "exemplified_by": "iPhone 14 Pro/Samsung S23 photos, portrait mode shots, night mode photography"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "photo",
+    "name": "photo_polaroid",
+    "label": "Photo | Polaroid",
+    "visual_modifiers": "(Polaroid instant:1.4), (chemical development:1.3), (square format:1.3), color shift, border frame",
+    "exemplified_by": "Polaroid SX-70 photos, Andy Warhol Polaroids, Impossible Project, vintage party photos"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "photo",
+    "name": "photo_medium_format",
+    "label": "Photo | Medium-Format",
+    "visual_modifiers": "(medium format:1.4), (Hasselblad:1.3), (exceptional detail:1.3), shallow depth of field, tack sharp",
+    "exemplified_by": "Fashion editorial photography, Peter Lindbergh, Richard Avedon studio portraits"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "photo",
+    "name": "photo_imax",
+    "label": "Photo | Imax",
+    "visual_modifiers": "(IMAX format:1.4), (70mm film:1.3), (extreme resolution:1.3), cinematic scale, massive detail",
+    "exemplified_by": "Christopher Nolan films (Dunkirk, Oppenheimer), Planet Earth documentaries, IMAX nature films"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "cartoon",
+    "name": "cartoon_rubber_hose",
+    "label": "Cartoon | Rubber-Hose",
+    "visual_modifiers": "(rubber hose animation:1.4), (1920s style:1.3), (bendy limbs:1.3), pie eyes, circular forms",
+    "exemplified_by": "Steamboat Willie, Felix the Cat, early Mickey Mouse, Oswald the Lucky Rabbit"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "cartoon",
+    "name": "cartoon_fleischer",
+    "label": "Cartoon | Fleischer",
+    "visual_modifiers": "(Fleischer Studios:1.4), (1930s animation:1.3), (rotoscoped movement:1.3), surreal, bouncing",
+    "exemplified_by": "Betty Boop, Popeye, Superman (1941), Koko the Clown"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "cartoon",
+    "name": "cartoon_disney_golden",
+    "label": "Cartoon | Disney-Golden",
+    "visual_modifiers": "(golden age Disney:1.4), (full animation:1.3), (painted backgrounds:1.3), realistic proportions",
+    "exemplified_by": "Snow White, Pinocchio, Fantasia, Bambi, Cinderella"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "cartoon",
+    "name": "cartoon_theatrical_golden",
+    "label": "Cartoon | Theatrical-Golden",
+    "visual_modifiers": "(Warner Bros:1.4), (theatrical cartoon:1.3), (exaggerated expressions:1.3), dynamic action, squash and stretch",
+    "exemplified_by": "Looney Tunes, Bugs Bunny, Tom and Jerry, Tex Avery cartoons"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "cartoon",
+    "name": "cartoon_limited_animation",
+    "label": "Cartoon | Limited-Animation",
+    "visual_modifiers": "(limited animation:1.4), (Hanna-Barbera:1.3), (simple backgrounds:1.3), repeated cycles, flat colors",
+    "exemplified_by": "The Flintstones, Scooby-Doo, The Jetsons, Yogi Bear"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "cartoon",
+    "name": "cartoon_saturday_morning",
+    "label": "Cartoon | Saturday-Morning",
+    "visual_modifiers": "(Saturday morning cartoon:1.4), (1970s TV:1.3), (flat cel colors:1.2), mystery aesthetic",
+    "exemplified_by": "Scooby-Doo Where Are You!, Super Friends, Fat Albert, Schoolhouse Rock"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "cartoon",
+    "name": "cartoon_toy_commercial",
+    "label": "Cartoon | Toy-Commercial",
+    "visual_modifiers": "(1980s toy cartoon:1.4), (action animation:1.3), (bold outlines:1.3), muscular characters, dramatic poses",
+    "exemplified_by": "He-Man, G.I. Joe, Transformers, ThunderCats, Voltron"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "cartoon",
+    "name": "cartoon_disney_renaissance",
+    "label": "Cartoon | Disney-Renaissance",
+    "visual_modifiers": "(Disney Renaissance:1.4), (Broadway musical:1.3), (detailed backgrounds:1.3), theatrical quality",
+    "exemplified_by": "The Little Mermaid, Beauty and the Beast, Aladdin, The Lion King"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "cartoon",
+    "name": "cartoon_gross_out",
+    "label": "Cartoon | Gross-Out",
+    "visual_modifiers": "(gross-out style:1.4), (Ren & Stimpy:1.3), (extreme close-ups:1.3), exaggerated details, surreal",
+    "exemplified_by": "Ren & Stimpy, Rocko's Modern Life, Cow and Chicken, early SpongeBob"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "cartoon",
+    "name": "cartoon_prime_time",
+    "label": "Cartoon | Prime-Time",
+    "visual_modifiers": "(prime time animation:1.4), (sitcom style:1.3), (satirical:1.2), yellow characters, simple designs",
+    "exemplified_by": "The Simpsons, King of the Hill, Beavis and Butt-Head, Daria"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "cartoon",
+    "name": "cartoon_geometric",
+    "label": "Cartoon | Geometric",
+    "visual_modifiers": "(geometric style:1.4), (Cartoon Network 90s:1.3), (bold colors:1.3), anime influences, sharp angles",
+    "exemplified_by": "The Powerpuff Girls, Dexter's Laboratory, Samurai Jack, Johnny Bravo"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "cartoon",
+    "name": "cartoon_nautical_surreal",
+    "label": "Cartoon | Nautical-Surreal",
+    "visual_modifiers": "(nautical cartoon:1.4), (surreal humor:1.3), (expressive faces:1.3), underwater, SpongeBob aesthetic",
+    "exemplified_by": "SpongeBob SquarePants, early seasons with detailed backgrounds and surreal humor"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "cartoon",
+    "name": "cartoon_flash_animation",
+    "label": "Cartoon | Flash-Animation",
+    "visual_modifiers": "(Flash animation:1.4), (limited frames:1.3), (cutaway gags:1.2), vector-based, stiff movement",
+    "exemplified_by": "Family Guy, American Dad, early web animations, Homestar Runner"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "cartoon",
+    "name": "cartoon_adventure",
+    "label": "Cartoon | Adventure",
+    "visual_modifiers": "(adventure cartoon:1.4), (noodly limbs:1.3), (pastel colors:1.3), simple shapes, whimsical",
+    "exemplified_by": "Adventure Time, Regular Show, Gravity Falls, Clarence"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "cartoon",
+    "name": "cartoon_calarts",
+    "label": "Cartoon | Calarts",
+    "visual_modifiers": "(CalArts style:1.4), (rounded designs:1.3), (soft colors:1.2), bean mouth, contemporary",
+    "exemplified_by": "Steven Universe, OK K.O.!, Craig of the Creek, Amphibia"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "cartoon",
+    "name": "cartoon_sci_fi_adult",
+    "label": "Cartoon | Sci-Fi-Adult",
+    "visual_modifiers": "(adult sci-fi cartoon:1.4), (detailed backgrounds:1.3), (expressive animation:1.3), cynical humor",
+    "exemplified_by": "Rick and Morty, Futurama, Final Space, Solar Opposites"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "cartoon",
+    "name": "cartoon_cutout",
+    "label": "Cartoon | Cutout",
+    "visual_modifiers": "(cutout animation:1.4), (construction paper:1.3), (crude simplicity:1.3), flat layers, South Park",
+    "exemplified_by": "South Park, early seasons especially, paper cutout aesthetic"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "cartoon",
+    "name": "cartoon_anime_influenced",
+    "label": "Cartoon | Anime | Influenced",
+    "visual_modifiers": "(western anime:1.4), (Avatar style:1.3), (anime aesthetics:1.3), dynamic action, Eastern influence",
+    "exemplified_by": "Avatar: The Last Airbender, The Legend of Korra, Teen Titans, RWBY, Castlevania"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "anime",
+    "name": "anime_astro_boy",
+    "label": "Anime | Astro-Boy",
+    "visual_modifiers": "(Tezuka style:1.4), (1960s anime:1.3), (limited animation:1.3), simple cel shading, thick outlines",
+    "exemplified_by": "Astro Boy, Kimba the White Lion, Speed Racer, early Osamu Tezuka works"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "anime",
+    "name": "anime_mecha_classic",
+    "label": "Anime | Mecha-Classic",
+    "visual_modifiers": "(1970s mecha:1.4), (hand-painted cels:1.3), (detailed mechanical:1.3), retro sci-fi, space opera",
+    "exemplified_by": "Space Battleship Yamato, Gundam (1979), Mazinger Z, Gatchaman"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "anime",
+    "name": "anime_macross",
+    "label": "Anime | Macross",
+    "visual_modifiers": "(Macross style:1.4), (transforming mecha:1.3), (detailed linework:1.3), space opera, romantic",
+    "exemplified_by": "Super Dimension Fortress Macross (Robotech), Do You Remember Love?"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "anime",
+    "name": "anime_theatrical_detailed",
+    "label": "Anime | Theatrical-Detailed",
+    "visual_modifiers": "(1980s theatrical:1.4), (film quality:1.3), (complex shading:1.3), gritty cyberpunk, extremely detailed",
+    "exemplified_by": "Akira, Ghost in the Shell, Nausicaä, Vampire Hunter D"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "anime",
+    "name": "anime_studio_ghibli",
+    "label": "Anime | Studio-Ghibli",
+    "visual_modifiers": "(Studio Ghibli:1.4), (Miyazaki style:1.3), (painterly backgrounds:1.3), soft lighting, whimsical, naturalistic",
+    "exemplified_by": "My Neighbor Totoro, Spirited Away, Princess Mononoke, Howl's Moving Castle, Kiki's Delivery Service"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "anime",
+    "name": "anime_shonen_action",
+    "label": "Anime | Shonen-Action",
+    "visual_modifiers": "(shonen battle:1.4), (power auras:1.3), (speed lines:1.3), muscular, dynamic action, energy attacks",
+    "exemplified_by": "Dragon Ball Z, Fist of the North Star, Saint Seiya, Yu Yu Hakusho"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "anime",
+    "name": "anime_psychological",
+    "label": "Anime | Psychological",
+    "visual_modifiers": "(1990s psychological:1.4), (digital cel hybrid:1.3), (dramatic shadows:1.3), muted colors, existential",
+    "exemplified_by": "Neon Genesis Evangelion, Serial Experiments Lain, Perfect Blue, Revolutionary Girl Utena"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "anime",
+    "name": "anime_jazz_noir",
+    "label": "Anime | Jazz-Noir",
+    "visual_modifiers": "(jazz aesthetic:1.4), (film noir influence:1.3), (fluid animation:1.3), detailed backgrounds, cinematic",
+    "exemplified_by": "Cowboy Bebop, Samurai Champloo, Baccano!, Michiko & Hatchin"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "anime",
+    "name": "anime_modern_digital",
+    "label": "Anime | Modern-Digital",
+    "visual_modifiers": "(modern anime:1.4), (digital animation:1.3), (dynamic camera:1.3), cinematic lighting, high detail",
+    "exemplified_by": "Attack on Titan, Demon Slayer, Jujutsu Kaisen, Mob Psycho 100, Violet Evergarden"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "illustration",
+    "name": "illustration_victorian",
+    "label": "Illustration | Victorian",
+    "visual_modifiers": "(Victorian illustration:1.4), (engraving style:1.3), (cross-hatching:1.3), ornate borders, sepia tones",
+    "exemplified_by": "Gustave Doré's illustrations, John Tenniel's Alice in Wonderland, Punch magazine"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "illustration",
+    "name": "illustration_art_nouveau",
+    "label": "Illustration | Art-Nouveau",
+    "visual_modifiers": "(Art Nouveau:1.4), (flowing lines:1.3), (organic forms:1.3), decorative patterns, 1890s-1910s",
+    "exemplified_by": "Alphonse Mucha posters, Aubrey Beardsley, Gustav Klimt, Art Nouveau advertisements"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "illustration",
+    "name": "illustration_storybook_golden",
+    "label": "Illustration | Storybook-Golden",
+    "visual_modifiers": "(Golden Age storybook:1.4), (painted illustration:1.3), (detailed linework:1.3), romantic, 1920s",
+    "exemplified_by": "N.C. Wyeth, Arthur Rackham, Kay Nielsen, Edmund Dulac fairy tale illustrations"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "illustration",
+    "name": "illustration_art_deco",
+    "label": "Illustration | Art-Deco",
+    "visual_modifiers": "(Art Deco:1.4), (geometric patterns:1.3), (streamlined:1.3), bold colors, metallic accents, 1920s-1930s",
+    "exemplified_by": "Erté fashion illustrations, Cassandre posters, Art Deco travel posters, Tamara de Lempicka"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "illustration",
+    "name": "illustration_pulp",
+    "label": "Illustration | Pulp",
+    "visual_modifiers": "(pulp magazine:1.4), (lurid colors:1.3), (dramatic composition:1.3), action-packed, 1930s-1950s",
+    "exemplified_by": "Frank R. Paul sci-fi covers, pulp detective magazines, Weird Tales covers, The Shadow"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "illustration",
+    "name": "illustration_mid_century",
+    "label": "Illustration | Mid-Century",
+    "visual_modifiers": "(mid-century modern:1.4), (atomic age:1.3), (simplified forms:1.3), bold graphics, 1950s-1960s",
+    "exemplified_by": "Charley Harper, Mary Blair Disney concept art, Saul Bass posters, vintage advertising"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "illustration",
+    "name": "illustration_psychedelic",
+    "label": "Illustration | Psychedelic",
+    "visual_modifiers": "(psychedelic art:1.4), (swirling patterns:1.3), (vibrant colors:1.3), surreal, 1960s-1970s",
+    "exemplified_by": "Peter Max, Wes Wilson concert posters, Yellow Submarine animation, Rick Griffin"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "illustration",
+    "name": "illustration_airbrush",
+    "label": "Illustration | Airbrush",
+    "visual_modifiers": "(airbrush illustration:1.4), (smooth gradients:1.3), (hyperrealistic:1.3), fantasy art, 1980s",
+    "exemplified_by": "Boris Vallejo, Frank Frazetta, Patrick Nagel, Sorayama, Heavy Metal magazine"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "illustration",
+    "name": "illustration_grunge",
+    "label": "Illustration | Grunge",
+    "visual_modifiers": "(grunge aesthetic:1.4), (distressed textures:1.3), (collage elements:1.3), 1990s alternative",
+    "exemplified_by": "David Carson Ray Gun magazine, Shepard Fairey, early Nirvana/Pearl Jam album art"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "illustration",
+    "name": "illustration_early_digital",
+    "label": "Illustration | Early-Digital",
+    "visual_modifiers": "(early digital:1.4), (vector art:1.3), (gradient mesh:1.3), clean lines, 2000s Adobe",
+    "exemplified_by": "Early Illustrator work, iPod advertisements, web 2.0 graphics, clean corporate design"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "illustration",
+    "name": "illustration_contemporary",
+    "label": "Illustration | Contemporary",
+    "visual_modifiers": "(contemporary editorial:1.4), (diverse styles:1.3), (conceptual:1.2), digital painting, modern",
+    "exemplified_by": "New Yorker covers, Victo Ngai, Malika Favre, James Jean, modern editorial illustration"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "illustration",
+    "name": "illustration_watercolor",
+    "label": "Illustration | Watercolor",
+    "visual_modifiers": "(traditional watercolor:1.4), (soft edges:1.3), (flowing colors:1.3), paper texture, transparent washes",
+    "exemplified_by": "Beatrix Potter, children's book illustrations, botanical watercolors, loose landscape paintings"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "manga",
+    "name": "manga_shonen",
+    "label": "Manga | Shonen",
+    "visual_modifiers": "(shonen manga:1.4), (dynamic action:1.3), (speed lines:1.3), impact effects, bold screentone",
+    "exemplified_by": "Dragon Ball, Naruto, One Piece, My Hero Academia, Bleach"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "manga",
+    "name": "manga_shojo",
+    "label": "Manga | Shojo",
+    "visual_modifiers": "(shojo manga:1.4), (romance focus:1.3), (sparkles and flowers:1.3), soft screentone, expressive eyes, flowing hair",
+    "exemplified_by": "Sailor Moon, Fruits Basket, Ouran High School Host Club, Nana, Kimi ni Todoke"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "manga",
+    "name": "manga_seinen",
+    "label": "Manga | Seinen",
+    "visual_modifiers": "(seinen manga:1.4), (mature themes:1.3), (detailed backgrounds:1.3), realistic proportions, complex shading, gritty",
+    "exemplified_by": "Berserk, Vagabond, Monster, Vinland Saga, Tokyo Ghoul"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "manga",
+    "name": "manga_josei",
+    "label": "Manga | Josei",
+    "visual_modifiers": "(josei manga:1.4), (adult women:1.3), (realistic romance:1.3), subtle emotions, detailed fashion, mature relationships",
+    "exemplified_by": "Paradise Kiss, Honey and Clover, Nodame Cantabile, Princess Jellyfish, Chihayafuru"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "manga",
+    "name": "manga_yaoi",
+    "label": "Manga | Yaoi",
+    "visual_modifiers": "(yaoi manga:1.4), (boys love:1.3), (romantic tension:1.3), beautiful characters, emotional expressions, dramatic panels",
+    "exemplified_by": "Gravitation, Junjou Romantica, Given, Sekaiichi Hatsukoi, Ten Count"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "manga",
+    "name": "manga_horror",
+    "label": "Manga | Horror",
+    "visual_modifiers": "(horror manga:1.4), (Junji Ito style:1.3), (intricate linework:1.3), disturbing details, spiral patterns, unsettling",
+    "exemplified_by": "Uzumaki, Tomie, Gyo, The Enigma of Amigara Fault, I Am a Hero"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "manga",
+    "name": "manga_webtoon",
+    "label": "Manga | Webtoon",
+    "visual_modifiers": "(webtoon:1.4), (vertical scroll:1.3), (full color:1.3), gradient shading, modern clean lines, digital",
+    "exemplified_by": "Tower of God, Solo Leveling, Lore Olympus, True Beauty, The God of High School"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "comic",
+    "name": "comic_golden_age",
+    "label": "Comic | Golden-Age",
+    "visual_modifiers": "(Golden Age comics:1.4), (1940s style:1.3), (bold outlines:1.3), primary colors, halftone dots",
+    "exemplified_by": "Superman (Action Comics #1), Batman (Detective Comics), Captain America, Wonder Woman"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "comic",
+    "name": "comic_silver_age",
+    "label": "Comic | Silver-Age",
+    "visual_modifiers": "(Silver Age comics:1.4), (1960s Marvel:1.3), (dynamic poses:1.3), Ben-Day dots, speech bubbles",
+    "exemplified_by": "Amazing Spider-Man, Fantastic Four, X-Men, Jack Kirby art, Steve Ditko"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "comic",
+    "name": "comic_bronze_age",
+    "label": "Comic | Bronze-Age",
+    "visual_modifiers": "(Bronze Age comics:1.4), (1970s DC:1.3), (darker themes:1.3), detailed backgrounds, dramatic shadows",
+    "exemplified_by": "The Dark Knight Returns, Swamp Thing, Green Lantern/Green Arrow, Conan"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "comic",
+    "name": "comic_modern_superhero",
+    "label": "Comic | Modern-Superhero",
+    "visual_modifiers": "(modern superhero:1.4), (Image Comics:1.3), (hyper-detailed:1.3), dynamic angles, crosshatching",
+    "exemplified_by": "Spawn, The Walking Dead, Saga, Invincible, Jim Lee X-Men"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "comic",
+    "name": "comic_underground",
+    "label": "Comic | Underground",
+    "visual_modifiers": "(underground comix:1.4), (R. Crumb:1.3), (counterculture:1.3), exaggerated features, gritty linework",
+    "exemplified_by": "Zap Comix, Fritz the Cat, Mr. Natural, Fabulous Furry Freak Brothers"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "comic",
+    "name": "comic_indie",
+    "label": "Comic | Indie",
+    "visual_modifiers": "(independent comics:1.4), (alternative:1.3), (experimental:1.3), personal style, black and white",
+    "exemplified_by": "Ghost World, Love and Rockets, Bone, Scott Pilgrim, Blankets"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "comic",
+    "name": "comic_graphic_novel",
+    "label": "Comic | Graphic-Novel",
+    "visual_modifiers": "(graphic novel:1.4), (literary:1.3), (painterly:1.3), serious tone, detailed illustration",
+    "exemplified_by": "Watchmen, Maus, Persepolis, V for Vendetta, Sandman"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "comic",
+    "name": "comic_noir",
+    "label": "Comic | Noir",
+    "visual_modifiers": "(noir comics:1.4), (crime genre:1.3), (high contrast:1.3), dramatic shadows, monochromatic",
+    "exemplified_by": "Sin City, 100 Bullets, Criminal, The Fade Out, Scalped"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "comic",
+    "name": "comic_horror",
+    "label": "Comic | Horror",
+    "visual_modifiers": "(horror comics:1.4), (EC Comics:1.3), (grotesque:1.3), cross-hatching, unsettling imagery",
+    "exemplified_by": "Tales from the Crypt, Creepy, Eerie, Swamp Thing, Hellboy"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "comic",
+    "name": "comic_webcomic",
+    "label": "Comic | Webcomic",
+    "visual_modifiers": "(webcomic:1.4), (digital format:1.3), (simplified art:1.2), scrolling layout, color gradients",
+    "exemplified_by": "Penny Arcade, XKCD, Questionable Content, Girl Genius, Homestuck"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "comic",
+    "name": "comic_newspaper",
+    "label": "Comic | Newspaper",
+    "visual_modifiers": "(newspaper strip:1.4), (syndicated:1.3), (simple linework:1.3), four panels, minimalist",
+    "exemplified_by": "Peanuts, Calvin and Hobbes, Garfield, The Far Side, Dilbert"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "comic",
+    "name": "comic_franco_belgian",
+    "label": "Comic | Franco-Belgian",
+    "visual_modifiers": "(bande dessinée:1.4), (ligne claire:1.3), (detailed backgrounds:1.3), realistic proportions, European",
+    "exemplified_by": "Tintin, Asterix, Lucky Luke, Spirou, Blacksad"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "comic",
+    "name": "comic_italian_fumetti",
+    "label": "Comic | Italian-Fumetti",
+    "visual_modifiers": "(Italian fumetti:1.4), (photo-referenced:1.3), (painted:1.3), realistic, dramatic lighting",
+    "exemplified_by": "Dylan Dog, Tex, Corto Maltese, Martin Mystère, Diabolik"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "comic",
+    "name": "comic_british",
+    "label": "Comic | British",
+    "visual_modifiers": "(British comics:1.4), (2000 AD:1.3), (gritty sci-fi:1.3), dark humor, detailed linework",
+    "exemplified_by": "Judge Dredd, V for Vendetta, Watchmen, Hellblazer, The League of Extraordinary Gentlemen"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "comic",
+    "name": "comic_manhua",
+    "label": "Comic | Manhua",
+    "visual_modifiers": "(Chinese manhua:1.4), (wuxia:1.3), (flowing martial arts:1.3), traditional clothing, dynamic action",
+    "exemplified_by": "The Ravages of Time, Feng Shen Ji, Tales of Demons and Gods, martial arts adaptations"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "comic",
+    "name": "comic_manhwa",
+    "label": "Comic | Manhwa",
+    "visual_modifiers": "(Korean manhwa:1.4), (webtoon format:1.3), (full color:1.3), vertical scroll, modern romance",
+    "exemplified_by": "Tower of God, The Breaker, Solo Leveling, True Beauty, Sweet Home"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "comic",
+    "name": "comic_latin_american",
+    "label": "Comic | Latin-American",
+    "visual_modifiers": "(Latin American comics:1.4), (political satire:1.3), (expressive:1.2), bold colors, social commentary",
+    "exemplified_by": "Mafalda, El Eternauta, Kaliman, Mexican comic books, lucha libre comics"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "comic",
+    "name": "comic_indian",
+    "label": "Comic | Indian",
+    "visual_modifiers": "(Indian comics:1.4), (Amar Chitra Katha:1.3), (mythological:1.3), vibrant colors, traditional clothing",
+    "exemplified_by": "Amar Chitra Katha, Chacha Chaudhary, Nagraj, Dhruva, mythological adaptations"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "comic",
+    "name": "comic_scandinavian",
+    "label": "Comic | Scandinavian",
+    "visual_modifiers": "(Scandinavian comics:1.4), (Nordic noir:1.3), (minimalist:1.3), atmospheric, cold palette",
+    "exemplified_by": "Moomin, Arne Anka, Norwegian/Swedish graphic novels, minimalist Nordic style"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "aesthetic",
+    "name": "aesthetic_deep_fried",
+    "label": "Aesthetic | Deep-Fried",
+    "visual_modifiers": "(deep fried meme:1.4), (extreme compression:1.3), (jpeg artifacts:1.3), oversaturated, distorted, lens flare",
+    "exemplified_by": "Deep fried memes, overly compressed images, distorted emoji memes, ironic meme culture"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "aesthetic",
+    "name": "aesthetic_vaporwave",
+    "label": "Aesthetic | Vaporwave",
+    "visual_modifiers": "(vaporwave:1.4), (90s internet:1.3), (glitch art:1.3), pastel gradients, Greek statues, sunset grid",
+    "exemplified_by": "Macintosh Plus album art, neon palm trees, Roman busts, Windows 95 aesthetics, A E S T H E T I C text"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "aesthetic",
+    "name": "aesthetic_weirdcore",
+    "label": "Aesthetic | Weirdcore",
+    "visual_modifiers": "(weirdcore:1.4), (liminal spaces:1.3), (nostalgic dread:1.3), unsettling, amateur photography, uncanny",
+    "exemplified_by": "Empty malls, backrooms, liminal space photography, unsettling childhood nostalgia, dreamcore"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "aesthetic",
+    "name": "aesthetic_webcore",
+    "label": "Aesthetic | Webcore",
+    "visual_modifiers": "(Y2K aesthetic:1.4), (early internet:1.3), (chaotic layout:1.3), pixel fonts, neon colors, low resolution",
+    "exemplified_by": "GeoCities websites, early 2000s web design, MSN Messenger, Neopets, Flash game aesthetics"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "aesthetic",
+    "name": "aesthetic_glitchcore",
+    "label": "Aesthetic | Glitchcore",
+    "visual_modifiers": "(glitchcore:1.4), (digital corruption:1.3), (RGB shift:1.3), scan lines, data moshing, chromatic aberration",
+    "exemplified_by": "Databending art, corrupted files aesthetic, VHS glitch effects, digital decay art"
+  },
+  {
+    "model_family": "diffuser",
+    "category": "aesthetic",
+    "name": "aesthetic_surreal_meme",
+    "label": "Aesthetic | Surreal-Meme",
+    "visual_modifiers": "(surreal meme:1.4), (internet absurdism:1.3), (nonsensical:1.3), warped proportions, chaotic energy",
+    "exemplified_by": "Surreal memes subreddit, Meme Man, Orang, abstract meme formats, absurdist humor"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_atari",
+    "label": "Game | Atari",
+    "visual_modifiers": "Atari 2600 game graphics with extremely blocky sprites and a very limited color palette, primitive pixel art",
+    "exemplified_by": "Pac-Man, Pitfall!, Combat, Adventure"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_amiga",
+    "label": "Game | Amiga",
+    "visual_modifiers": "Amiga 16-bit computer graphics featuring dithered shading and distinctive copper effects",
+    "exemplified_by": "Shadow of the Beast, Turrican, Lemmings, Defender of the Crown"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_ega_vga",
+    "label": "Game | Ega-Vga",
+    "visual_modifiers": "DOS game graphics in classic EGA/VGA style with a 16-color palette and CRT scanline aesthetic",
+    "exemplified_by": "King's Quest, Commander Keen, Prince of Persia, Doom"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_nes",
+    "label": "Game | Nes",
+    "visual_modifiers": "8-bit NES game graphics with chunky pixels and a characteristically limited color palette",
+    "exemplified_by": "Super Mario Bros, The Legend of Zelda, Mega Man, Metroid"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_genesis",
+    "label": "Game | Genesis",
+    "visual_modifiers": "Sega Genesis 16-bit graphics featuring blast processing effects and heavy dithering",
+    "exemplified_by": "Sonic the Hedgehog, Streets of Rage, Golden Axe, Phantasy Star"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_snes",
+    "label": "Game | Snes",
+    "visual_modifiers": "Super Nintendo 16-bit graphics with Mode 7 rotation effects and smooth dithering",
+    "exemplified_by": "Super Mario World, Chrono Trigger, Super Metroid, Final Fantasy VI"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_ps1",
+    "label": "Game | Ps1",
+    "visual_modifiers": "PlayStation 1 low-poly 3D graphics with vertex shading, warped textures, and wobbly geometry characteristic of early 3D games",
+    "exemplified_by": "Final Fantasy VII, Metal Gear Solid, Crash Bandicoot, Silent Hill"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_n64",
+    "label": "Game | N64",
+    "visual_modifiers": "Nintendo 64 low-poly 3D graphics with heavy fog effects, chunky models, and blurred textures",
+    "exemplified_by": "Super Mario 64, The Legend of Zelda: Ocarina of Time, GoldenEye 007, Banjo-Kazooie"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_ps2",
+    "label": "Game | Ps2",
+    "visual_modifiers": "PlayStation 2 graphics from the early 2000s with improved polygon count, texture filtering, and sharp edges",
+    "exemplified_by": "Grand Theft Auto: San Andreas, God of War, Shadow of the Colossus, Kingdom Hearts"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_xbox",
+    "label": "Game | Xbox",
+    "visual_modifiers": "Original Xbox graphics featuring normal mapping, bump mapping, and realistic lighting effects",
+    "exemplified_by": "Halo: Combat Evolved, Fable, Knights of the Old Republic, Ninja Gaiden"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_gamecube",
+    "label": "Game | Gamecube",
+    "visual_modifiers": "GameCube stylized 3D graphics with cel shading, vibrant colors, and clean textures",
+    "exemplified_by": "The Legend of Zelda: Wind Waker, Super Smash Bros. Melee, Metroid Prime, Luigi's Mansion"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_xbox360",
+    "label": "Game | Xbox360",
+    "visual_modifiers": "Xbox 360 HD graphics with normal maps, advanced shader effects, and bloom lighting",
+    "exemplified_by": "Gears of War, BioShock, Mass Effect, Halo 3"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_ps3",
+    "label": "Game | Ps3",
+    "visual_modifiers": "PlayStation 3 HD era graphics with high polygon counts, realistic materials, and motion blur",
+    "exemplified_by": "The Last of Us, Uncharted 2, LittleBigPlanet, inFAMOUS"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_wii",
+    "label": "Game | Wii",
+    "visual_modifiers": "Nintendo Wii graphics with stylized 3D rendering, soft lighting, and family-friendly aesthetics",
+    "exemplified_by": "Wii Sports, Super Mario Galaxy, The Legend of Zelda: Twilight Princess, Xenoblade Chronicles"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_ps4",
+    "label": "Game | Ps4",
+    "visual_modifiers": "PlayStation 4 eighth generation graphics featuring physically based rendering and volumetric lighting",
+    "exemplified_by": "Horizon Zero Dawn, Spider-Man, Bloodborne, Ghost of Tsushima"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_xboxone",
+    "label": "Game | Xboxone",
+    "visual_modifiers": "Xbox One modern console graphics with PBR materials and highly detailed textures",
+    "exemplified_by": "Forza Horizon 4, Gears 5, Ori and the Blind Forest, Halo Infinite"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_ps5",
+    "label": "Game | Ps5",
+    "visual_modifiers": "PlayStation 5 next-generation graphics with ray tracing, native 4K resolution, and ultra-realistic lighting",
+    "exemplified_by": "Demon's Souls remake, Ratchet & Clank: Rift Apart, Returnal, Spider-Man: Miles Morales"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_pc_modern",
+    "label": "Game | Pc-Modern",
+    "visual_modifiers": "Modern PC gaming on ultra settings with ray traced reflections and extreme detail",
+    "exemplified_by": "Cyberpunk 2077 with ray tracing, Microsoft Flight Simulator, Red Dead Redemption 2 max settings"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_steam_deck",
+    "label": "Game | Steam-Deck",
+    "visual_modifiers": "Steam Deck portable PC graphics optimized for handheld performance",
+    "exemplified_by": "Elden Ring on Steam Deck, Vampire Survivors, Hades, Stardew Valley"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_gameboy",
+    "label": "Game | Gameboy",
+    "visual_modifiers": "Game Boy screen with a distinctive 4-color green monochrome palette on a dot matrix display",
+    "exemplified_by": "Pokémon Red/Blue, Tetris, The Legend of Zelda: Link's Awakening, Kirby's Dream Land"
+  },
+  {
+    "model_family": "transformer",
+    "category": "game",
+    "name": "game_arcade",
+    "label": "Game | Arcade",
+    "visual_modifiers": "Arcade cabinet game graphics with vibrant sprite art, saturated colors, and CRT screen glow",
+    "exemplified_by": "Street Fighter II, Pac-Man, Donkey Kong, Mortal Kombat, Galaga"
+  },
+  {
+    "model_family": "transformer",
+    "category": "photo",
+    "name": "photo_daguerreotype",
+    "label": "Photo | Daguerreotype",
+    "visual_modifiers": "A daguerreotype photograph from the 1850s with sepia tones, long exposure blur, and a distinctive mirror-like surface",
+    "exemplified_by": "Louis Daguerre's Boulevard du Temple, early portraits by Southworth & Hawes"
+  },
+  {
+    "model_family": "transformer",
+    "category": "photo",
+    "name": "photo_tintype",
+    "label": "Photo | Tintype",
+    "visual_modifiers": "A tintype photograph made with wet plate collodion process on a metallic surface, showing characteristic vignetting",
+    "exemplified_by": "Civil War soldier portraits, traveling photographer portraits, Victorian family photos"
+  },
+  {
+    "model_family": "transformer",
+    "category": "photo",
+    "name": "photo_early_film",
+    "label": "Photo | Early-Film",
+    "visual_modifiers": "Early film photography from the 1920s-1930s with grainy black and white tones and soft focus",
+    "exemplified_by": "Ansel Adams early work, Dorothea Lange Depression-era, Alfred Stieglitz"
+  },
+  {
+    "model_family": "transformer",
+    "category": "photo",
+    "name": "photo_golden_age",
+    "label": "Photo | Golden-Age",
+    "visual_modifiers": "Film noir photography from the 1940s-1950s with high contrast, dramatic lighting, and deep blacks",
+    "exemplified_by": "Robert Frank's The Americans, Weegee crime scene photos, Life magazine photography"
+  },
+  {
+    "model_family": "transformer",
+    "category": "photo",
+    "name": "photo_kodachrome",
+    "label": "Photo | Kodachrome",
+    "visual_modifiers": "Kodachrome film photograph from the 1960s with richly saturated colors, warm tones, and fine grain",
+    "exemplified_by": "National Geographic 1960s-70s, Steve McCurry, Kodachrome slide shows"
+  },
+  {
+    "model_family": "transformer",
+    "category": "photo",
+    "name": "photo_seventies",
+    "label": "Photo | Seventies",
+    "visual_modifiers": "1970s film photography with vintage color stock showing a warm cast, slight grain, and faded aesthetic",
+    "exemplified_by": "William Eggleston, Stephen Shore, family vacation slides"
+  },
+  {
+    "model_family": "transformer",
+    "category": "photo",
+    "name": "photo_eighties",
+    "label": "Photo | Eighties",
+    "visual_modifiers": "1980s color film photography with saturated colors, typical period lighting, and bold contrast",
+    "exemplified_by": "Annie Leibovitz celebrity portraits, fashion photography, Cindy Sherman"
+  },
+  {
+    "model_family": "transformer",
+    "category": "photo",
+    "name": "photo_nineties",
+    "label": "Photo | Nineties",
+    "visual_modifiers": "1990s 35mm film photograph with natural colors, fine grain, and balanced exposure",
+    "exemplified_by": "Wolfgang Tillmans, Nan Goldin, grunge era photography, rave culture photos"
+  },
+  {
+    "model_family": "transformer",
+    "category": "photo",
+    "name": "photo_early_digital",
+    "label": "Photo | Early-Digital",
+    "visual_modifiers": "Early 2000s digital camera photograph with low megapixel resolution, visible digital noise, and limited dynamic range",
+    "exemplified_by": "Early Canon Digital Rebel/Nikon D70 photos, early camera phone pictures"
+  },
+  {
+    "model_family": "transformer",
+    "category": "photo",
+    "name": "photo_modern",
+    "label": "Photo | Modern",
+    "visual_modifiers": "Modern high-resolution digital photography with clean image quality and computational processing",
+    "exemplified_by": "Contemporary Instagram photography, modern DSLR/mirrorless work, digital fashion photography"
+  },
+  {
+    "model_family": "transformer",
+    "category": "photo",
+    "name": "photo_ultra_high_res",
+    "label": "Photo | Ultra-High-Res",
+    "visual_modifiers": "Ultra high resolution large format digital photograph with extreme detail and 100+ megapixels",
+    "exemplified_by": "Phase One/Hasselblad H6D commercial work, Andreas Gursky large prints, museum archival photography"
+  },
+  {
+    "model_family": "transformer",
+    "category": "photo",
+    "name": "photo_flipphone",
+    "label": "Photo | Flipphone",
+    "visual_modifiers": "Flip phone camera photograph with heavy noise, pixelation, and very low 1MP resolution",
+    "exemplified_by": "Motorola RAZR photos circa 2004, early mobile blogging, MySpace profile pictures"
+  },
+  {
+    "model_family": "transformer",
+    "category": "photo",
+    "name": "photo_early_smartphone",
+    "label": "Photo | Early-Smartphone",
+    "visual_modifiers": "Early smartphone photograph at 5MP with limited dynamic range, slight noise, and 720p quality",
+    "exemplified_by": "iPhone 4 photos, early Instagram (2010-2012), filtered mobile photography"
+  },
+  {
+    "model_family": "transformer",
+    "category": "photo",
+    "name": "photo_smartphone",
+    "label": "Photo | Smartphone",
+    "visual_modifiers": "Modern smartphone photograph with computational photography, HDR processing, and AI enhancement",
+    "exemplified_by": "iPhone 14 Pro/Samsung S23 photos, portrait mode shots, night mode photography"
+  },
+  {
+    "model_family": "transformer",
+    "category": "photo",
+    "name": "photo_polaroid",
+    "label": "Photo | Polaroid",
+    "visual_modifiers": "Polaroid instant film photograph with chemical development artifacts, square format, and color shift with distinctive border",
+    "exemplified_by": "Polaroid SX-70 photos, Andy Warhol Polaroids, Impossible Project, vintage party photos"
+  },
+  {
+    "model_family": "transformer",
+    "category": "photo",
+    "name": "photo_medium_format",
+    "label": "Photo | Medium-Format",
+    "visual_modifiers": "Medium format photograph taken with a Hasselblad showing exceptional detail, tack sharpness, and shallow depth of field",
+    "exemplified_by": "Fashion editorial photography, Peter Lindbergh, Richard Avedon studio portraits"
+  },
+  {
+    "model_family": "transformer",
+    "category": "photo",
+    "name": "photo_imax",
+    "label": "Photo | Imax",
+    "visual_modifiers": "IMAX format photograph shot on 70mm film with extreme resolution, cinematic scale, and massive detail",
+    "exemplified_by": "Christopher Nolan films (Dunkirk, Oppenheimer), Planet Earth documentaries, IMAX nature films"
+  },
+  {
+    "model_family": "transformer",
+    "category": "cartoon",
+    "name": "cartoon_rubber_hose",
+    "label": "Cartoon | Rubber-Hose",
+    "visual_modifiers": "Rubber hose animation from the 1920s featuring bendy limbs, pie eyes, and circular forms in black and white",
+    "exemplified_by": "Steamboat Willie, Felix the Cat, early Mickey Mouse, Oswald the Lucky Rabbit"
+  },
+  {
+    "model_family": "transformer",
+    "category": "cartoon",
+    "name": "cartoon_fleischer",
+    "label": "Cartoon | Fleischer",
+    "visual_modifiers": "Fleischer Studios 1930s animation with rotoscoped movement, surreal qualities, and bouncing characters",
+    "exemplified_by": "Betty Boop, Popeye, Superman (1941), Koko the Clown"
+  },
+  {
+    "model_family": "transformer",
+    "category": "cartoon",
+    "name": "cartoon_disney_golden",
+    "label": "Cartoon | Disney-Golden",
+    "visual_modifiers": "Golden age Disney animation with full animation, beautifully painted backgrounds, and realistic proportions",
+    "exemplified_by": "Snow White, Pinocchio, Fantasia, Bambi, Cinderella"
+  },
+  {
+    "model_family": "transformer",
+    "category": "cartoon",
+    "name": "cartoon_theatrical_golden",
+    "label": "Cartoon | Theatrical-Golden",
+    "visual_modifiers": "Warner Bros theatrical cartoon with highly exaggerated expressions, dynamic action, and classic squash-and-stretch",
+    "exemplified_by": "Looney Tunes, Bugs Bunny, Tom and Jerry, Tex Avery cartoons"
+  },
+  {
+    "model_family": "transformer",
+    "category": "cartoon",
+    "name": "cartoon_limited_animation",
+    "label": "Cartoon | Limited-Animation",
+    "visual_modifiers": "Hanna-Barbera limited animation style with simple backgrounds, repeated cycles, and flat cel colors",
+    "exemplified_by": "The Flintstones, Scooby-Doo, The Jetsons, Yogi Bear"
+  },
+  {
+    "model_family": "transformer",
+    "category": "cartoon",
+    "name": "cartoon_saturday_morning",
+    "label": "Cartoon | Saturday-Morning",
+    "visual_modifiers": "Saturday morning cartoon from the 1970s with flat cel colors and mystery-solving aesthetic",
+    "exemplified_by": "Scooby-Doo Where Are You!, Super Friends, Fat Albert, Schoolhouse Rock"
+  },
+  {
+    "model_family": "transformer",
+    "category": "cartoon",
+    "name": "cartoon_toy_commercial",
+    "label": "Cartoon | Toy-Commercial",
+    "visual_modifiers": "1980s toy commercial cartoon with bold outlines, muscular characters, and dramatic action poses",
+    "exemplified_by": "He-Man, G.I. Joe, Transformers, ThunderCats, Voltron"
+  },
+  {
+    "model_family": "transformer",
+    "category": "cartoon",
+    "name": "cartoon_disney_renaissance",
+    "label": "Cartoon | Disney-Renaissance",
+    "visual_modifiers": "Disney Renaissance animation with Broadway musical quality, theatrical presentation, and detailed backgrounds",
+    "exemplified_by": "The Little Mermaid, Beauty and the Beast, Aladdin, The Lion King"
+  },
+  {
+    "model_family": "transformer",
+    "category": "cartoon",
+    "name": "cartoon_gross_out",
+    "label": "Cartoon | Gross-Out",
+    "visual_modifiers": "Gross-out cartoon in the style of Ren & Stimpy with extreme close-ups, exaggerated details, and surreal imagery",
+    "exemplified_by": "Ren & Stimpy, Rocko's Modern Life, Cow and Chicken, early SpongeBob"
+  },
+  {
+    "model_family": "transformer",
+    "category": "cartoon",
+    "name": "cartoon_prime_time",
+    "label": "Cartoon | Prime-Time",
+    "visual_modifiers": "Prime time animated sitcom with yellow characters, simple designs, and satirical style",
+    "exemplified_by": "The Simpsons, King of the Hill, Beavis and Butt-Head, Daria"
+  },
+  {
+    "model_family": "transformer",
+    "category": "cartoon",
+    "name": "cartoon_geometric",
+    "label": "Cartoon | Geometric",
+    "visual_modifiers": "Late 90s Cartoon Network geometric style with bold colors, sharp angles, and anime influences",
+    "exemplified_by": "The Powerpuff Girls, Dexter's Laboratory, Samurai Jack, Johnny Bravo"
+  },
+  {
+    "model_family": "transformer",
+    "category": "cartoon",
+    "name": "cartoon_nautical_surreal",
+    "label": "Cartoon | Nautical-Surreal",
+    "visual_modifiers": "Nautical cartoon with surreal humor, highly expressive faces, and underwater SpongeBob aesthetic",
+    "exemplified_by": "SpongeBob SquarePants, early seasons with detailed backgrounds and surreal humor"
+  },
+  {
+    "model_family": "transformer",
+    "category": "cartoon",
+    "name": "cartoon_flash_animation",
+    "label": "Cartoon | Flash-Animation",
+    "visual_modifiers": "Flash animation with limited frames, vector-based art, stiff movement, and cutaway gags",
+    "exemplified_by": "Family Guy, American Dad, early web animations, Homestar Runner"
+  },
+  {
+    "model_family": "transformer",
+    "category": "cartoon",
+    "name": "cartoon_adventure",
+    "label": "Cartoon | Adventure",
+    "visual_modifiers": "Adventure cartoon with noodly limbs, pastel colors, simple shapes, and whimsical design",
+    "exemplified_by": "Adventure Time, Regular Show, Gravity Falls, Clarence"
+  },
+  {
+    "model_family": "transformer",
+    "category": "cartoon",
+    "name": "cartoon_calarts",
+    "label": "Cartoon | Calarts",
+    "visual_modifiers": "CalArts style contemporary cartoon with rounded designs, soft colors, and bean mouth characters",
+    "exemplified_by": "Steven Universe, OK K.O.!, Craig of the Creek, Amphibia"
+  },
+  {
+    "model_family": "transformer",
+    "category": "cartoon",
+    "name": "cartoon_sci_fi_adult",
+    "label": "Cartoon | Sci-Fi-Adult",
+    "visual_modifiers": "Adult animated sci-fi cartoon with detailed backgrounds, expressive animation, and cynical humor",
+    "exemplified_by": "Rick and Morty, Futurama, Final Space, Solar Opposites"
+  },
+  {
+    "model_family": "transformer",
+    "category": "cartoon",
+    "name": "cartoon_cutout",
+    "label": "Cartoon | Cutout",
+    "visual_modifiers": "Cutout animation in the style of South Park using construction paper aesthetic, crude simplicity, and flat layers",
+    "exemplified_by": "South Park, early seasons especially, paper cutout aesthetic"
+  },
+  {
+    "model_family": "transformer",
+    "category": "cartoon",
+    "name": "cartoon_anime_influenced",
+    "label": "Cartoon | Anime | Influenced",
+    "visual_modifiers": "Western anime-influenced animation in the style of Avatar with anime aesthetics, dynamic action, and Eastern influence",
+    "exemplified_by": "Avatar: The Last Airbender, The Legend of Korra, Teen Titans, RWBY, Castlevania"
+  },
+  {
+    "model_family": "transformer",
+    "category": "anime",
+    "name": "anime_astro_boy",
+    "label": "Anime | Astro-Boy",
+    "visual_modifiers": "Tezuka style anime from the 1960s with limited animation, simple cel shading, and thick outlines",
+    "exemplified_by": "Astro Boy, Kimba the White Lion, Speed Racer, early Osamu Tezuka works"
+  },
+  {
+    "model_family": "transformer",
+    "category": "anime",
+    "name": "anime_mecha_classic",
+    "label": "Anime | Mecha-Classic",
+    "visual_modifiers": "1970s classic mecha anime with hand-painted cels, detailed mechanical designs, and retro sci-fi aesthetic",
+    "exemplified_by": "Space Battleship Yamato, Gundam (1979), Mazinger Z, Gatchaman"
+  },
+  {
+    "model_family": "transformer",
+    "category": "anime",
+    "name": "anime_macross",
+    "label": "Anime | Macross",
+    "visual_modifiers": "Macross style anime featuring transforming mecha, detailed linework, and space opera romanticism",
+    "exemplified_by": "Super Dimension Fortress Macross (Robotech), Do You Remember Love?"
+  },
+  {
+    "model_family": "transformer",
+    "category": "anime",
+    "name": "anime_theatrical_detailed",
+    "label": "Anime | Theatrical-Detailed",
+    "visual_modifiers": "1980s theatrical anime with film quality, complex shading, gritty cyberpunk aesthetic, and extreme detail",
+    "exemplified_by": "Akira, Ghost in the Shell, Nausicaä, Vampire Hunter D"
+  },
+  {
+    "model_family": "transformer",
+    "category": "anime",
+    "name": "anime_studio_ghibli",
+    "label": "Anime | Studio-Ghibli",
+    "visual_modifiers": "Studio Ghibli anime in Miyazaki's style with painterly backgrounds, soft lighting, whimsical naturalistic detail",
+    "exemplified_by": "My Neighbor Totoro, Spirited Away, Princess Mononoke, Howl's Moving Castle, Kiki's Delivery Service"
+  },
+  {
+    "model_family": "transformer",
+    "category": "anime",
+    "name": "anime_shonen_action",
+    "label": "Anime | Shonen-Action",
+    "visual_modifiers": "Shonen battle anime with glowing power auras, intense speed lines, muscular characters, and dynamic energy attacks",
+    "exemplified_by": "Dragon Ball Z, Fist of the North Star, Saint Seiya, Yu Yu Hakusho"
+  },
+  {
+    "model_family": "transformer",
+    "category": "anime",
+    "name": "anime_psychological",
+    "label": "Anime | Psychological",
+    "visual_modifiers": "1990s psychological anime with digital cel hybrid technique, dramatic shadows, muted colors, and existential themes",
+    "exemplified_by": "Neon Genesis Evangelion, Serial Experiments Lain, Perfect Blue, Revolutionary Girl Utena"
+  },
+  {
+    "model_family": "transformer",
+    "category": "anime",
+    "name": "anime_jazz_noir",
+    "label": "Anime | Jazz-Noir",
+    "visual_modifiers": "Anime with jazz aesthetic and film noir influence, featuring fluid animation, detailed backgrounds, and cinematic style",
+    "exemplified_by": "Cowboy Bebop, Samurai Champloo, Baccano!, Michiko & Hatchin"
+  },
+  {
+    "model_family": "transformer",
+    "category": "anime",
+    "name": "anime_modern_digital",
+    "label": "Anime | Modern-Digital",
+    "visual_modifiers": "Modern digital anime with dynamic camera movements, cinematic lighting, and high detail throughout",
+    "exemplified_by": "Attack on Titan, Demon Slayer, Jujutsu Kaisen, Mob Psycho 100, Violet Evergarden"
+  },
+  {
+    "model_family": "transformer",
+    "category": "illustration",
+    "name": "illustration_victorian",
+    "label": "Illustration | Victorian",
+    "visual_modifiers": "Victorian era illustration in engraving style with intricate cross-hatching, ornate borders, and sepia tones",
+    "exemplified_by": "Gustave Doré's illustrations, John Tenniel's Alice in Wonderland, Punch magazine"
+  },
+  {
+    "model_family": "transformer",
+    "category": "illustration",
+    "name": "illustration_art_nouveau",
+    "label": "Illustration | Art-Nouveau",
+    "visual_modifiers": "Art Nouveau illustration from the 1890s-1910s featuring flowing lines, organic forms, and decorative patterns",
+    "exemplified_by": "Alphonse Mucha posters, Aubrey Beardsley, Gustav Klimt, Art Nouveau advertisements"
+  },
+  {
+    "model_family": "transformer",
+    "category": "illustration",
+    "name": "illustration_storybook_golden",
+    "label": "Illustration | Storybook-Golden",
+    "visual_modifiers": "Golden Age storybook illustration from the 1920s with painted quality, romantic themes, and detailed linework",
+    "exemplified_by": "N.C. Wyeth, Arthur Rackham, Kay Nielsen, Edmund Dulac fairy tale illustrations"
+  },
+  {
+    "model_family": "transformer",
+    "category": "illustration",
+    "name": "illustration_art_deco",
+    "label": "Illustration | Art-Deco",
+    "visual_modifiers": "Art Deco illustration from the 1920s-1930s with geometric patterns, streamlined forms, bold colors, and metallic accents",
+    "exemplified_by": "Erté fashion illustrations, Cassandre posters, Art Deco travel posters, Tamara de Lempicka"
+  },
+  {
+    "model_family": "transformer",
+    "category": "illustration",
+    "name": "illustration_pulp",
+    "label": "Illustration | Pulp",
+    "visual_modifiers": "Pulp magazine illustration from the 1930s-1950s with lurid colors, dramatic composition, and action-packed scenes",
+    "exemplified_by": "Frank R. Paul sci-fi covers, pulp detective magazines, Weird Tales covers, The Shadow"
+  },
+  {
+    "model_family": "transformer",
+    "category": "illustration",
+    "name": "illustration_mid_century",
+    "label": "Illustration | Mid-Century",
+    "visual_modifiers": "Mid-century modern illustration from the 1950s-1960s with atomic age aesthetic, simplified forms, and bold graphics",
+    "exemplified_by": "Charley Harper, Mary Blair Disney concept art, Saul Bass posters, vintage advertising"
+  },
+  {
+    "model_family": "transformer",
+    "category": "illustration",
+    "name": "illustration_psychedelic",
+    "label": "Illustration | Psychedelic",
+    "visual_modifiers": "Psychedelic art from the 1960s-1970s with swirling patterns, vibrant colors, and surreal imagery",
+    "exemplified_by": "Peter Max, Wes Wilson concert posters, Yellow Submarine animation, Rick Griffin"
+  },
+  {
+    "model_family": "transformer",
+    "category": "illustration",
+    "name": "illustration_airbrush",
+    "label": "Illustration | Airbrush",
+    "visual_modifiers": "1980s airbrush illustration with smooth gradients, hyperrealistic rendering, and fantasy art quality",
+    "exemplified_by": "Boris Vallejo, Frank Frazetta, Patrick Nagel, Sorayama, Heavy Metal magazine"
+  },
+  {
+    "model_family": "transformer",
+    "category": "illustration",
+    "name": "illustration_grunge",
+    "label": "Illustration | Grunge",
+    "visual_modifiers": "1990s illustration with grunge aesthetic, distressed textures, and collage elements",
+    "exemplified_by": "David Carson Ray Gun magazine, Shepard Fairey, early Nirvana/Pearl Jam album art"
+  },
+  {
+    "model_family": "transformer",
+    "category": "illustration",
+    "name": "illustration_early_digital",
+    "label": "Illustration | Early-Digital",
+    "visual_modifiers": "Early digital illustration from the 2000s in vector art style with clean lines, gradient mesh, and Adobe aesthetic",
+    "exemplified_by": "Early Illustrator work, iPod advertisements, web 2.0 graphics, clean corporate design"
+  },
+  {
+    "model_family": "transformer",
+    "category": "illustration",
+    "name": "illustration_contemporary",
+    "label": "Illustration | Contemporary",
+    "visual_modifiers": "Contemporary editorial illustration with diverse artistic styles, conceptual approach, and modern digital painting",
+    "exemplified_by": "New Yorker covers, Victo Ngai, Malika Favre, James Jean, modern editorial illustration"
+  },
+  {
+    "model_family": "transformer",
+    "category": "illustration",
+    "name": "illustration_watercolor",
+    "label": "Illustration | Watercolor",
+    "visual_modifiers": "Traditional watercolor illustration with soft edges, flowing transparent colors, and visible paper texture",
+    "exemplified_by": "Beatrix Potter, children's book illustrations, botanical watercolors, loose landscape paintings"
+  },
+  {
+    "model_family": "transformer",
+    "category": "manga",
+    "name": "manga_shonen",
+    "label": "Manga | Shonen",
+    "visual_modifiers": "Shonen manga with dynamic action scenes, bold speed lines, dramatic impact effects, and heavy screentone",
+    "exemplified_by": "Dragon Ball, Naruto, One Piece, My Hero Academia, Bleach"
+  },
+  {
+    "model_family": "transformer",
+    "category": "manga",
+    "name": "manga_shojo",
+    "label": "Manga | Shojo",
+    "visual_modifiers": "Shojo manga focused on romance with sparkles, flowers, soft screentone, expressive eyes, and flowing hair",
+    "exemplified_by": "Sailor Moon, Fruits Basket, Ouran High School Host Club, Nana, Kimi ni Todoke"
+  },
+  {
+    "model_family": "transformer",
+    "category": "manga",
+    "name": "manga_seinen",
+    "label": "Manga | Seinen",
+    "visual_modifiers": "Seinen manga for mature audiences with detailed backgrounds, realistic proportions, complex shading, and gritty atmosphere",
+    "exemplified_by": "Berserk, Vagabond, Monster, Vinland Saga, Tokyo Ghoul"
+  },
+  {
+    "model_family": "transformer",
+    "category": "manga",
+    "name": "manga_josei",
+    "label": "Manga | Josei",
+    "visual_modifiers": "Josei manga for adult women with realistic romance, subtle emotions, detailed fashion, and mature relationship themes",
+    "exemplified_by": "Paradise Kiss, Honey and Clover, Nodame Cantabile, Princess Jellyfish, Chihayafuru"
+  },
+  {
+    "model_family": "transformer",
+    "category": "manga",
+    "name": "manga_yaoi",
+    "label": "Manga | Yaoi",
+    "visual_modifiers": "Yaoi boys love manga with romantic tension, beautiful character designs, emotional expressions, and dramatic panel layouts",
+    "exemplified_by": "Gravitation, Junjou Romantica, Given, Sekaiichi Hatsukoi, Ten Count"
+  },
+  {
+    "model_family": "transformer",
+    "category": "manga",
+    "name": "manga_horror",
+    "label": "Manga | Horror",
+    "visual_modifiers": "Horror manga in Junji Ito's style with intricate linework, disturbing details, spiral patterns, and deeply unsettling imagery",
+    "exemplified_by": "Uzumaki, Tomie, Gyo, The Enigma of Amigara Fault, I Am a Hero"
+  },
+  {
+    "model_family": "transformer",
+    "category": "manga",
+    "name": "manga_webtoon",
+    "label": "Manga | Webtoon",
+    "visual_modifiers": "Modern webtoon with vertical scroll format, full color throughout, gradient shading, and clean digital lines",
+    "exemplified_by": "Tower of God, Solo Leveling, Lore Olympus, True Beauty, The God of High School"
+  },
+  {
+    "model_family": "transformer",
+    "category": "comic",
+    "name": "comic_golden_age",
+    "label": "Comic | Golden-Age",
+    "visual_modifiers": "Golden Age comic book from the 1940s with bold outlines, primary colors, and visible halftone dots",
+    "exemplified_by": "Superman (Action Comics #1), Batman (Detective Comics), Captain America, Wonder Woman"
+  },
+  {
+    "model_family": "transformer",
+    "category": "comic",
+    "name": "comic_silver_age",
+    "label": "Comic | Silver-Age",
+    "visual_modifiers": "Silver Age comic book from the 1960s in Marvel style with dynamic poses, Ben-Day dots, and speech bubbles",
+    "exemplified_by": "Amazing Spider-Man, Fantastic Four, X-Men, Jack Kirby art, Steve Ditko"
+  },
+  {
+    "model_family": "transformer",
+    "category": "comic",
+    "name": "comic_bronze_age",
+    "label": "Comic | Bronze-Age",
+    "visual_modifiers": "Bronze Age comic book from the 1970s with darker themes, detailed backgrounds, and dramatic shadows",
+    "exemplified_by": "The Dark Knight Returns, Swamp Thing, Green Lantern/Green Arrow, Conan"
+  },
+  {
+    "model_family": "transformer",
+    "category": "comic",
+    "name": "comic_modern_superhero",
+    "label": "Comic | Modern-Superhero",
+    "visual_modifiers": "Modern superhero comic book with hyper-detailed art, dynamic angles, and extensive crosshatching",
+    "exemplified_by": "Spawn, The Walking Dead, Saga, Invincible, Jim Lee X-Men"
+  },
+  {
+    "model_family": "transformer",
+    "category": "comic",
+    "name": "comic_underground",
+    "label": "Comic | Underground",
+    "visual_modifiers": "Underground comix in R. Crumb's style with counterculture themes, exaggerated features, and gritty linework",
+    "exemplified_by": "Zap Comix, Fritz the Cat, Mr. Natural, Fabulous Furry Freak Brothers"
+  },
+  {
+    "model_family": "transformer",
+    "category": "comic",
+    "name": "comic_indie",
+    "label": "Comic | Indie",
+    "visual_modifiers": "Independent alternative comic with experimental approach, personal artistic style, and black and white rendering",
+    "exemplified_by": "Ghost World, Love and Rockets, Bone, Scott Pilgrim, Blankets"
+  },
+  {
+    "model_family": "transformer",
+    "category": "comic",
+    "name": "comic_graphic_novel",
+    "label": "Comic | Graphic-Novel",
+    "visual_modifiers": "Literary graphic novel with painterly quality, serious tone, and detailed illustration throughout",
+    "exemplified_by": "Watchmen, Maus, Persepolis, V for Vendetta, Sandman"
+  },
+  {
+    "model_family": "transformer",
+    "category": "comic",
+    "name": "comic_noir",
+    "label": "Comic | Noir",
+    "visual_modifiers": "Noir crime comic with high contrast, dramatic shadows, and monochromatic color scheme",
+    "exemplified_by": "Sin City, 100 Bullets, Criminal, The Fade Out, Scalped"
+  },
+  {
+    "model_family": "transformer",
+    "category": "comic",
+    "name": "comic_horror",
+    "label": "Comic | Horror",
+    "visual_modifiers": "Horror comic in EC Comics style with grotesque imagery, cross-hatching technique, and unsettling visuals",
+    "exemplified_by": "Tales from the Crypt, Creepy, Eerie, Swamp Thing, Hellboy"
+  },
+  {
+    "model_family": "transformer",
+    "category": "comic",
+    "name": "comic_webcomic",
+    "label": "Comic | Webcomic",
+    "visual_modifiers": "Digital webcomic with simplified art, scrolling layout format, and color gradients",
+    "exemplified_by": "Penny Arcade, XKCD, Questionable Content, Girl Genius, Homestuck"
+  },
+  {
+    "model_family": "transformer",
+    "category": "comic",
+    "name": "comic_newspaper",
+    "label": "Comic | Newspaper",
+    "visual_modifiers": "Syndicated newspaper comic strip with simple linework, four-panel layout, and minimalist style",
+    "exemplified_by": "Peanuts, Calvin and Hobbes, Garfield, The Far Side, Dilbert"
+  },
+  {
+    "model_family": "transformer",
+    "category": "comic",
+    "name": "comic_franco_belgian",
+    "label": "Comic | Franco-Belgian",
+    "visual_modifiers": "Franco-Belgian bande dessinée with ligne claire style, detailed backgrounds, and realistic proportions",
+    "exemplified_by": "Tintin, Asterix, Lucky Luke, Spirou, Blacksad"
+  },
+  {
+    "model_family": "transformer",
+    "category": "comic",
+    "name": "comic_italian_fumetti",
+    "label": "Comic | Italian-Fumetti",
+    "visual_modifiers": "Italian fumetti with photo-referenced art, painted quality, realistic rendering, and dramatic lighting",
+    "exemplified_by": "Dylan Dog, Tex, Corto Maltese, Martin Mystère, Diabolik"
+  },
+  {
+    "model_family": "transformer",
+    "category": "comic",
+    "name": "comic_british",
+    "label": "Comic | British",
+    "visual_modifiers": "British comic in 2000 AD style with gritty sci-fi aesthetic, dark humor, and detailed linework",
+    "exemplified_by": "Judge Dredd, V for Vendetta, Watchmen, Hellblazer, The League of Extraordinary Gentlemen"
+  },
+  {
+    "model_family": "transformer",
+    "category": "comic",
+    "name": "comic_manhua",
+    "label": "Comic | Manhua",
+    "visual_modifiers": "Chinese manhua featuring flowing wuxia martial arts, traditional clothing, and dynamic action",
+    "exemplified_by": "The Ravages of Time, Feng Shen Ji, Tales of Demons and Gods, martial arts adaptations"
+  },
+  {
+    "model_family": "transformer",
+    "category": "comic",
+    "name": "comic_manhwa",
+    "label": "Comic | Manhwa",
+    "visual_modifiers": "Korean manhwa in webtoon format with full color, vertical scrolling layout, and modern romance themes",
+    "exemplified_by": "Tower of God, The Breaker, Solo Leveling, True Beauty, Sweet Home"
+  },
+  {
+    "model_family": "transformer",
+    "category": "comic",
+    "name": "comic_latin_american",
+    "label": "Comic | Latin-American",
+    "visual_modifiers": "Latin American comic with political satire, expressive style, bold colors, and social commentary",
+    "exemplified_by": "Mafalda, El Eternauta, Kaliman, Mexican comic books, lucha libre comics"
+  },
+  {
+    "model_family": "transformer",
+    "category": "comic",
+    "name": "comic_indian",
+    "label": "Comic | Indian",
+    "visual_modifiers": "Indian comic book like Amar Chitra Katha with mythological themes, vibrant colors, and traditional clothing",
+    "exemplified_by": "Amar Chitra Katha, Chacha Chaudhary, Nagraj, Dhruva, mythological adaptations"
+  },
+  {
+    "model_family": "transformer",
+    "category": "comic",
+    "name": "comic_scandinavian",
+    "label": "Comic | Scandinavian",
+    "visual_modifiers": "Scandinavian comic with Nordic noir aesthetic, minimalist approach, atmospheric mood, and cold color palette",
+    "exemplified_by": "Moomin, Arne Anka, Norwegian/Swedish graphic novels, minimalist Nordic style"
+  },
+  {
+    "model_family": "transformer",
+    "category": "aesthetic",
+    "name": "aesthetic_deep_fried",
+    "label": "Aesthetic | Deep-Fried",
+    "visual_modifiers": "Deep fried meme aesthetic with extreme compression, heavy jpeg artifacts, oversaturation, distortion, and lens flare",
+    "exemplified_by": "Deep fried memes, overly compressed images, distorted emoji memes, ironic meme culture"
+  },
+  {
+    "model_family": "transformer",
+    "category": "aesthetic",
+    "name": "aesthetic_vaporwave",
+    "label": "Aesthetic | Vaporwave",
+    "visual_modifiers": "Vaporwave aesthetic inspired by 90s internet with glitch art, pastel gradients, Greek statues, palm trees, and sunset grid",
+    "exemplified_by": "Macintosh Plus album art, neon palm trees, Roman busts, Windows 95 aesthetics, A E S T H E T I C text"
+  },
+  {
+    "model_family": "transformer",
+    "category": "aesthetic",
+    "name": "aesthetic_weirdcore",
+    "label": "Aesthetic | Weirdcore",
+    "visual_modifiers": "Weirdcore aesthetic featuring liminal spaces, nostalgic dread, unsettling atmosphere, amateur photography feel, and uncanny imagery",
+    "exemplified_by": "Empty malls, backrooms, liminal space photography, unsettling childhood nostalgia, dreamcore"
+  },
+  {
+    "model_family": "transformer",
+    "category": "aesthetic",
+    "name": "aesthetic_webcore",
+    "label": "Aesthetic | Webcore",
+    "visual_modifiers": "Y2K early internet aesthetic with chaotic layout, pixel fonts, neon colors, low resolution, and scattered elements",
+    "exemplified_by": "GeoCities websites, early 2000s web design, MSN Messenger, Neopets, Flash game aesthetics"
+  },
+  {
+    "model_family": "transformer",
+    "category": "aesthetic",
+    "name": "aesthetic_glitchcore",
+    "label": "Aesthetic | Glitchcore",
+    "visual_modifiers": "Glitchcore aesthetic with digital corruption, RGB color shift, scan lines, data moshing, and chromatic aberration",
+    "exemplified_by": "Databending art, corrupted files aesthetic, VHS glitch effects, digital decay art"
+  },
+  {
+    "model_family": "transformer",
+    "category": "aesthetic",
+    "name": "aesthetic_surreal_meme",
+    "label": "Aesthetic | Surreal-Meme",
+    "visual_modifiers": "Surreal meme aesthetic with internet absurdism, nonsensical composition, warped proportions, random text, and chaotic energy",
+    "exemplified_by": "Surreal memes subreddit, Meme Man, Orang, abstract meme formats, absurdist humor"
+  }
+]

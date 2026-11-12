@@ -1,0 +1,85 @@
+Daily Resource Usage System - Implementation Plan
+Overview
+This document outlines the detailed implementation plan for adding daily resource consumption mechanics to the Uranus Dungeon Guide game. The system will automatically consume resources each day, creating strategic depth and time pressure while maintaining compatibility with existing game mechanics.
+Current System Analysis
+Existing Stat System
+Core Stats: hull, oxygen, fuel, food, morale, weirdness
+Stat Ranges: 0-100 (except weirdness: 0-5)
+Change Mechanism: Delta strings (e.g., "fuel-5,morale-1")
+Application: applyDelta() function in gameEngine.ts
+Day Progression: Every 2 turns (turnNumber % 2 === 0)
+Current Integration Points
+Event System: Events modify stats via passEffect/failEffect
+Action System: Player actions have base consequences
+Item System: Equipped items provide scene-based stat effects
+Turn System: Stats are displayed in turn delta arrays
+Implementation Plan
+Phase 1: Core Daily Consumption System
+1.1 Add Daily Consumption Configuration
+File: server/gameEngine.ts
+1.2 Create Daily Consumption Calculation Function
+File: server/gameEngine.ts
+1.3 Update Schema for Item Efficiency
+File: shared/schema.ts
+Phase 2: Integration with Game Flow
+2.1 Modify Day Advancement Logic
+File: server/routes.ts (lines 234-238)
+2.2 Update Turn Creation Logic
+File: server/routes.ts (lines 248-256)
+2.3 Update GameState Interface
+File: shared/schema.ts
+Phase 3: Enhanced Features
+3.1 Resource Efficiency Items
+File: server/seedItems.ts
+3.2 Dynamic Consumption Events
+File: server/seedEvents.ts
+3.3 Consumption Tracking and Analytics
+File: server/gameEngine.ts
+Phase 4: UI Integration
+4.1 Update Stat Display Components
+File: client/src/components/StatBar.tsx
+}
+  <div className="text-xs text-gray-500">
+4.2 Add Consumption Summary Component
+File: client/src/components/ConsumptionSummary.tsx
+Phase 5: Testing and Validation
+5.1 Unit Tests
+File: server/gameEngine.test.ts
+5.2 Integration Tests
+File: server/gameEngine.integration.test.ts
+Implementation Timeline
+Week 1: Core System
+[ ] Add daily consumption configuration
+[ ] Implement calculation functions
+[ ] Update schema interfaces
+[ ] Basic unit tests
+Week 2: Game Integration
+[ ] Modify day advancement logic
+[ ] Update turn creation
+[ ] Integration tests
+[ ] Basic UI updates
+Week 3: Enhanced Features
+[ ] Add efficiency items
+[ ] Create consumption events
+[ ] Add tracking and analytics
+[ ] Advanced UI components
+Week 4: Polish and Testing
+[ ] Comprehensive testing
+[ ] Performance optimization
+[ ] Documentation updates
+[ ] User acceptance testing
+Configuration Options
+Easy Mode (Lower Consumption)
+Hard Mode (Higher Consumption)
+Migration Strategy
+Backward Compatibility: Existing games will have daily consumption applied from their current day forward
+Gradual Rollout: Feature can be toggled via game settings
+Data Migration: No database changes required, only schema additions
+Fallback Handling: Games without daily consumption data will use default rates
+Success Metrics
+Engagement: Increased session length due to resource management
+Strategy: More diverse action choices based on resource needs
+Difficulty: Appropriate challenge level maintained
+Performance: No significant impact on game performance
+User Satisfaction: Positive feedback on strategic depth
+This implementation plan provides a comprehensive roadmap for adding daily resource usage while maintaining the existing game's charm and functionality. The modular approach allows for incremental implementation and easy adjustment of consumption rates based on playtesting feedback.

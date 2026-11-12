@@ -1,0 +1,232 @@
+# OpenAI Image Generator - Functional and Engineering Documentation
+
+## Overview
+
+The `openai_image.py` script is a sophisticated command-line interface (CLI) tool for generating images using OpenAI's image generation models. It features dynamic CLI parameter generation through runtime type introspection, making it automatically compatible with new OpenAI API parameters without code changes.
+
+## Functional Specification
+
+### Purpose
+Generate images from text prompts using OpenAI's image generation models with a user-friendly CLI interface that automatically adapts to API changes.
+
+### Core Features
+
+1. **Dynamic CLI Generation**: Automatically introspects OpenAI's `Images.generate` method to create CLI parameters
+2. **Flexible Model Support**: Supports any OpenAI image model with intelligent defaults
+3. **Automatic Parameter Discovery**: Extracts valid choices from `Literal` type annotations
+4. **Performance Monitoring**: Measures and reports API call duration
+5. **Smart Output Handling**: Generates unique filenames and handles base64 decoding
+6. **Comprehensive Logging**: Outputs detailed JSON metadata to stderr
+
+### Command Line Interface
+
+#### Required Arguments
+- `PROMPT`: Text description of the image to generate
+
+#### Optional Arguments
+- `OUTFILE`: Output file path (defaults to `/tmp/image-<6-hex>.png`)
+
+#### Options
+- `-m, --model`: Image generation model (default: `gpt-image-1-mini`)
+- `--background`: Background setting (auto-discovered from API)
+- `--moderation`: Moderation setting (auto-discovered from API)
+- `--output-format`: Output format (auto-discovered from API)
+- `--quality`: Image quality setting (auto-discovered from API)
+- `--size`: Image size (auto-discovered from API)
+
+### Usage Examples
+
+```bash
+# Basic usage
+python openai_image.py "a futuristic cityscape"
+
+# Specify model and output file
+python openai_image.py "a cat wearing a space helmet" --model dall-e-3 --output my_image.png
+
+# Use discovered parameters
+python openai_image.py "abstract art" --quality hd --size 1024x1024
+```
+
+## Engineering Architecture
+
+### Design Patterns
+
+1. **Dynamic CLI Construction**: Uses runtime introspection to build CLI parameters
+2. **Type-Safe Parameter Extraction**: Leverages Python's typing system for parameter discovery
+3. **Graceful Fallback Handling**: Handles missing or incompatible type annotations
+4. **Separation of Concerns**: Clear separation between CLI construction and execution logic
+
+### Core Components
+
+#### 1. Type Introspection System
+
+**Purpose**: Extracts valid parameter choices from Python type annotations, specifically `Literal` types.
+
+**Key Functions**:
+- `_is_literal(ann)`: Detects `Literal` type annotations
+- `_is_union(ann)`: Identifies union types
+- `_is_optional(ann)`: Detects optional types (Union with None)
+- `_skip_ann(ann)`: Filters out sentinel values like `NotGiven`
+- `literal_choices(annotation)`: Main function that recursively extracts all valid choices
+
+**Key Features**:
+- Handles nested union types and optional types
+- Filters out sentinel values like `NotGiven`
+- Recursively walks complex type hierarchies
+- Deduplicates choices using a set
+
+#### 2. Dynamic CLI Builder
+
+**Purpose**: Constructs a Click CLI command dynamically based on OpenAI API type hints.
+
+**Process**:
+1. Uses `get_type_hints` with `include_extras=True` for full type information
+2. Creates positional arguments for prompt and optional output file
+3. Dynamically generates options for known API parameters
+4. Provides intelligent help text with discovered choices
+
+**Key Features**:
+- Automatic parameter discovery from API types
+- Intelligent help text generation
+- Support for both required and optional parameters
+- Case-sensitive choice validation
+
+#### 3. Execution Engine
+
+**Purpose**: Handles the actual image generation, timing, and output processing.
+
+**Process Flow**:
+1. Validates API key presence
+2. Generates unique output filenames using `secrets.token_hex`
+3. Prepares parameters for API call
+4. Measures API call performance with `time.perf_counter`
+5. Handles response parsing (both Pydantic and JSON)
+6. Saves base64-decoded image data to file
+7. Provides comprehensive logging to stderr
+
+**Key Features**:
+- High-precision timing measurement
+- Flexible response handling
+- Secure filename generation
+- Comprehensive error reporting
+
+### Dependencies and Requirements
+
+#### Python PEP 723 Script Dependencies
+```python
+# /// script
+# requires-python = ">=3.10"
+# dependencies = ["openai>=2.2.0", "typing-extensions", "click"]
+# ///
+```
+
+#### Runtime Dependencies
+- **openai>=2.2.0**: OpenAI Python SDK for API access
+- **typing-extensions**: Enhanced typing support for older Python versions
+- **click**: CLI framework for parameter handling and user interface
+
+#### System Requirements
+- Python 3.10 or higher
+- `OPENAI_API_KEY` environment variable
+- Write access to output directory
+
+### Error Handling Strategy
+
+1. **API Key Validation**: Checks for `OPENAI_API_KEY` before execution
+2. **Graceful Type Introspection**: Handles missing or incompatible type annotations
+3. **Flexible Response Parsing**: Supports both Pydantic models and raw JSON responses
+4. **Path Validation**: Ensures output directory exists and is writable
+
+### Performance Characteristics
+
+#### Timing Precision
+- Uses `time.perf_counter()` for high-precision timing
+- Measures only the API call duration, excluding setup overhead
+- Reports timing in seconds with floating-point precision
+
+#### Memory Efficiency
+- Processes base64 data directly without intermediate storage
+- Uses generators and iterators where possible
+- Minimal memory footprint for large image processing
+
+### Security Considerations
+
+1. **API Key Protection**: Requires environment variable, not hardcoded
+2. **Secure Random Filenames**: Uses `secrets.token_hex()` for unique filenames
+3. **Path Validation**: Prevents directory traversal attacks
+4. **Input Sanitization**: Relies on Click's built-in parameter validation
+
+### Extensibility and Maintenance
+
+#### Future-Proof Design
+- **Automatic API Compatibility**: New OpenAI parameters are automatically discovered
+- **Type-Safe Evolution**: Changes to API types are reflected in CLI without code changes
+- **Graceful Degradation**: Handles missing or changed type annotations
+
+#### Maintenance Benefits
+- **Self-Documenting**: CLI help is automatically generated from API types
+- **Reduced Manual Updates**: New parameters don't require code changes
+- **Consistent Interface**: All parameters follow the same discovery pattern
+
+### Testing Considerations
+
+#### Unit Test Coverage Areas
+1. Type introspection functions (`_is_literal`, `_is_union`, etc.)
+2. CLI parameter generation logic
+3. Error handling for missing API keys
+4. File output and base64 decoding
+5. Timing measurement accuracy
+
+#### Integration Test Scenarios
+1. End-to-end image generation with various models
+2. Parameter validation with different API versions
+3. Error handling for API failures
+4. Output file handling and cleanup
+
+### Deployment and Distribution
+
+#### UV Script Format
+- Uses PEP 723 script format for dependency management
+- Can be executed directly with `uv run`
+- Self-contained with minimal external dependencies
+
+#### Production Considerations
+- Environment variable configuration
+- Logging and monitoring integration
+- Error reporting and alerting
+- Resource usage monitoring
+
+## Code Structure Analysis
+
+### File Organization
+```
+openai_image.py
+├── Shebang and PEP 723 metadata (lines 1-5)
+├── Module docstring (lines 7-18)
+├── Imports (lines 20-35)
+├── Sentinel type handling (lines 37-42)
+├── Type introspection helpers (lines 44-99)
+├── CLI construction (lines 101-152)
+├── Main execution logic (lines 154-192)
+├── Command assembly (lines 194-205)
+└── Entry point (lines 207-211)
+```
+
+### Key Design Decisions
+
+1. **Runtime Introspection**: Chose dynamic CLI generation over static parameter lists for maintainability
+2. **Type-Safe Discovery**: Leveraged Python's typing system for automatic parameter validation
+3. **Graceful Fallbacks**: Implemented robust error handling for API changes
+4. **Performance Monitoring**: Added timing measurement for operational insights
+5. **Secure Defaults**: Used cryptographically secure random filenames
+
+### Integration Points
+
+- **OpenAI SDK**: Direct integration with `openai.Images.generate`
+- **Click Framework**: CLI parameter handling and user interaction
+- **Python Type System**: Runtime introspection for parameter discovery
+- **File System**: Secure file output with path validation
+
+## Conclusion
+
+This tool represents a sophisticated approach to CLI development that balances flexibility, maintainability, and user experience through intelligent use of Python's type system and runtime introspection capabilities. The design ensures long-term maintainability while providing immediate value through automatic API compatibility and comprehensive logging.

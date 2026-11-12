@@ -1,0 +1,302 @@
+[
+  {
+    "id": 1,
+    "scene": "Tree Pulley Rig",
+    "flux": "Photorealistic image of a custom-built tree rigging system using aluminum pulleys, steel cables, and a 3D-printed anchor block mounted to a pine tree. Golden-hour sunlight, sawdust in air, shallow depth of field.",
+    "gpt_image": "A realistic scene with a tree-mounted pulley system lifting logs. Steel cables under tension, pine forest environment, worker adjusting rig, natural lighting.",
+    "sdxl": {
+      "positive": "(masterpiece:1.2), (photorealistic:1.3), ultra detailed, pine forest, custom tree pulley system, (steel cables under tension:1.1), 3d-printed anchor block, bark texture, sawdust in sunlight, golden hour, (sharp focus), RAW photo",
+      "negative": "lowres, blurry, cartoon, painting, watermark, text, extra limbs, bad anatomy, cgi, oversaturated, flat lighting"
+    }
+  },
+  {
+    "id": 2,
+    "scene": "Forest Winch System",
+    "flux": "A rugged hillside forest with a motorized winch pulling a large oak log uphill. Muddy terrain, tension in cable, overcast sky, cinematic realism.",
+    "gpt_image": "A logging winch hauling a tree trunk up a muddy slope. Steel cable under tension, operator wearing gloves and helmet. Forest background, cloudy natural light.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), (ultra detailed), forest hill, motorized winch pulling log, mud, steel cable, worker nearby, overcast lighting, realistic shadows",
+      "negative": "cgi, digital painting, blurry, low detail, watermark, text, deformed hands, bad anatomy"
+    }
+  },
+  {
+    "id": 3,
+    "scene": "Homemade Rock Tumbler in Workshop",
+    "flux": "Close-up of a homemade rock tumbler built from a repurposed motor, rubber drum, and wooden frame. Oil-stained workbench, scattered gemstones, warm workshop lighting.",
+    "gpt_image": "A realistic workshop scene with a homemade rock tumbler made from a small motor and rubber drum on a wooden bench. Tools, grit powder, and rocks scattered around.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), (ultra detailed), homemade rock tumbler, rubber drum, electric motor, wooden workbench, tools scattered, oil stains, warm indoor lighting, sharp focus",
+      "negative": "lowres, cartoon, digital art, bad hands, watermark, blurry, text"
+    }
+  },
+  {
+    "id": 4,
+    "scene": "3D-Printed Gear in Hand",
+    "flux": "Weathered hand holding a freshly 3D-printed PLA gear with visible layer lines, forest background softly blurred, cold morning light.",
+    "gpt_image": "Close-up of a human hand holding a new 3D-printed plastic gear, print layer lines clearly visible. Forest background slightly blurred.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), close-up, hand holding 3d-printed gear, visible layer lines, detailed skin texture, shallow depth of field, natural morning light, forest background",
+      "negative": "blurry, lowres, cartoon, fake plastic, extra fingers, bad anatomy"
+    }
+  },
+  {
+    "id": 5,
+    "scene": "Off-Grid Creek Water Pump",
+    "flux": "A small off-grid water pump beside a creek in dense forest. PVC pipes, car battery, flowing water over mossy rocks, morning mist.",
+    "gpt_image": "A realistic scene of a creek with a DIY pump setup using a car battery and PVC piping. Mossy stones, flowing water, forest in early morning light.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), forest creek, off-grid water pump, PVC pipes, car battery, flowing water, mossy rocks, morning mist, sharp focus, natural colors",
+      "negative": "cgi, low detail, blurry, overexposed, watermark, text"
+    }
+  },
+  {
+    "id": 6,
+    "scene": "Chainsaw with Mechanical Assist",
+    "flux": "Man using a chainsaw attached to a belt-driven mechanical assist motor. Wood chips flying, intense focus, forest background, natural lighting.",
+    "gpt_image": "A worker cutting a log using a chainsaw modified with a small motor and belt-driven assist mechanism. Wood debris flying, forest setting.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), chainsaw with belt-driven assist, cutting log, wood chips flying, worker wearing gloves, realistic motion, forest background, dynamic lighting, ultra detail",
+      "negative": "cartoon, anime, cgi, extra limbs, bad anatomy, text"
+    }
+  },
+  {
+    "id": 7,
+    "scene": "Foggy Dawn Gold Panning",
+    "flux": "Prospector kneeling beside a shallow stream, swirling a gold pan with tiny metallic flakes. Breath visible in the cold air, early morning fog, pine trees in background.",
+    "gpt_image": "A realistic scene of a man panning for gold in a shallow creek at dawn. Visible breath in cold air, fog hanging between tall pine trees, water and rocks around him.",
+    "sdxl": {
+      "positive": "(masterpiece:1.2), (photorealistic:1.3), prospector gold panning, cold morning air, visible breath, foggy pine forest, shallow creek, wet rocks, realistic water reflections, (sharp focus), cinematic natural lighting",
+      "negative": "cartoon, lowres, painting, deformed hands, watermark, text, oversaturated, cgi"
+    }
+  },
+  {
+    "id": 8,
+    "scene": "Portable Sluice Box Setup",
+    "flux": "Portable sluice box over river rocks, water flowing through metal riffles, small gold specks and black sand collecting. Worn boots in foreground, overcast sky.",
+    "gpt_image": "A sluice box positioned in a rocky stream with flowing water. Black sand and small pieces of gold collecting in the riffles. Boots and tools nearby.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), (ultra detailed), sluice box, flowing water, black sand with gold flakes, river rocks, worn boots, cloudy sky, realistic water movement, natural colors",
+      "negative": "low detail, blurry, cartoon, watermark, cgi, extra limbs, text"
+    }
+  },
+  {
+    "id": 9,
+    "scene": "Hillside Pulley Firewood Transport",
+    "flux": "Steep forest hillside with a pulley system lifting firewood. Orange dusk light, long shadows, canvas straps, visible tension on rope.",
+    "gpt_image": "A pulley system moving split firewood up a steep hill. Late evening sunlight, long shadows, worker monitoring the line, pine trees in background.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), hillside pulley system, firewood transport, rope tension, evening sun, long shadows, pine forest, realistic lighting, high detail equipment, natural colors",
+      "negative": "cgi, cartoon, bad anatomy, extra limbs, blurry, watermark, text"
+    }
+  },
+  {
+    "id": 10,
+    "scene": "Steel Tree Anchor Close-Up",
+    "flux": "Close-up of a steel tree anchor strap and ratchet system on rough bark. Detailed metal texture, small patches of moss, warm sunset side light.",
+    "gpt_image": "Close-up of a ratchet strap securing a steel anchor to a tree trunk. Bark texture, slight moss, warm evening light hitting the metal.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), detailed close-up, steel ratchet strap on tree, bark texture, moss patches, warm sunset lighting, ultra detail, shallow depth of field",
+      "negative": "blurry, cartoon, lowres, painted look, watermark, text, bad anatomy"
+    }
+  },
+  {
+    "id": 11,
+    "scene": "Workshop at Night – Single Light Source",
+    "flux": "Dimly lit workshop illuminated by a single overhead bulb. Tools on pegboard, drill press with metal shavings, coffee mug, cold visible breath in the air.",
+    "gpt_image": "A small dark workshop lit by one hanging light. Tools on the wall, metal shavings on a drill press table, a coffee mug beside it, cold air with faint visible breath.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), dimly lit workshop, single overhead bulb, tools on pegboard, drill press, metal shavings, cold air breath, realistic shadows, moody lighting, ultra detailed, RAW style",
+      "negative": "cartoon, cgi, lowres, blurry, watermark, text, extra limbs, bad anatomy"
+    }
+  },
+  {
+    "id": 12,
+    "scene": "Workbench with Gears and Bearings",
+    "flux": "Wooden workbench scattered with gears, steel bearings, sawdust, grease rags. Soft window light illuminating object textures in high detail.",
+    "gpt_image": "A realistic wooden workbench covered with gears, ball bearings, bolts, sawdust, and an oil-stained rag. Soft natural light from a window.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), detailed workbench, loose gears and ball bearings, sawdust, grease-stained rag, bolts and tools, natural window light, high detail texture",
+      "negative": "blurry, cartoon, watercolor, painting, lowres, watermark, text"
+    }
+  },
+  {
+    "id": 13,
+    "scene": "Solar-Powered Hillside Irrigation",
+    "flux": "Steep dirt hillside with solar panel powering a drip irrigation system. PVC tubing, water valves, garden tools, early morning light with long shadows.",
+    "gpt_image": "A simple solar-powered irrigation system on a slope. Solar panel, battery box, plastic drip lines running through rough soil. Early morning natural lighting.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), hillside irrigation system, solar panel, PVC drip lines, battery box, dry soil, morning light, long shadows, realistic texture, natural vegetation",
+      "negative": "cgi, cartoon, flat lighting, oversaturated, watermark, text"
+    }
+  },
+  {
+    "id": 14,
+    "scene": "Campfire and Pulley Rig at Night",
+    "flux": "Night forest with a small campfire glowing beside a pulley hoist attached to a pine tree. Sparks rising, orange firelight reflecting on metal hardware, silhouetted trees.",
+    "gpt_image": "Nighttime scene in a forest. A pulley hoist is attached to a tree near a campfire. Firelight illuminates the metal pulley, surrounding trees are dark silhouettes.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), night forest campfire, pulley rig on tree, warm firelight, sparks, metal reflections, dark pine silhouettes, realistic shadows, detailed lighting",
+      "negative": "lowres, cartoon, flat colors, bad anatomy, text, watermark"
+    }
+  },
+  {
+    "id": 15,
+    "scene": "Rustic Hand Tools in Forest Dirt",
+    "flux": "Old rusted wrench, hand saw, and hatchet lying on damp forest soil with pine needles. Dew on metal surfaces, morning natural light, sharp detail.",
+    "gpt_image": "A set of old hand tools including a wrench and hatchet on wet forest ground covered in pine needles. Small water droplets and worn metal texture.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), rustic hand tools on forest floor, rusted wrench and hatchet, damp soil, pine needles, morning dew, natural lighting, high detail texture, sharp focus",
+      "negative": "cartoon, cgi, blurry, oversaturated, watermark, text"
+    }
+  },
+  {
+    "id": 16,
+    "scene": "3D-Printed Chainsaw Guide Attachment",
+    "flux": "Close-up of a chainsaw fitted with a custom 3D-printed angle guide. Smudges of oil, visible layer lines on plastic, blurred pine forest in background under harsh midday sunlight.",
+    "gpt_image": "A realistic close-up of a chainsaw with a 3D-printed angle guide mounted near the bar. Plastic layer lines visible, some oil and dust on the surface, forest background slightly blurred.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), chainsaw with 3d-printed angle guide, detailed plastic layer lines, dust and oil smudges, realistic metal texture, shallow depth of field, forest background, midday natural light, sharp focus",
+      "negative": "cgi, cartoon, painting, lowres, text, watermark, deformed hands, bad anatomy"
+    }
+  },
+  {
+    "id": 17,
+    "scene": "Aerial Drone Shot of Worksite",
+    "flux": "High-angle drone view of a steep forest worksite. Stacked logs, pulley lines, solar charger, blue pickup truck, and water tank. Late afternoon sunlight, long shadows.",
+    "gpt_image": "An aerial view of a hillside forest work area. Logs stacked, pulley ropes visible, a small solar setup, water tank, and a parked truck. Sunlight casting long shadows.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), aerial drone shot, forest hillside worksite, stacked logs, pulley ropes, solar charger, water tank, pickup truck, late afternoon light, long shadows, high detail, natural colors",
+      "negative": "lowres, blurry, cartoon, oversaturated, text, watermark"
+    }
+  },
+  {
+    "id": 18,
+    "scene": "Welding Bracket Up Close",
+    "flux": "Close-up of a dirty hand welding a steel bracket. Bright arc light, sparks flying, leather gloves, metal glowing at weld point, workshop background blurred.",
+    "gpt_image": "Realistic close-up of a person welding a metal bracket. Bright welding arc, sparks, glove-covered hand, glowing molten metal, blurred workshop.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), close-up welding, sparks, glowing molten metal, leather gloves, realistic hand, metal bracket, workshop background, dramatic lighting, sharp detail",
+      "negative": "blurry, cartoon, CGI, bad anatomy, extra fingers, watermark, text"
+    }
+  },
+  {
+    "id": 19,
+    "scene": "Winter Forest Logging Scene",
+    "flux": "Snow-covered forest with a logging winch pulling a pine log. Chainsaw nearby, breath vapor visible, cold blue ambient light.",
+    "gpt_image": "A winter forest where a chain-driven logging winch is hauling a pine log through snow. Worker’s breath visible, chainsaw on the ground, cold bluish light.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), snowy forest logging scene, winch pulling pine log, snow on ground, chainsaw nearby, cold air breath, blue ambient winter light, realistic details, sharp focus",
+      "negative": "overexposed, cartoon, cgi, lowres, painting, watermark, text"
+    }
+  },
+  {
+    "id": 20,
+    "scene": "Nighttime Generator in Foggy Woods",
+    "flux": "Gasoline generator running beside a tent in a foggy pine forest. LED lamp shining on metal frame, exhaust smoke, wet ground reflecting light.",
+    "gpt_image": "A realistic night scene with a small gas generator next to a tent in a foggy forest. Light from a portable lamp reflects off wet ground, faint exhaust smoke.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), night forest camp, gasoline generator, fog, LED work light, wet ground reflections, tent nearby, exhaust smoke, pine trees silhouette, high detail, moody lighting",
+      "negative": "cartoon, blurry, lowres, CGI, watermark, text, oversaturated"
+    }
+  },
+  {
+    "id": 21,
+    "scene": "Mechanical Tree Felling Rig",
+    "flux": "A mechanized tree-felling setup using a belt-driven winch and tensioned ropes attached around a pine tree. Sawdust in the air, early sunlight cutting through fog.",
+    "gpt_image": "A realistic scene of a mechanical tree-felling system: a winch and cable anchored to a tree, guiding the fall direction. Sawdust from cutting, foggy forest morning.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), mechanical tree felling rig, belt-driven winch, rope under tension, pine forest, sawdust in air, early morning fog, sunlight rays, realistic forest floor, sharp focus, ultra detail",
+      "negative": "anime, cartoon, CGI, lowres, extra limbs, bad perspective, text, watermark"
+    }
+  },
+  {
+    "id": 22,
+    "scene": "3D-Printed Pulley Prototype Test",
+    "flux": "Close-up of a small 3D-printed pulley prototype mounted on a wooden test frame. Fine plastic layer lines, paracord threaded through, blurred workshop background.",
+    "gpt_image": "A 3D-printed pulley being tested on a small wooden frame. Nylon rope threaded through, print layer lines visible, workbench tools in background.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), close-up 3d-printed pulley, detailed layer lines, paracord through pulley, wooden test rig, workshop background, shallow depth of field, ultra detail",
+      "negative": "blurry, cartoon, lowres, CGI, text, watermark"
+    }
+  },
+  {
+    "id": 23,
+    "scene": "Steep-Slope Timber Extraction",
+    "flux": "A small tracked machine pulling logs uphill on a steep forest slope using a winch. Fallen branches, mud tracks, morning overcast light.",
+    "gpt_image": "A realistic view of a small crawler vehicle hauling logs up a muddy forest incline with a winch. Wet ground, pine trees, cloudy light.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), tracked machine hauling logs uphill, forest hillside, winch cable tension, mud and tracks, wet needles, overcast lighting, high detail, realistic terrain",
+      "negative": "cartoon, simplified, cgi artifacts, watermark, text, oversaturated"
+    }
+  },
+  {
+    "id": 24,
+    "scene": "Homestead Irrigation Valve Close-Up",
+    "flux": "Close-up of a manual irrigation valve connected to PVC tubing in soil. Dirt-stained hands adjusting it, water droplets, morning light on wet ground.",
+    "gpt_image": "A person's hand adjusting a simple PVC irrigation valve in the ground. Moist soil, small water beads on plastic, natural morning sunlight.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), close-up irrigation valve, dirty hands, PVC pipes, moist soil, water droplets, morning sunlight, realistic textures, shallow depth of field, ultra detailed",
+      "negative": "blurry, cartoon, cgi, extra fingers, watermark, text"
+    }
+  },
+  {
+    "id": 25,
+    "scene": "Rock Crushing Setup for Gold Ore",
+    "flux": "Manual rock crusher with a steel lever arm crushing quartz on a workbench. Crushed rock dust, small gold flecks, rusted tools, sunlight through workshop window.",
+    "gpt_image": "A realistic scene of a hand-operated rock crusher crushing quartz for gold extraction. Stone dust on table, flecks of metal, natural indoor light.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), manual rock crusher, steel lever arm, quartz stones breaking, rock dust, tiny gold flecks, rustic workshop table, sunlight through window, highly detailed, natural shadows",
+      "negative": "cartoon, blurry, painting, CGI, watermark, text"
+    }
+  },
+  {
+    "id": 26,
+    "scene": "Solar Battery Bank in Forest Cabin",
+    "flux": "Inside a rustic wooden cabin with a wall-mounted array of deep-cycle batteries connected to a solar charge controller. Cables neatly routed, morning light through dusty window.",
+    "gpt_image": "A realistic interior of a cabin showing a small off-grid solar battery bank. Multiple deep-cycle batteries, charge controller on the wall, tidy wiring, sunlight filtering through window.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), off-grid cabin interior, solar battery bank on wall, deep cycle batteries, charge controller, neatly arranged wires, dusty window sunlight, wooden cabin walls, high detail, sharp focus",
+      "negative": "cgi, cartoon, lowres, messy wiring, text, watermark"
+    }
+  },
+  {
+    "id": 27,
+    "scene": "Pulley-Assisted Tree Climb",
+    "flux": "Person climbing a tall pine tree using a rope-and-pulley system with foot ascender. Mossy bark, rope tension visible, dramatic upward camera angle.",
+    "gpt_image": "A climber ascending a pine tree using a pulley and rope system. Gear includes harness and foot ascender, camera angle from below looking up the trunk.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), tree climbing with pulley system, rope under tension, pine tree bark close-up, climber boots and harness, mossy trunk, upward camera angle, natural outdoor lighting, detailed realism",
+      "negative": "anime, blurry, lowres, incorrect anatomy, watermark, text"
+    }
+  },
+  {
+    "id": 28,
+    "scene": "Forest Workshop with Lathe and Wood Shavings",
+    "flux": "Open-sided shed in forest containing a small wood lathe. Fresh wood shavings curled on bench, unfinished wooden cup mounted in lathe, dappled sunlight from trees.",
+    "gpt_image": "A rustic outdoor workshop in the forest with a wood lathe. Piles of curled shavings, unfinished wooden piece spinning in the lathe, natural sunlight coming through trees.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), outdoor forest workshop, wood lathe, curls of wood shavings, unfinished wood turning piece, dappled sunlight, mossy ground, detailed textures, sharp focus",
+      "negative": "cgi, cartoon, oversaturated, messy blur, watermark, text"
+    }
+  },
+  {
+    "id": 29,
+    "scene": "Foggy River Sluice at Dawn",
+    "flux": "Early morning with thick fog over a shallow river. A sluice box in the water with black sand and specks of gold, lantern casting soft light on wet stones.",
+    "gpt_image": "A gold sluice box in a shallow river at dawn with fog in the air. Lantern light reflecting on water, black sand and gold flakes inside riffles.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), foggy morning river, sluice box in water, black sand and tiny gold particles, lantern light, wet stones, reflective water surface, soft light, cinematic realism",
+      "negative": "cartoon, cgi, low detail, text, watermark, blown highlights"
+    }
+  },
+  {
+    "id": 30,
+    "scene": "Gravity-Fed Water Barrel Irrigation",
+    "flux": "Large blue rain barrel on wooden platform with hose feeding garden rows. Early sun hitting water droplets, soil, and young green sprouts.",
+    "gpt_image": "A realistic homestead garden with a blue rainwater barrel elevated on a platform. Hose running from it to small sprouts in soil, morning light, water dripping from nozzle.",
+    "sdxl": {
+      "positive": "(photorealistic:1.3), blue rain barrel on wooden stand, gravity-fed irrigation hose, young sprouts in soil, water droplets, warm morning light, sharp focus, natural tones, high detail",
+      "negative": "cgi, cartoon, lowres, flat light, watermark, text"
+    }
+  }
+]

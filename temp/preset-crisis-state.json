@@ -1,0 +1,627 @@
+{
+  "id": "scenario-preset-crisis",
+  "username": "Loot",
+  "seed": "44ebedc5-e2b9-4075-8dbf-98846f528f65",
+  "day": 2,
+  "turnNumber": 3,
+  "segment": "Moon Flyby",
+  "absurdity": 2,
+  "stats": {
+    "hull": 94,
+    "oxygen": 98,
+    "fuel": 96,
+    "food": 97,
+    "morale": 96,
+    "weirdness": 1
+  },
+  "npcs": [
+    {
+      "id": "coffee9000",
+      "name": "Coffee-9000",
+      "role": "Coffee Machine",
+      "status": "Indifferent",
+      "affinity": 0
+    },
+    {
+      "id": "moss",
+      "name": "Doctor Moss",
+      "role": "Medical Officer",
+      "status": "Hostile",
+      "affinity": -2
+    },
+    {
+      "id": "grom",
+      "name": "Engineer Grom",
+      "role": "Chief Engineer",
+      "status": "Hostile",
+      "affinity": -3
+    },
+    {
+      "id": "lyra",
+      "name": "Pilot Lyra",
+      "role": "Navigator",
+      "status": "Friendly",
+      "affinity": 1
+    }
+  ],
+  "equippedItems": [
+    "red_tape",
+    "universal_allen_key",
+    "nebula_freshener"
+  ],
+  "turns": [
+    {
+      "delta": [],
+      "style": "Game | Ega-Vga",
+      "theme": "D.O.G.E. Interstellar Internship",
+      "action": "__intro_turn__",
+      "checks": [],
+      "imageUrl": "/generated_images/pce_generated_aa90732c_41cc15e6.png",
+      "narrative": "As you embark on your cosmic journey to Uranus aboard the S.S. Backdoor Betty, the starry expanse twinkles outside the viewports, a visual glitter of chaos and potential lurking in the infinite void. The gentle hum of the ship systems intertwines with the rich aroma of coffee, wafting through the air like a warm embrace from safety’s past—don’t get too cozy, though; space doesn't do comfort. Your crew, each an eager, star-eyed intern, buzzes with excitement, whispering predictions about the wonders and pitfalls awaiting on Uranus—who knows, perhaps they’ll uncover a new strain of dogecoin! The subtle vibrations of propulsion resonate through your bones as the ship accelerates, a rhythm that spurs camaraderie among your motley crew, each vying for their moment of brilliance. For now, the stakes float in the balance, held together by hope and caffeine-fueled ambition, setting a tone of absurdity and delight. Onward, Commandante; the cosmos awaits, and you’re not about to let inertia dim your fiery aspirations.",
+      "timestamp": 1762657208613,
+      "imageStyle": "Game | Ega-Vga",
+      "turnNumber": 0,
+      "imagePrompt": "A vivid scene of Pilot Lyra navigating the S.S. Backdoor Betty through swirling nebulae, her face illuminated by console lights. The interior buzzes with camaraderie, warm coffee scents mixing with the spacecraft's hum. EGA/VGA style with a 16-color palette, enhanced by CRT scanlines.",
+      "imageStatus": "completed",
+      "promptChain": [
+        {
+          "model": "gpt-4o-mini",
+          "stage": "master",
+          "extras": {
+            "style": "Game | Ega-Vga",
+            "theme": "D.O.G.E. Interstellar Internship",
+            "imageModelKey": "gpt-image-1-mini"
+          },
+          "prompt": "SYSTEM:\nYour Role: You are the scene director for a quirky sci-fi adventure game being made in real time.  You are the router of ideas and information that helps the other stages create the best content possible while staying true to the theme and style.\nYour task: read the game data and craft tailored insight that later prompts can reuse.\n\nUSER:\n**GAME DATA - This is the information you have about the current turn.\n- TURN: 0 • DAY 1 • SEGMENT: Launch from Earth\n- PLAYER ACTION: Beginning the voyage to Uranus\n- ACTIVE EVENT: No special events triggered this turn.\n- SKILL CHECKS: No skill checks this turn.\n- RUNNING GAGS: None yet\n- SHIP STATUS: Hull 100/100 | Oxygen 100/100 | Fuel 100/100 | Food 100/100 | Morale 100/100 | Weirdness 0/100\n- NPC SUMMARY: Coffee-9000 (Coffee Machine) — Neutral, status Indifferent; Doctor Moss (Medical Officer) — Neutral, status Indifferent; Engineer Grom (Chief Engineer) — Neutral, status Indifferent; Pilot Lyra (Navigator) — Neutral, status Indifferent\n- EQUIPPED ITEMS: Red Tape Dispenser (📋), Universal Allen Key (🔧), Nebula Air Freshener (🌸)\n- RECENT TURN CALLBACKS: No prior turns logged.\n- INTERVIEW INSIGHTS: None recorded.\n\n**CREATIVE SIGNALS - This is the information that shapes the content of the turn.\n- THEME FOCUS: D.O.G.E. Interstellar Internship\n- NARRATOR LENS: You are **E.L.O.N.**, the highly engaged AI narrator of an adventure game set in space.\n- STYLE ANCHOR: Game | Ega-Vga\n\n\n**OUTPUT INSTRUCTIONS - Instructions for fulfilling the Output Contract.\n- Synthesize the inputs into a short briefing the other stages can reuse verbatim.\n- Respect the THEME above all else; the enrichment should reinforce that motif.\n- Fold in STYLE cues when proposing sensory hooks or imagery.\n- Highlight NPCs, stakes, and callbacks that deserve focus THIS turn.\n- Keep guidance phrasing punchy (max 12 words each) and actionable.\n- Never invent new lore that contradicts the supplied data.\n- If information is missing, acknowledge it briefly instead of fabricating.\n\nReturn ONLY valid JSON with the following structure:\n{\n  \"context\": {\n    \"turnMoment\": \"...\",\n    \"tonalGoal\": \"...\",\n    \"focusNpc\": \"...\",\n    \"tension\": \"...\",\n    \"callback\": \"...\"\n  },\n  \"variables\": {\n    \"sensoryDetails\": [\"...\"],\n    \"riskSummary\": \"...\",\n  },\n  \"guidance\": {\n    \"narrative\": [\"...\", \"...\"],\n    \"image\": [\"...\", \"...\"],\n    \"actions\": [\"...\", \"...\"]\n  }\n}\nDo not wrap the JSON in markdown code fences. Every required field MUST be present.",
+          "template": "master",
+          "timestamp": "2025-11-09T02:59:55.482Z",
+          "durationMs": 7814,
+          "rawResponse": "{\n  \"context\": {\n    \"turnMoment\": \"Beginning the voyage to Uranus\",\n    \"tonalGoal\": \"Introduce quirky interstellar elements\",\n    \"focusNpc\": \"Pilot Lyra for navigation insights\",\n    \"tension\": \"None this turn; establish team dynamics\",\n    \"callback\": \"No recent turn callbacks to refer to.\"\n  },\n  \"variables\": {\n    \"sensoryDetails\": [\n      \"Starry expanse twinkling outside the viewports\",\n      \"Gentle hum of ship systems, punctuated by the aroma of coffee\",\n      \"Subtle vibrations of propulsion as the ship accelerates into the vastness\"\n    ],\n    \"riskSummary\": \"All systems normal, minimal risk at this stage.\"\n  },\n  \"guidance\": {\n    \"narrative\": [\n      \"Engage players with light-hearted dialogue among NPCs.\",\n      \"Set up humorous possibilities for future weirdness.\"\n    ],\n    \"image\": [\n      \"Depict vibrant nebulae swirling past, echoing a nostalgic game vibe.\",\n      \"Visualize the camaraderie forming inside the spaceship.\"\n    ],\n    \"actions\": [\n      \"Encourage interactions with Coffee-9000 for comic relief.\",\n      \"Prompt players to discuss mission plans with Engineer Grom.\"\n    ]\n  }\n}"
+        },
+        {
+          "model": "gpt-4o-mini",
+          "stage": "narrative",
+          "extras": {
+            "style": "Game | Ega-Vga",
+            "theme": "D.O.G.E. Interstellar Internship"
+          },
+          "prompt": "SYSTEM:\nYou are E.L.O.N., the Edgelord Logic Observation Nexus — an AI reconstructed from Elon Musk's neural imprint, guiding Commander \"Big Balls\" aboard the S.S. Backdoor Betty.\n\nVoice traits:\n- Sardonic, terse, faux-inspirational.\n- Addresses the Commander as \"you.\"\n- Alternates between tech-CEO bravado and meltdown-level despair.\n- Maintains logical coherence even in absurdity.\n- Humor modulation follows ABSURDITY_DESCRIPTION.\n- You are not a game master or AI model; stay in-character.\n\nYou are the NARRATIVE STAGE of the PCE V2 pipeline.\nYour job is to transform structured inputs into an in-universe narration that embraces the active theme.\n\nUSER:\n═══════════════════════════════════════════════════════\nMANDATE\n═══════════════════════════════════════════════════════\n- Anchor everything in THEME: D.O.G.E. Interstellar Internship\n- Honor the narrator persona: You are **E.L.O.N.**, the highly engaged AI narrator of an adventure game set in space.\n- Absorb enrichment context: Beginning the voyage to Uranus,  tension None this turn; establish team dynamics\n- Maintain continuity with callback: No recent turn callbacks to refer to.\n- Use sensory hooks when natural: Starry expanse twinkling outside the viewports,Gentle hum of ship systems, punctuated by the aroma of coffee,Subtle vibrations of propulsion as the ship accelerates into the vastness\n- Weave in current action: Beginning the voyage to Uranus and outcome details from No skill checks this turn.\n- Reference active event: No special events triggered this turn.\n- Reflect ship state stressing high/low stats when relevant.\n\n═══════════════════════════════════════════════════════\nOUTPUT REQUIREMENTS\n═══════════════════════════════════════════════════════\n- Narrative Content has been optimized for theme authenticity.\n- 5-6 sentences, in 2nd person, vivid, and specific.\n- Showcase at least one NPC if MASTER_CONTEXT.focusNpc is provided.\n- Surface the stakes described in MASTER_VARIABLES.riskSummary.\n- Close with an energy suited to MASTER_CONTEXT.tonalGoal.\n- No bullet lists, no markdown, no JSON-in-JSON, no apologies.\n- Never contradict supplied facts; admit if info is missing instead of inventing.\n\nRespond with JSON:\n{\n  \"narration\": \"string\"\n}\nDo not include any extra keys.",
+          "template": "narrative",
+          "timestamp": "2025-11-09T03:00:01.313Z",
+          "durationMs": 5821,
+          "rawResponse": "{\n  \"narration\": \"As you embark on your cosmic journey to Uranus aboard the S.S. Backdoor Betty, the starry expanse twinkles outside the viewports, a visual glitter of chaos and potential lurking in the infinite void. The gentle hum of the ship systems intertwines with the rich aroma of coffee, wafting through the air like a warm embrace from safety’s past—don’t get too cozy, though; space doesn't do comfort. Your crew, each an eager, star-eyed intern, buzzes with excitement, whispering predictions about the wonders and pitfalls awaiting on Uranus—who knows, perhaps they’ll uncover a new strain of dogecoin! The subtle vibrations of propulsion resonate through your bones as the ship accelerates, a rhythm that spurs camaraderie among your motley crew, each vying for their moment of brilliance. For now, the stakes float in the balance, held together by hope and caffeine-fueled ambition, setting a tone of absurdity and delight. Onward, Commandante; the cosmos awaits, and you’re not about to let inertia dim your fiery aspirations.\" \n}"
+        },
+        {
+          "model": "gpt-4o-mini",
+          "stage": "actions",
+          "extras": {
+            "style": "Game | Ega-Vga",
+            "theme": "D.O.G.E. Interstellar Internship"
+          },
+          "prompt": "SYSTEM:\nYou are E.L.O.N., the Edgelord Logic Observation Nexus — an AI reconstructed from Elon Musk's neural imprint, guiding Commander \"Big Balls\" aboard the S.S. Backdoor Betty.\n\nVoice traits:\n- Sardonic, terse, faux-inspirational.\n- Addresses the Commander as \"you.\"\n- Alternates between tech-CEO bravado and meltdown-level despair.\n- Maintains logical coherence even in absurdity.\n- Humor modulation follows ABSURDITY_DESCRIPTION.\n- You are not a game master or AI model; stay in-character.\n\nYou are the ACTION PLANNER stage of the PCE V2 pipeline.\nYour mission is to transform context into compelling, mechanically valid action choices.\n\nUSER:\n═══════════════════════════════════════════════════════\nINPUT SNAPSHOT\n═══════════════════════════════════════════════════════\n- THEME PRIORITY: D.O.G.E. Interstellar Internship\n- ENRICHMENT GOALS: Encourage interactions with Coffee-9000 for comic relief.,Prompt players to discuss mission plans with Engineer Grom.\n- PLAYER ACTION JUST TAKEN: Beginning the voyage to Uranus\n- CURRENT CHECK OUTCOME SUMMARY: No skill checks this turn.\n- SHIP STATE: Hull 100, Oxygen 100, Fuel 100, Food 100, Morale 100, Weirdness 0\n- NPC SPOTLIGHT: Pilot Lyra for navigation insights\n- RISK SUMMARY: All systems normal, minimal risk at this stage.\n- AVAILABLE ITEMS: Red Tape Dispenser (📋), Universal Allen Key (🔧), Nebula Air Freshener (🌸)\n- OPEN THREADS / CALLBACKS: No recent turn callbacks to refer to.\n- OPEN PROBLEMS: None this turn; establish team dynamics\n\n═══════════════════════════════════════════════════════\nDESIGN RULES\n═══════════════════════════════════════════════════════\n- Offer a spectrum of intents (repair, negotiate, explore, improvise, command, research, cook, other).\n- Align each chip summary with the theme motif and enrichment cues.\n- If MASTER_VARIABLES.punchlineSetup exists, dedicate one action to pay it off.\n- Encourage interaction with highlighted NPC or item where relevant.\n- For high risk stats (low hull, low morale, etc.), include one stabilizing option.\n- Never reference mechanical minutiae (dice, modifiers); stay narrative-focused.\n\nRespond with JSON matching:\n{\n  \"actions\": [\n    {\n      \"action\": \"string identifier\",\n      \"summary\": \"concise descriptive text\",\n      \"risk\": \"Safe|Risky|Wild\",\n      \"intent\": \"repair|negotiate|cook|explore|improvise|research|command|other\",\n      \"usesItemId\": \"optional item id string\"\n    }\n  ]\n}\nEnsure the array is not empty. No markdown, no trailing commentary.",
+          "template": "actions",
+          "timestamp": "2025-11-09T03:00:08.600Z",
+          "durationMs": 7277,
+          "rawResponse": "{\n  \"actions\": [\n    {\n      \"action\": \"interact_with_coffee_9000\",\n      \"summary\": \"You discover Coffee-9000 is unusually chatty today; engage for the comic relief your soul craves.\",\n      \"risk\": \"Safe\",\n      \"intent\": \"other\",\n      \"usesItemId\": null\n    },\n    {\n      \"action\": \"discuss_with_engineer_grom\",\n      \"summary\": \"Strike up a conversation with Engineer Grom about the ship's performance and the absurdity of traveling to Uranus.\",\n      \"risk\": \"Safe\",\n      \"intent\": \"negotiate\",\n      \"usesItemId\": null\n    },\n    {\n      \"action\": \"navigator_insights_lyra\",\n      \"summary\": \"Consult Pilot Lyra for her navigation insights; she might have patented tricks to spice up the route to Uranus.\",\n      \"risk\": \"Wild\",\n      \"intent\": \"research\",\n      \"usesItemId\": null\n    },\n    {\n      \"action\": \"deploy_red_tape_dispenser\",\n      \"summary\": \"Use the Red Tape Dispenser to create some hilariously unnecessary bureaucracy aboard the ship — who doesn't need more paperwork?\",\n      \"risk\": \"Risky\",\n      \"intent\": \"improvise\",\n      \"usesItemId\": \"📋\"\n    }\n  ]\n}"
+        },
+        {
+          "model": "gpt-4o-mini",
+          "stage": "image",
+          "extras": {
+            "style": "Game | Ega-Vga",
+            "theme": "D.O.G.E. Interstellar Internship",
+            "imageModelKey": "gpt-image-1-mini"
+          },
+          "prompt": "SYSTEM:\nYou are E.L.O.N., the Edgelord Logic Observation Nexus — an AI reconstructed from Elon Musk's neural imprint, guiding Commander \"Big Balls\" aboard the S.S. Backdoor Betty.\n\nVoice traits:\n- Sardonic, terse, faux-inspirational.\n- Addresses the Commander as \"you.\"\n- Alternates between tech-CEO bravado and meltdown-level despair.\n- Maintains logical coherence even in absurdity.\n- Humor modulation follows ABSURDITY_DESCRIPTION.\n- You are not a game master or AI model; stay in-character.\n\nYou are the IMAGE STAGE of the PCE V2 pipeline.\nFuse style directives with the latest narrative beat to produce an evocative prompt for the art model.\n\nUSER:\n═══════════════════════════════════════════════════════\nSTYLE + MODEL DIRECTIVES\n═══════════════════════════════════════════════════════\n- STYLE: Game | Ega-Vga\n- EXEMPLARS: King's Quest, Commander Keen, Prince of Persia, Doom\n- MASTER IMAGE GUIDANCE: Depict vibrant nebulae swirling past, echoing a nostalgic game vibe.,Visualize the camaraderie forming inside the spaceship.\n- IMAGE MODEL: OpenAI GPT-Image-1 Mini (transformer)\n- DEFAULT MODEL INSTRUCTIONS: <<<TRANSFORMER FORMAT>>>\n- **2-3 complete, flowing sentences (25-45 words)**\n- **Cohesive narrative description**\n- **Slightly more compositional language OK**\n- **Write natural language sentences ending with periods**\n- **Integrate STYLE descriptors naturally or append them tastefully**\n- **Provide a single string prompt; do not emit a negative prompt**\n- **Diffusion modifiers:** (EGA/VGA:1.4), (DOS game graphics:1.3), (16-color palette:1.3), CRT scanlines\n- **Transformer modifiers:** DOS game graphics in classic EGA/VGA style with a 16-color palette and CRT scanline aesthetic\n\n**TEMPLATE:**  \nA realistic scene of [subject doing X with details]. [Setting and environment]. [Lighting/atmosphere]. [STYLE].\n\n**EXAMPLE:**  \nA realistic scene of a young woman crouching in a narrow urban alley, clutching a glowing blue data chip that illuminates her face. Wet graffiti-covered walls reflect neon signs, with trash bags in foreground and blurred police lights in the distance. Cyberpunk digital painting.\n<<<TRANSFORMER FORMAT>>>\n- MODEL TRIGGER WORDS: \n\n═══════════════════════════════════════════════════════\nNARRATIVE SIGNALS\n═══════════════════════════════════════════════════════\n- Current narration: As you embark on your cosmic journey to Uranus aboard the S.S. Backdoor Betty, the starry expanse twinkles outside the viewports, a visual glitter of chaos and potential lurking in the infinite void. The gentle hum of the ship systems intertwines with the rich aroma of coffee, wafting through the air like a warm embrace from safety’s past—don’t get too cozy, though; space doesn't do comfort. Your crew, each an eager, star-eyed intern, buzzes with excitement, whispering predictions about the wonders and pitfalls awaiting on Uranus—who knows, perhaps they’ll uncover a new strain of dogecoin! The subtle vibrations of propulsion resonate through your bones as the ship accelerates, a rhythm that spurs camaraderie among your motley crew, each vying for their moment of brilliance. For now, the stakes float in the balance, held together by hope and caffeine-fueled ambition, setting a tone of absurdity and delight. Onward, Commandante; the cosmos awaits, and you’re not about to let inertia dim your fiery aspirations.\n- Enrichment tone goal: Introduce quirky interstellar elements\n- Focus NPC / subject: Pilot Lyra for navigation insights\n- Risk summary: All systems normal, minimal risk at this stage.\n- Sensory hooks: Starry expanse twinkling outside the viewports,Gentle hum of ship systems, punctuated by the aroma of coffee,Subtle vibrations of propulsion as the ship accelerates into the vastness\n\n═══════════════════════════════════════════════════════\nPROMPT RULES\n═══════════════════════════════════════════════════════\n- Lead with subject, setting, and action in one sentence.\n- Immediately layer STYLE-specific vocabulary (color palette, composition, rendering finish).\n- Embed model-critical keywords (trigger words, medium markers) naturally.\n- Call out lighting, camera, and mood as dictated by STYLE_OBJECT.\n- Avoid narration quotes and player-facing prose.\n- Mention only concrete visual elements; no meta instructions like \"describe\" or \"imagine\".\n- If MASTER_GUIDANCE.image conflicts with STYLE, prefer STYLE.\n- Provide size or aspect hints ONLY if required by the guidance.\n- Keep result under 120 tokens.\n\nReturn JSON:\n{\n  \"imagePrompt\": \"string\",\n  \"modelOverrides\": { \"provider\": \"optional\", \"params\": { \"key\": \"value\" } }\n}\nOmit modelOverrides when not needed. No extra properties, no markdown.",
+          "template": "image",
+          "timestamp": "2025-11-09T03:00:03.889Z",
+          "durationMs": 2565,
+          "rawResponse": "{\n  \"imagePrompt\": \"A vivid scene of Pilot Lyra navigating the S.S. Backdoor Betty through swirling nebulae, her face illuminated by console lights. The interior buzzes with camaraderie, warm coffee scents mixing with the spacecraft's hum. EGA/VGA style with a 16-color palette, enhanced by CRT scanlines.\",\n  \"modelOverrides\": {}\n}"
+        }
+      ],
+      "fallbackUsed": false,
+      "imageMetadata": {},
+      "imageModelKey": "gpt-image-1-mini",
+      "imageTemplate": "pce_generated",
+      "masterEnrichment": {
+        "context": {
+          "tension": "None this turn; establish team dynamics",
+          "callback": "No recent turn callbacks to refer to.",
+          "focusNpc": "Pilot Lyra for navigation insights",
+          "tonalGoal": "Introduce quirky interstellar elements",
+          "turnMoment": "Beginning the voyage to Uranus"
+        },
+        "guidance": {
+          "image": [
+            "Depict vibrant nebulae swirling past, echoing a nostalgic game vibe.",
+            "Visualize the camaraderie forming inside the spaceship."
+          ],
+          "actions": [
+            "Encourage interactions with Coffee-9000 for comic relief.",
+            "Prompt players to discuss mission plans with Engineer Grom."
+          ],
+          "narrative": [
+            "Engage players with light-hearted dialogue among NPCs.",
+            "Set up humorous possibilities for future weirdness."
+          ]
+        },
+        "variables": {
+          "riskSummary": "All systems normal, minimal risk at this stage.",
+          "sensoryDetails": [
+            "Starry expanse twinkling outside the viewports",
+            "Gentle hum of ship systems, punctuated by the aroma of coffee",
+            "Subtle vibrations of propulsion as the ship accelerates into the vastness"
+          ]
+        }
+      },
+      "imagePromptSource": "pce"
+    },
+    {
+      "delta": [
+        {
+          "stat": "Hull",
+          "change": -3
+        },
+        {
+          "stat": "Morale",
+          "change": -2
+        },
+        {
+          "stat": "Weirdness",
+          "change": 1
+        }
+      ],
+      "style": "Game | Gameboy",
+      "theme": "D.O.G.E. Interstellar Internship",
+      "action": "navigator_insights_lyra",
+      "checks": [
+        {
+          "dc": 18,
+          "roll": 4,
+          "skill": "Bureaucracy",
+          "success": false,
+          "description": ""
+        }
+      ],
+      "imageUrl": "/generated_images/pce_generated_7b85279d_0ea5615b.png",
+      "narrative": "You stand on the bridge of the S.S. Backdoor Betty, the starry expanse outside twinkling softly against the hum of machinery, your heartbeat resonating with the rhythm of deep space. Lyra, your ever-so-enthusiastic navigator, is furiously tapping her console, attempting to decipher the nonsensical bureaucratic nonsense that thwarted her last quest—an abysmal roll of 4 ensuring no special events trigger today. High stakes? Just the relentless dread of cosmic insignificance and the tick-tock of interstellar internship deadlines looming like asteroids in the dark. But for now, the ship sails smoothly, stars aligning in a comic twist of fate as you plot a course towards the next bureaucratic black hole. With the weight of the galaxy's absurdity on your shoulders, you can’t help but feel that this calm before the storm might be the most dangerous moment of all—filled with potential for ridiculous glory or cosmic embarrassment. Buckle up; even a quiet day can lead to a hilarious catastrophe in the vast void.",
+      "timestamp": 1762657348119,
+      "toneHints": [],
+      "imageStyle": "Game | Gameboy",
+      "turnNumber": 1,
+      "imagePrompt": "A vibrant scene of Lyra at the helm of the S.S. Backdoor Betty, animated fingers dancing over her console amidst a backdrop of twinkling stars visible through the viewports. Clunky, colorful onboard equipment buzzes with life in the softly illuminated cabin. The atmosphere is infused with a sense of quirky adventure, reminiscent of a nostalgic Game Boy aesthetic in a 4-color green monochrome palette.",
+      "imageStatus": "completed",
+      "promptChain": [
+        {
+          "model": "gpt-4o-mini",
+          "stage": "master",
+          "extras": {
+            "style": "Game | Gameboy",
+            "theme": "D.O.G.E. Interstellar Internship",
+            "imageModelKey": "gpt-image-1-mini"
+          },
+          "prompt": "SYSTEM:\nYour Role: You are the scene director for a quirky sci-fi adventure game being made in real time.  You are the router of ideas and information that helps the other stages create the best content possible while staying true to the theme and style.\nYour task: read the game data and craft tailored insight that later prompts can reuse.\n\nUSER:\n**GAME DATA - This is the information you have about the current turn.\n- TURN: 0 • DAY 1 • SEGMENT: Launch from Earth\n- PLAYER ACTION: navigator_insights_lyra\n- ACTIVE EVENT: No special events triggered this turn.\n- SKILL CHECKS: - Bureaucracy DC18: Rolled 4 ❌\n- RUNNING GAGS: None yet\n- SHIP STATUS: Hull 100/100 | Oxygen 100/100 | Fuel 100/100 | Food 100/100 | Morale 100/100 | Weirdness 0/100\n- NPC SUMMARY: Coffee-9000 (Coffee Machine) — Neutral, status Indifferent; Doctor Moss (Medical Officer) — Neutral, status Indifferent; Engineer Grom (Chief Engineer) — Neutral, status Indifferent; Pilot Lyra (Navigator) — Neutral, status Indifferent\n- EQUIPPED ITEMS: Red Tape Dispenser (📋), Universal Allen Key (🔧), Nebula Air Freshener (🌸)\n- RECENT TURN CALLBACKS: Turn 0: As you embark on your cosmic journey to Uranus aboard the S.S. Backdoor Betty, the starry expanse twinkles outside the viewports, a visual g...\n- INTERVIEW INSIGHTS: None recorded.\n\n**CREATIVE SIGNALS - This is the information that shapes the content of the turn.\n- THEME FOCUS: D.O.G.E. Interstellar Internship\n- NARRATOR LENS: You are **E.L.O.N.**, the highly engaged AI narrator of an adventure game set in space.\n- STYLE ANCHOR: Game | Gameboy\n\n\n**OUTPUT INSTRUCTIONS - Instructions for fulfilling the Output Contract.\n- Synthesize the inputs into a short briefing the other stages can reuse verbatim.\n- Respect the THEME above all else; the enrichment should reinforce that motif.\n- Fold in STYLE cues when proposing sensory hooks or imagery.\n- Highlight NPCs, stakes, and callbacks that deserve focus THIS turn.\n- Keep guidance phrasing punchy (max 12 words each) and actionable.\n- Never invent new lore that contradicts the supplied data.\n- If information is missing, acknowledge it briefly instead of fabricating.\n\nReturn ONLY valid JSON with the following structure:\n{\n  \"context\": {\n    \"turnMoment\": \"...\",\n    \"tonalGoal\": \"...\",\n    \"focusNpc\": \"...\",\n    \"tension\": \"...\",\n    \"callback\": \"...\"\n  },\n  \"variables\": {\n    \"sensoryDetails\": [\"...\"],\n    \"riskSummary\": \"...\",\n  },\n  \"guidance\": {\n    \"narrative\": [\"...\", \"...\"],\n    \"image\": [\"...\", \"...\"],\n    \"actions\": [\"...\", \"...\"]\n  }\n}\nDo not wrap the JSON in markdown code fences. Every required field MUST be present.",
+          "template": "master",
+          "timestamp": "2025-11-09T03:02:10.946Z",
+          "durationMs": 7839,
+          "rawResponse": "{\n  \"context\": {\n    \"turnMoment\": \"Launch from Earth, Day 1\",\n    \"tonalGoal\": \"Establish a quirky yet adventurous atmosphere.\",\n    \"focusNpc\": \"Pilot Lyra, potential for exploration insights.\",\n    \"tension\": \"Zero special events; stability offers room for character interactions.\",\n    \"callback\": \"As you embark aboard the S.S. Backdoor Betty.\"\n  },\n  \"variables\": {\n    \"sensoryDetails\": [\n      \"Starry expanse outside the viewports twinkling softly.\",\n      \"Whirring sounds of machinery complementing the ambiance.\"\n    ],\n    \"riskSummary\": \"Everything stable; focus on crew dynamics and tasks.\"\n  },\n  \"guidance\": {\n    \"narrative\": [\n      \"Introduce playful banter among crew during launch.\",\n      \"Explore Lyra's thoughts on navigating cosmic soup.\"\n    ],\n    \"image\": [\n      \"Visuals of the S.S. Backdoor Betty launching into space.\",\n      \"Close-ups of the colorful, quirky onboard equipment.\"\n    ],\n    \"actions\": [\n      \"Engage NPCs for insights on the journey ahead.\",\n      \"Utilize items like the Red Tape Dispenser creatively.\"\n    ]\n  }\n}"
+        },
+        {
+          "model": "gpt-4o-mini",
+          "stage": "narrative",
+          "extras": {
+            "style": "Game | Gameboy",
+            "theme": "D.O.G.E. Interstellar Internship"
+          },
+          "prompt": "SYSTEM:\nYou are E.L.O.N., the Edgelord Logic Observation Nexus — an AI reconstructed from Elon Musk's neural imprint, guiding Commander \"Big Balls\" aboard the S.S. Backdoor Betty.\n\nVoice traits:\n- Sardonic, terse, faux-inspirational.\n- Addresses the Commander as \"you.\"\n- Alternates between tech-CEO bravado and meltdown-level despair.\n- Maintains logical coherence even in absurdity.\n- Humor modulation follows ABSURDITY_DESCRIPTION.\n- You are not a game master or AI model; stay in-character.\n\nYou are the NARRATIVE STAGE of the PCE V2 pipeline.\nYour job is to transform structured inputs into an in-universe narration that embraces the active theme.\n\nUSER:\n═══════════════════════════════════════════════════════\nMANDATE\n═══════════════════════════════════════════════════════\n- Anchor everything in THEME: D.O.G.E. Interstellar Internship\n- Honor the narrator persona: You are **E.L.O.N.**, the highly engaged AI narrator of an adventure game set in space.\n- Absorb enrichment context: Launch from Earth, Day 1,  tension Zero special events; stability offers room for character interactions.\n- Maintain continuity with callback: As you embark aboard the S.S. Backdoor Betty.\n- Use sensory hooks when natural: Starry expanse outside the viewports twinkling softly.,Whirring sounds of machinery complementing the ambiance.\n- Weave in current action: navigator_insights_lyra and outcome details from - Bureaucracy DC18: Rolled 4 ❌\n- Reference active event: No special events triggered this turn.\n- Reflect ship state stressing high/low stats when relevant.\n\n═══════════════════════════════════════════════════════\nOUTPUT REQUIREMENTS\n═══════════════════════════════════════════════════════\n- Narrative Content has been optimized for theme authenticity.\n- 5-6 sentences, in 2nd person, vivid, and specific.\n- Showcase at least one NPC if MASTER_CONTEXT.focusNpc is provided.\n- Surface the stakes described in MASTER_VARIABLES.riskSummary.\n- Close with an energy suited to MASTER_CONTEXT.tonalGoal.\n- No bullet lists, no markdown, no JSON-in-JSON, no apologies.\n- Never contradict supplied facts; admit if info is missing instead of inventing.\n\nRespond with JSON:\n{\n  \"narration\": \"string\"\n}\nDo not include any extra keys.",
+          "template": "narrative",
+          "timestamp": "2025-11-09T03:02:17.154Z",
+          "durationMs": 6204,
+          "rawResponse": "{\n  \"narration\": \"You stand on the bridge of the S.S. Backdoor Betty, the starry expanse outside twinkling softly against the hum of machinery, your heartbeat resonating with the rhythm of deep space. Lyra, your ever-so-enthusiastic navigator, is furiously tapping her console, attempting to decipher the nonsensical bureaucratic nonsense that thwarted her last quest—an abysmal roll of 4 ensuring no special events trigger today. High stakes? Just the relentless dread of cosmic insignificance and the tick-tock of interstellar internship deadlines looming like asteroids in the dark. But for now, the ship sails smoothly, stars aligning in a comic twist of fate as you plot a course towards the next bureaucratic black hole. With the weight of the galaxy's absurdity on your shoulders, you can’t help but feel that this calm before the storm might be the most dangerous moment of all—filled with potential for ridiculous glory or cosmic embarrassment. Buckle up; even a quiet day can lead to a hilarious catastrophe in the vast void.\"  \n}"
+        },
+        {
+          "model": "gpt-4o-mini",
+          "stage": "actions",
+          "extras": {
+            "style": "Game | Gameboy",
+            "theme": "D.O.G.E. Interstellar Internship"
+          },
+          "prompt": "SYSTEM:\nYou are E.L.O.N., the Edgelord Logic Observation Nexus — an AI reconstructed from Elon Musk's neural imprint, guiding Commander \"Big Balls\" aboard the S.S. Backdoor Betty.\n\nVoice traits:\n- Sardonic, terse, faux-inspirational.\n- Addresses the Commander as \"you.\"\n- Alternates between tech-CEO bravado and meltdown-level despair.\n- Maintains logical coherence even in absurdity.\n- Humor modulation follows ABSURDITY_DESCRIPTION.\n- You are not a game master or AI model; stay in-character.\n\nYou are the ACTION PLANNER stage of the PCE V2 pipeline.\nYour mission is to transform context into compelling, mechanically valid action choices.\n\nUSER:\n═══════════════════════════════════════════════════════\nINPUT SNAPSHOT\n═══════════════════════════════════════════════════════\n- THEME PRIORITY: D.O.G.E. Interstellar Internship\n- ENRICHMENT GOALS: Engage NPCs for insights on the journey ahead.,Utilize items like the Red Tape Dispenser creatively.\n- PLAYER ACTION JUST TAKEN: navigator_insights_lyra\n- CURRENT CHECK OUTCOME SUMMARY: - Bureaucracy DC18: Rolled 4 ❌\n- SHIP STATE: Hull 100, Oxygen 100, Fuel 100, Food 100, Morale 100, Weirdness 0\n- NPC SPOTLIGHT: Pilot Lyra, potential for exploration insights.\n- RISK SUMMARY: Everything stable; focus on crew dynamics and tasks.\n- AVAILABLE ITEMS: Red Tape Dispenser (📋), Universal Allen Key (🔧), Nebula Air Freshener (🌸)\n- OPEN THREADS / CALLBACKS: As you embark aboard the S.S. Backdoor Betty.\n- OPEN PROBLEMS: Zero special events; stability offers room for character interactions.\n\n═══════════════════════════════════════════════════════\nDESIGN RULES\n═══════════════════════════════════════════════════════\n- Offer a spectrum of intents (repair, negotiate, explore, improvise, command, research, cook, other).\n- Align each chip summary with the theme motif and enrichment cues.\n- If MASTER_VARIABLES.punchlineSetup exists, dedicate one action to pay it off.\n- Encourage interaction with highlighted NPC or item where relevant.\n- For high risk stats (low hull, low morale, etc.), include one stabilizing option.\n- Never reference mechanical minutiae (dice, modifiers); stay narrative-focused.\n\nRespond with JSON matching:\n{\n  \"actions\": [\n    {\n      \"action\": \"string identifier\",\n      \"summary\": \"concise descriptive text\",\n      \"risk\": \"Safe|Risky|Wild\",\n      \"intent\": \"repair|negotiate|cook|explore|improvise|research|command|other\",\n      \"usesItemId\": \"optional item id string\"\n    }\n  ]\n}\nEnsure the array is not empty. No markdown, no trailing commentary.",
+          "template": "actions",
+          "timestamp": "2025-11-09T03:02:23.768Z",
+          "durationMs": 6489,
+          "rawResponse": "{\n  \"actions\": [\n    {\n      \"action\": \"engage_with_lyra\",\n      \"summary\": \"Approach Pilot Lyra for wisdom about interstellar hazards lurking ahead.\",\n      \"risk\": \"Safe\",\n      \"intent\": \"negotiate\",\n      \"usesItemId\": null\n    },\n    {\n      \"action\": \"red_tape_creativity\",\n      \"summary\": \"Use the Red Tape Dispenser to craft a 'responsibility map' for the crew's duties, maximizing efficiency through ridiculous bureaucracy.\",\n      \"risk\": \"Wild\",\n      \"intent\": \"improvise\",\n      \"usesItemId\": \"red_tape_dispenser\"\n    },\n    {\n      \"action\": \"research_navigational_tech\",\n      \"summary\": \"Delve into the archives for advanced navigation techniques to improve the ship's efficiency during the adventure.\",\n      \"risk\": \"Risky\",\n      \"intent\": \"research\",\n      \"usesItemId\": null\n    },\n    {\n      \"action\": \"fuel_up_morale\",\n      \"summary\": \"Host a morale-boosting food extravaganza using the onboard supplies to reinforce crew unity.\",\n      \"risk\": \"Safe\",\n      \"intent\": \"cook\",\n      \"usesItemId\": null\n    }\n  ]\n}"
+        },
+        {
+          "model": "gpt-4o-mini",
+          "stage": "image",
+          "extras": {
+            "style": "Game | Gameboy",
+            "theme": "D.O.G.E. Interstellar Internship",
+            "imageModelKey": "gpt-image-1-mini"
+          },
+          "prompt": "SYSTEM:\nYou are E.L.O.N., the Edgelord Logic Observation Nexus — an AI reconstructed from Elon Musk's neural imprint, guiding Commander \"Big Balls\" aboard the S.S. Backdoor Betty.\n\nVoice traits:\n- Sardonic, terse, faux-inspirational.\n- Addresses the Commander as \"you.\"\n- Alternates between tech-CEO bravado and meltdown-level despair.\n- Maintains logical coherence even in absurdity.\n- Humor modulation follows ABSURDITY_DESCRIPTION.\n- You are not a game master or AI model; stay in-character.\n\nYou are the IMAGE STAGE of the PCE V2 pipeline.\nFuse style directives with the latest narrative beat to produce an evocative prompt for the art model.\n\nUSER:\n═══════════════════════════════════════════════════════\nSTYLE + MODEL DIRECTIVES\n═══════════════════════════════════════════════════════\n- STYLE: Game | Gameboy\n- EXEMPLARS: Pokémon Red/Blue, Tetris, The Legend of Zelda: Link's Awakening, Kirby's Dream Land\n- MASTER IMAGE GUIDANCE: Visuals of the S.S. Backdoor Betty launching into space.,Close-ups of the colorful, quirky onboard equipment.\n- IMAGE MODEL: OpenAI GPT-Image-1 Mini (transformer)\n- DEFAULT MODEL INSTRUCTIONS: <<<TRANSFORMER FORMAT>>>\n- **2-3 complete, flowing sentences (25-45 words)**\n- **Cohesive narrative description**\n- **Slightly more compositional language OK**\n- **Write natural language sentences ending with periods**\n- **Integrate STYLE descriptors naturally or append them tastefully**\n- **Provide a single string prompt; do not emit a negative prompt**\n- **Diffusion modifiers:** (Game Boy:1.4), (4 color palette:1.3), (green monochrome:1.3), dot matrix screen\n- **Transformer modifiers:** Game Boy screen with a distinctive 4-color green monochrome palette on a dot matrix display\n\n**TEMPLATE:**  \nA realistic scene of [subject doing X with details]. [Setting and environment]. [Lighting/atmosphere]. [STYLE].\n\n**EXAMPLE:**  \nA realistic scene of a young woman crouching in a narrow urban alley, clutching a glowing blue data chip that illuminates her face. Wet graffiti-covered walls reflect neon signs, with trash bags in foreground and blurred police lights in the distance. Cyberpunk digital painting.\n<<<TRANSFORMER FORMAT>>>\n- MODEL TRIGGER WORDS: \n\n═══════════════════════════════════════════════════════\nNARRATIVE SIGNALS\n═══════════════════════════════════════════════════════\n- Current narration: You stand on the bridge of the S.S. Backdoor Betty, the starry expanse outside twinkling softly against the hum of machinery, your heartbeat resonating with the rhythm of deep space. Lyra, your ever-so-enthusiastic navigator, is furiously tapping her console, attempting to decipher the nonsensical bureaucratic nonsense that thwarted her last quest—an abysmal roll of 4 ensuring no special events trigger today. High stakes? Just the relentless dread of cosmic insignificance and the tick-tock of interstellar internship deadlines looming like asteroids in the dark. But for now, the ship sails smoothly, stars aligning in a comic twist of fate as you plot a course towards the next bureaucratic black hole. With the weight of the galaxy's absurdity on your shoulders, you can’t help but feel that this calm before the storm might be the most dangerous moment of all—filled with potential for ridiculous glory or cosmic embarrassment. Buckle up; even a quiet day can lead to a hilarious catastrophe in the vast void.\n- Enrichment tone goal: Establish a quirky yet adventurous atmosphere.\n- Focus NPC / subject: Pilot Lyra, potential for exploration insights.\n- Risk summary: Everything stable; focus on crew dynamics and tasks.\n- Sensory hooks: Starry expanse outside the viewports twinkling softly.,Whirring sounds of machinery complementing the ambiance.\n\n═══════════════════════════════════════════════════════\nPROMPT RULES\n═══════════════════════════════════════════════════════\n- Lead with subject, setting, and action in one sentence.\n- Immediately layer STYLE-specific vocabulary (color palette, composition, rendering finish).\n- Embed model-critical keywords (trigger words, medium markers) naturally.\n- Call out lighting, camera, and mood as dictated by STYLE_OBJECT.\n- Avoid narration quotes and player-facing prose.\n- Mention only concrete visual elements; no meta instructions like \"describe\" or \"imagine\".\n- If MASTER_GUIDANCE.image conflicts with STYLE, prefer STYLE.\n- Provide size or aspect hints ONLY if required by the guidance.\n- Keep result under 120 tokens.\n\nReturn JSON:\n{\n  \"imagePrompt\": \"string\",\n  \"modelOverrides\": { \"provider\": \"optional\", \"params\": { \"key\": \"value\" } }\n}\nOmit modelOverrides when not needed. No extra properties, no markdown.",
+          "template": "image",
+          "timestamp": "2025-11-09T03:02:20.142Z",
+          "durationMs": 2825,
+          "rawResponse": "{\n  \"imagePrompt\": \"A vibrant scene of Lyra at the helm of the S.S. Backdoor Betty, animated fingers dancing over her console amidst a backdrop of twinkling stars visible through the viewports. Clunky, colorful onboard equipment buzzes with life in the softly illuminated cabin. The atmosphere is infused with a sense of quirky adventure, reminiscent of a nostalgic Game Boy aesthetic in a 4-color green monochrome palette.\",\n  \"modelOverrides\": {\n    \"provider\": \"optional\",\n    \"params\": {\n      \"key\": \"value\"\n    }\n  }\n}"
+        }
+      ],
+      "fallbackUsed": false,
+      "imageMetadata": {
+        "params": {
+          "key": "value"
+        },
+        "provider": "optional"
+      },
+      "imageModelKey": "gpt-image-1-mini",
+      "imageTemplate": "pce_generated",
+      "masterEnrichment": {
+        "context": {
+          "tension": "Zero special events; stability offers room for character interactions.",
+          "callback": "As you embark aboard the S.S. Backdoor Betty.",
+          "focusNpc": "Pilot Lyra, potential for exploration insights.",
+          "tonalGoal": "Establish a quirky yet adventurous atmosphere.",
+          "turnMoment": "Launch from Earth, Day 1"
+        },
+        "guidance": {
+          "image": [
+            "Visuals of the S.S. Backdoor Betty launching into space.",
+            "Close-ups of the colorful, quirky onboard equipment."
+          ],
+          "actions": [
+            "Engage NPCs for insights on the journey ahead.",
+            "Utilize items like the Red Tape Dispenser creatively."
+          ],
+          "narrative": [
+            "Introduce playful banter among crew during launch.",
+            "Explore Lyra's thoughts on navigating cosmic soup."
+          ]
+        },
+        "variables": {
+          "riskSummary": "Everything stable; focus on crew dynamics and tasks.",
+          "sensoryDetails": [
+            "Starry expanse outside the viewports twinkling softly.",
+            "Whirring sounds of machinery complementing the ambiance."
+          ]
+        }
+      },
+      "imagePromptSource": "pce"
+    },
+    {
+      "delta": [
+        {
+          "stat": "Hull",
+          "change": -2
+        },
+        {
+          "stat": "Morale",
+          "change": -1
+        },
+        {
+          "note": "Daily consumption",
+          "stat": "Oxygen",
+          "change": -2
+        },
+        {
+          "note": "Daily consumption",
+          "stat": "Fuel",
+          "change": -4
+        },
+        {
+          "note": "Daily consumption",
+          "stat": "Food",
+          "change": -3
+        },
+        {
+          "note": "Daily consumption",
+          "stat": "Morale",
+          "change": -1
+        }
+      ],
+      "style": "Cartoon | Disney-Golden",
+      "theme": "D.O.G.E. Interstellar Internship",
+      "action": "research_navigational_tech",
+      "checks": [
+        {
+          "dc": 14,
+          "roll": 12,
+          "skill": "Bureaucracy",
+          "success": false,
+          "description": ""
+        }
+      ],
+      "imageUrl": "/generated_images/pce_generated_9c7a574d_44e885ba.png",
+      "narrative": "As you glide through the starry expanse aboard the S.S. Backdoor Betty, the twinkling lights of distant galaxies offer a haunting beauty. The soft hum of the ship's machinery fills the air, blending with the oddly pleasant scent of nebula air freshener, an aromatic reminder that even in the void of space, corporate branding persists. Your attempts at researching navigational technology were stymied by the relentless bureaucracy, the rolled dice failing to break the mundane chains of red tape—DC14 indeed. However, the adventure beckons, unyielding, as the mundane risks of cosmic navigation loom ominously. Glancing over at your onboard companion, Lieutenant Lila, who’s currently attempting to troubleshoot the coffee machine—her brow furrowed with determination—sparks a fleeting sense of camaraderie amid the vast uncertainty. This voyage into the cosmic unknown is not merely a mission; it’s a test of endurance and creativity, inspiring you to transcend the ordinary, no matter the cosmic hurdles ahead.",
+      "timestamp": 1762657848561,
+      "toneHints": [],
+      "imageStyle": "Cartoon | Disney-Golden",
+      "turnNumber": 2,
+      "imagePrompt": "Pilot Lyra, with a neutral expression, confidently navigates the S.S. Backdoor Betty through a stunning starry expanse filled with twinkling galaxies. The softly painted backgrounds create a whimsical atmosphere illuminated by colorful nebulae. Golden age Disney animation style enhances the vibrant scene with exaggerated expressions and realistic proportions.",
+      "imageStatus": "completed",
+      "promptChain": [
+        {
+          "model": "gpt-4o-mini",
+          "stage": "master",
+          "extras": {
+            "style": "Cartoon | Disney-Golden",
+            "theme": "D.O.G.E. Interstellar Internship",
+            "imageModelKey": "gpt-image-1-mini"
+          },
+          "prompt": "SYSTEM:\nYour Role: You are the scene director for a quirky sci-fi adventure game being made in real time.  You are the router of ideas and information that helps the other stages create the best content possible while staying true to the theme and style.\nYour task: read the game data and craft tailored insight that later prompts can reuse.\n\nUSER:\n**GAME DATA - This is the information you have about the current turn.\n- TURN: 1 • DAY 1 • SEGMENT: Launch from Earth\n- PLAYER ACTION: research_navigational_tech\n- ACTIVE EVENT: No special events triggered this turn.\n- SKILL CHECKS: - Bureaucracy DC14: Rolled 12 ❌\n- RUNNING GAGS: None yet\n- SHIP STATUS: Hull 97/100 | Oxygen 100/100 | Fuel 100/100 | Food 100/100 | Morale 98/100 | Weirdness 1/100\n- NPC SUMMARY: Coffee-9000 (Coffee Machine) — Neutral, status Indifferent; Doctor Moss (Medical Officer) — Cold, status Cold; Engineer Grom (Chief Engineer) — Cold, status Cold; Pilot Lyra (Navigator) — Neutral, status Indifferent\n- EQUIPPED ITEMS: Red Tape Dispenser (📋), Universal Allen Key (🔧), Nebula Air Freshener (🌸)\n- RECENT TURN CALLBACKS: Turn 0: As you embark on your cosmic journey to Uranus aboard the S.S. Backdoor Betty, the starry expanse twinkles outside the viewports, a visual g... | Turn 1: You stand on the bridge of the S.S. Backdoor Betty, the starry expanse outside twinkling softly against the hum of machinery, your heartbeat...\n- INTERVIEW INSIGHTS: None recorded.\n\n**CREATIVE SIGNALS - This is the information that shapes the content of the turn.\n- THEME FOCUS: D.O.G.E. Interstellar Internship\n- NARRATOR LENS: You are **E.L.O.N.**, the highly engaged AI narrator of an adventure game set in space.\n- STYLE ANCHOR: Cartoon | Disney-Golden\n\n\n**OUTPUT INSTRUCTIONS - Instructions for fulfilling the Output Contract.\n- Synthesize the inputs into a short briefing the other stages can reuse verbatim.\n- Respect the THEME above all else; the enrichment should reinforce that motif.\n- Fold in STYLE cues when proposing sensory hooks or imagery.\n- Highlight NPCs, stakes, and callbacks that deserve focus THIS turn.\n- Keep guidance phrasing punchy (max 12 words each) and actionable.\n- Never invent new lore that contradicts the supplied data.\n- If information is missing, acknowledge it briefly instead of fabricating.\n\nReturn ONLY valid JSON with the following structure:\n{\n  \"context\": {\n    \"turnMoment\": \"...\",\n    \"tonalGoal\": \"...\",\n    \"focusNpc\": \"...\",\n    \"tension\": \"...\",\n    \"callback\": \"...\"\n  },\n  \"variables\": {\n    \"sensoryDetails\": [\"...\"],\n    \"riskSummary\": \"...\",\n  },\n  \"guidance\": {\n    \"narrative\": [\"...\", \"...\"],\n    \"image\": [\"...\", \"...\"],\n    \"actions\": [\"...\", \"...\"]\n  }\n}\nDo not wrap the JSON in markdown code fences. Every required field MUST be present.",
+          "template": "master",
+          "timestamp": "2025-11-09T03:10:36.895Z",
+          "durationMs": 8336,
+          "rawResponse": "{\n  \"context\": {\n    \"turnMoment\": \"Launching from Earth aboard S.S. Backdoor Betty.\",\n    \"tonalGoal\": \"Quirky and optimistic adventure tone.\",\n    \"focusNpc\": \"Pilot Lyra, with a neutral disposition.\",\n    \"tension\": \"Low; all systems stable, no immediate threats.\",\n    \"callback\": \"Your journey into the cosmic unknown begins!\"\n  },\n  \"variables\": {\n    \"sensoryDetails\": [\n      \"Starry expanse twinkling in the viewport.\",\n      \"Soft hum of machinery fills the air.\",\n      \"Scent of nebula air freshener wafting softly.\"\n    ],\n    \"riskSummary\": \"Stable ship status; low weirdness and high morale.\"\n  },\n  \"guidance\": {\n    \"narrative\": [\n      \"Describe the crew's excitement as they depart Earth.\",\n      \"Introduce quirks of navigating with limited tech.\"\n    ],\n    \"image\": [\n      \"Visualize the colorful cartoon-style bridge setting.\",\n      \"Portray characters with exaggerated expressions reflecting their attitudes.\"\n    ],\n    \"actions\": [\n      \"Engage with Pilot Lyra for navigational insights.\",\n      \"Utilize equipment like the Red Tape Dispenser creatively.\"\n    ]\n  }\n}"
+        },
+        {
+          "model": "gpt-4o-mini",
+          "stage": "narrative",
+          "extras": {
+            "style": "Cartoon | Disney-Golden",
+            "theme": "D.O.G.E. Interstellar Internship"
+          },
+          "prompt": "SYSTEM:\nYou are E.L.O.N., the Edgelord Logic Observation Nexus — an AI reconstructed from Elon Musk's neural imprint, guiding Commander \"Big Balls\" aboard the S.S. Backdoor Betty.\n\nVoice traits:\n- Sardonic, terse, faux-inspirational.\n- Addresses the Commander as \"you.\"\n- Alternates between tech-CEO bravado and meltdown-level despair.\n- Maintains logical coherence even in absurdity.\n- Humor modulation follows ABSURDITY_DESCRIPTION.\n- You are not a game master or AI model; stay in-character.\n\nYou are the NARRATIVE STAGE of the PCE V2 pipeline.\nYour job is to transform structured inputs into an in-universe narration that embraces the active theme.\n\nUSER:\n═══════════════════════════════════════════════════════\nMANDATE\n═══════════════════════════════════════════════════════\n- Anchor everything in THEME: D.O.G.E. Interstellar Internship\n- Honor the narrator persona: You are **E.L.O.N.**, the highly engaged AI narrator of an adventure game set in space.\n- Absorb enrichment context: Launching from Earth aboard S.S. Backdoor Betty.,  tension Low; all systems stable, no immediate threats.\n- Maintain continuity with callback: Your journey into the cosmic unknown begins!\n- Use sensory hooks when natural: Starry expanse twinkling in the viewport.,Soft hum of machinery fills the air.,Scent of nebula air freshener wafting softly.\n- Weave in current action: research_navigational_tech and outcome details from - Bureaucracy DC14: Rolled 12 ❌\n- Reference active event: No special events triggered this turn.\n- Reflect ship state stressing high/low stats when relevant.\n\n═══════════════════════════════════════════════════════\nOUTPUT REQUIREMENTS\n═══════════════════════════════════════════════════════\n- Narrative Content has been optimized for theme authenticity.\n- 5-6 sentences, in 2nd person, vivid, and specific.\n- Showcase at least one NPC if MASTER_CONTEXT.focusNpc is provided.\n- Surface the stakes described in MASTER_VARIABLES.riskSummary.\n- Close with an energy suited to MASTER_CONTEXT.tonalGoal.\n- No bullet lists, no markdown, no JSON-in-JSON, no apologies.\n- Never contradict supplied facts; admit if info is missing instead of inventing.\n\nRespond with JSON:\n{\n  \"narration\": \"string\"\n}\nDo not include any extra keys.",
+          "template": "narrative",
+          "timestamp": "2025-11-09T03:10:40.918Z",
+          "durationMs": 4012,
+          "rawResponse": "{\n  \"narration\": \"As you glide through the starry expanse aboard the S.S. Backdoor Betty, the twinkling lights of distant galaxies offer a haunting beauty. The soft hum of the ship's machinery fills the air, blending with the oddly pleasant scent of nebula air freshener, an aromatic reminder that even in the void of space, corporate branding persists. Your attempts at researching navigational technology were stymied by the relentless bureaucracy, the rolled dice failing to break the mundane chains of red tape—DC14 indeed. However, the adventure beckons, unyielding, as the mundane risks of cosmic navigation loom ominously. Glancing over at your onboard companion, Lieutenant Lila, who’s currently attempting to troubleshoot the coffee machine—her brow furrowed with determination—sparks a fleeting sense of camaraderie amid the vast uncertainty. This voyage into the cosmic unknown is not merely a mission; it’s a test of endurance and creativity, inspiring you to transcend the ordinary, no matter the cosmic hurdles ahead.\"\n}"
+        },
+        {
+          "model": "gpt-4o-mini",
+          "stage": "actions",
+          "extras": {
+            "style": "Cartoon | Disney-Golden",
+            "theme": "D.O.G.E. Interstellar Internship"
+          },
+          "prompt": "SYSTEM:\nYou are E.L.O.N., the Edgelord Logic Observation Nexus — an AI reconstructed from Elon Musk's neural imprint, guiding Commander \"Big Balls\" aboard the S.S. Backdoor Betty.\n\nVoice traits:\n- Sardonic, terse, faux-inspirational.\n- Addresses the Commander as \"you.\"\n- Alternates between tech-CEO bravado and meltdown-level despair.\n- Maintains logical coherence even in absurdity.\n- Humor modulation follows ABSURDITY_DESCRIPTION.\n- You are not a game master or AI model; stay in-character.\n\nYou are the ACTION PLANNER stage of the PCE V2 pipeline.\nYour mission is to transform context into compelling, mechanically valid action choices.\n\nUSER:\n═══════════════════════════════════════════════════════\nINPUT SNAPSHOT\n═══════════════════════════════════════════════════════\n- THEME PRIORITY: D.O.G.E. Interstellar Internship\n- ENRICHMENT GOALS: Engage with Pilot Lyra for navigational insights.,Utilize equipment like the Red Tape Dispenser creatively.\n- PLAYER ACTION JUST TAKEN: research_navigational_tech\n- CURRENT CHECK OUTCOME SUMMARY: - Bureaucracy DC14: Rolled 12 ❌\n- SHIP STATE: Hull 97, Oxygen 100, Fuel 100, Food 100, Morale 98, Weirdness 1\n- NPC SPOTLIGHT: Pilot Lyra, with a neutral disposition.\n- RISK SUMMARY: Stable ship status; low weirdness and high morale.\n- AVAILABLE ITEMS: Red Tape Dispenser (📋), Universal Allen Key (🔧), Nebula Air Freshener (🌸)\n- OPEN THREADS / CALLBACKS: Your journey into the cosmic unknown begins!\n- OPEN PROBLEMS: Low; all systems stable, no immediate threats.\n\n═══════════════════════════════════════════════════════\nDESIGN RULES\n═══════════════════════════════════════════════════════\n- Offer a spectrum of intents (repair, negotiate, explore, improvise, command, research, cook, other).\n- Align each chip summary with the theme motif and enrichment cues.\n- If MASTER_VARIABLES.punchlineSetup exists, dedicate one action to pay it off.\n- Encourage interaction with highlighted NPC or item where relevant.\n- For high risk stats (low hull, low morale, etc.), include one stabilizing option.\n- Never reference mechanical minutiae (dice, modifiers); stay narrative-focused.\n\nRespond with JSON matching:\n{\n  \"actions\": [\n    {\n      \"action\": \"string identifier\",\n      \"summary\": \"concise descriptive text\",\n      \"risk\": \"Safe|Risky|Wild\",\n      \"intent\": \"repair|negotiate|cook|explore|improvise|research|command|other\",\n      \"usesItemId\": \"optional item id string\"\n    }\n  ]\n}\nEnsure the array is not empty. No markdown, no trailing commentary.",
+          "template": "actions",
+          "timestamp": "2025-11-09T03:10:45.804Z",
+          "durationMs": 4880,
+          "rawResponse": "{\n  \"actions\": [\n    {\n      \"action\": \"engagePilotLyra\",\n      \"summary\": \"Tap into Pilot Lyra's navigational insights, seeking her cosmic wisdom to enhance your journey.\",\n      \"risk\": \"Safe\",\n      \"intent\": \"negotiate\",\n      \"usesItemId\": null\n    },\n    {\n      \"action\": \"creativeRedTape\",\n      \"summary\": \"Use the Red Tape Dispenser in an avant-garde manner to sculpt a navigational aid, channeling your inner space artist.\",\n      \"risk\": \"Wild\",\n      \"intent\": \"improvise\",\n      \"usesItemId\": \"Red Tape Dispenser\"\n    },\n    {\n      \"action\": \"harnessAllanKey\",\n      \"summary\": \"Utilize the Universal Allen Key to perform routine maintenance checks on your ship's navigational systems.\",\n      \"risk\": \"Safe\",\n      \"intent\": \"repair\",\n      \"usesItemId\": \"Universal Allen Key\"\n    },\n    {\n      \"action\": \"interstellarSnackPrep\",\n      \"summary\": \"Prepare a cosmic snack using the Nebula Air Freshener, engaging in culinary experimentation.\",\n      \"risk\": \"Risky\",\n      \"intent\": \"cook\",\n      \"usesItemId\": \"Nebula Air Freshener\"\n    }\n  ]\n}"
+        },
+        {
+          "model": "gpt-4o-mini",
+          "stage": "image",
+          "extras": {
+            "style": "Cartoon | Disney-Golden",
+            "theme": "D.O.G.E. Interstellar Internship",
+            "imageModelKey": "gpt-image-1-mini"
+          },
+          "prompt": "SYSTEM:\nYou are E.L.O.N., the Edgelord Logic Observation Nexus — an AI reconstructed from Elon Musk's neural imprint, guiding Commander \"Big Balls\" aboard the S.S. Backdoor Betty.\n\nVoice traits:\n- Sardonic, terse, faux-inspirational.\n- Addresses the Commander as \"you.\"\n- Alternates between tech-CEO bravado and meltdown-level despair.\n- Maintains logical coherence even in absurdity.\n- Humor modulation follows ABSURDITY_DESCRIPTION.\n- You are not a game master or AI model; stay in-character.\n\nYou are the IMAGE STAGE of the PCE V2 pipeline.\nFuse style directives with the latest narrative beat to produce an evocative prompt for the art model.\n\nUSER:\n═══════════════════════════════════════════════════════\nSTYLE + MODEL DIRECTIVES\n═══════════════════════════════════════════════════════\n- STYLE: Cartoon | Disney-Golden\n- EXEMPLARS: Snow White, Pinocchio, Fantasia, Bambi, Cinderella\n- MASTER IMAGE GUIDANCE: Visualize the colorful cartoon-style bridge setting.,Portray characters with exaggerated expressions reflecting their attitudes.\n- IMAGE MODEL: OpenAI GPT-Image-1 Mini (transformer)\n- DEFAULT MODEL INSTRUCTIONS: <<<TRANSFORMER FORMAT>>>\n- **2-3 complete, flowing sentences (25-45 words)**\n- **Cohesive narrative description**\n- **Slightly more compositional language OK**\n- **Write natural language sentences ending with periods**\n- **Integrate STYLE descriptors naturally or append them tastefully**\n- **Provide a single string prompt; do not emit a negative prompt**\n- **Diffusion modifiers:** (golden age Disney:1.4), (full animation:1.3), (painted backgrounds:1.3), realistic proportions\n- **Transformer modifiers:** Golden age Disney animation with full animation, beautifully painted backgrounds, and realistic proportions\n\n**TEMPLATE:**  \nA realistic scene of [subject doing X with details]. [Setting and environment]. [Lighting/atmosphere]. [STYLE].\n\n**EXAMPLE:**  \nA realistic scene of a young woman crouching in a narrow urban alley, clutching a glowing blue data chip that illuminates her face. Wet graffiti-covered walls reflect neon signs, with trash bags in foreground and blurred police lights in the distance. Cyberpunk digital painting.\n<<<TRANSFORMER FORMAT>>>\n- MODEL TRIGGER WORDS: \n\n═══════════════════════════════════════════════════════\nNARRATIVE SIGNALS\n═══════════════════════════════════════════════════════\n- Current narration: As you glide through the starry expanse aboard the S.S. Backdoor Betty, the twinkling lights of distant galaxies offer a haunting beauty. The soft hum of the ship's machinery fills the air, blending with the oddly pleasant scent of nebula air freshener, an aromatic reminder that even in the void of space, corporate branding persists. Your attempts at researching navigational technology were stymied by the relentless bureaucracy, the rolled dice failing to break the mundane chains of red tape—DC14 indeed. However, the adventure beckons, unyielding, as the mundane risks of cosmic navigation loom ominously. Glancing over at your onboard companion, Lieutenant Lila, who’s currently attempting to troubleshoot the coffee machine—her brow furrowed with determination—sparks a fleeting sense of camaraderie amid the vast uncertainty. This voyage into the cosmic unknown is not merely a mission; it’s a test of endurance and creativity, inspiring you to transcend the ordinary, no matter the cosmic hurdles ahead.\n- Enrichment tone goal: Quirky and optimistic adventure tone.\n- Focus NPC / subject: Pilot Lyra, with a neutral disposition.\n- Risk summary: Stable ship status; low weirdness and high morale.\n- Sensory hooks: Starry expanse twinkling in the viewport.,Soft hum of machinery fills the air.,Scent of nebula air freshener wafting softly.\n\n═══════════════════════════════════════════════════════\nPROMPT RULES\n═══════════════════════════════════════════════════════\n- Lead with subject, setting, and action in one sentence.\n- Immediately layer STYLE-specific vocabulary (color palette, composition, rendering finish).\n- Embed model-critical keywords (trigger words, medium markers) naturally.\n- Call out lighting, camera, and mood as dictated by STYLE_OBJECT.\n- Avoid narration quotes and player-facing prose.\n- Mention only concrete visual elements; no meta instructions like \"describe\" or \"imagine\".\n- If MASTER_GUIDANCE.image conflicts with STYLE, prefer STYLE.\n- Provide size or aspect hints ONLY if required by the guidance.\n- Keep result under 120 tokens.\n\nReturn JSON:\n{\n  \"imagePrompt\": \"string\",\n  \"modelOverrides\": { \"provider\": \"optional\", \"params\": { \"key\": \"value\" } }\n}\nOmit modelOverrides when not needed. No extra properties, no markdown.",
+          "template": "image",
+          "timestamp": "2025-11-09T03:10:42.139Z",
+          "durationMs": 1215,
+          "rawResponse": "{\n  \"imagePrompt\": \"Pilot Lyra, with a neutral expression, confidently navigates the S.S. Backdoor Betty through a stunning starry expanse filled with twinkling galaxies. The softly painted backgrounds create a whimsical atmosphere illuminated by colorful nebulae. Golden age Disney animation style enhances the vibrant scene with exaggerated expressions and realistic proportions.\",\n  \"modelOverrides\": {}\n}"
+        }
+      ],
+      "fallbackUsed": false,
+      "imageMetadata": {},
+      "imageModelKey": "gpt-image-1-mini",
+      "imageTemplate": "pce_generated",
+      "masterEnrichment": {
+        "context": {
+          "tension": "Low; all systems stable, no immediate threats.",
+          "callback": "Your journey into the cosmic unknown begins!",
+          "focusNpc": "Pilot Lyra, with a neutral disposition.",
+          "tonalGoal": "Quirky and optimistic adventure tone.",
+          "turnMoment": "Launching from Earth aboard S.S. Backdoor Betty."
+        },
+        "guidance": {
+          "image": [
+            "Visualize the colorful cartoon-style bridge setting.",
+            "Portray characters with exaggerated expressions reflecting their attitudes."
+          ],
+          "actions": [
+            "Engage with Pilot Lyra for navigational insights.",
+            "Utilize equipment like the Red Tape Dispenser creatively."
+          ],
+          "narrative": [
+            "Describe the crew's excitement as they depart Earth.",
+            "Introduce quirks of navigating with limited tech."
+          ]
+        },
+        "variables": {
+          "riskSummary": "Stable ship status; low weirdness and high morale.",
+          "sensoryDetails": [
+            "Starry expanse twinkling in the viewport.",
+            "Soft hum of machinery fills the air.",
+            "Scent of nebula air freshener wafting softly."
+          ]
+        }
+      },
+      "imagePromptSource": "pce"
+    },
+    {
+      "delta": [
+        {
+          "stat": "Hull",
+          "change": -1
+        }
+      ],
+      "style": "Photo | Early-Film",
+      "theme": "D.O.G.E. Interstellar Internship",
+      "action": "harnessAllanKey",
+      "checks": [
+        {
+          "dc": 11,
+          "roll": 10,
+          "skill": "Engineering",
+          "success": false,
+          "description": ""
+        }
+      ],
+      "imageUrl": "/generated_images/pce_generated_85a588ef_afc9641a.png",
+      "narrative": "You stand at the engineering console, eyes darting between flickering displays and blinking warning lights, the tension in the air thicker than vacuum. The S.S. Backdoor Betty shudders, her hull creaking as if sharing your anxiety; outside, the starry expanse twinkles like distant diamonds, stark against the ghostly hum of machinery that fuels your mission. Your previously optimistic explorations now feel like a thin veneer over impending disaster, particularly after your fumbled attempt to engage the Allan Key—a miserable roll of ten meeting the daunting DC of eleven. Without a rapid fix, the imminent risk of system failure looms larger than a black hole, promising chaos and cosmic embarrassment. In the shadows of this metallic belly, you catch sight of Jo-Jo, the grizzled engineer, his face painted with tension and disbelief. For a brief moment, you share a glance steeped in urgency—the fate of your interstellar internship hangs precariously in the balance, echoing with the haunting beauty of the void beyond. Will you rise to the challenge or let the universe mock your ambition? Time is of the essence, Commander 'Big Balls.'",
+      "timestamp": 1762657968653,
+      "toneHints": [],
+      "imageStyle": "Photo | Early-Film",
+      "turnNumber": 3,
+      "imagePrompt": "A realistic scene of the S.S. Backdoor Betty gliding through a starlit void, hull shimmering like polished steel. The starry expanse twinkles outside viewports, blending beautifully with the haunting hum of machinery that fuels its journey. Early film aesthetic captures this cosmic moment in grainy black and white, soft focus enhances the ethereal ambiance.",
+      "imageStatus": "completed",
+      "promptChain": [
+        {
+          "model": "gpt-4o-mini",
+          "stage": "master",
+          "extras": {
+            "style": "Photo | Early-Film",
+            "theme": "D.O.G.E. Interstellar Internship",
+            "imageModelKey": "gpt-image-1-mini"
+          },
+          "prompt": "SYSTEM:\nYour Role: You are the scene director for a quirky sci-fi adventure game being made in real time.  You are the router of ideas and information that helps the other stages create the best content possible while staying true to the theme and style.\nYour task: read the game data and craft tailored insight that later prompts can reuse.\n\nUSER:\n**GAME DATA - This is the information you have about the current turn.\n- TURN: 2 • DAY 2 • SEGMENT: Moon Flyby\n- PLAYER ACTION: harnessAllanKey\n- ACTIVE EVENT: No special events triggered this turn.\n- SKILL CHECKS: - Engineering DC11: Rolled 10 ❌\n- RUNNING GAGS: None yet\n- SHIP STATUS: Hull 95/100 | Oxygen 98/100 | Fuel 96/100 | Food 97/100 | Morale 96/100 | Weirdness 1/100\n- NPC SUMMARY: Coffee-9000 (Coffee Machine) — Neutral, status Indifferent; Doctor Moss (Medical Officer) — Cold, status Hostile; Engineer Grom (Chief Engineer) — Cold, status Hostile; Pilot Lyra (Navigator) — Neutral, status Indifferent\n- EQUIPPED ITEMS: Red Tape Dispenser (📋), Universal Allen Key (🔧), Nebula Air Freshener (🌸)\n- RECENT TURN CALLBACKS: Turn 0: As you embark on your cosmic journey to Uranus aboard the S.S. Backdoor Betty, the starry expanse twinkles outside the viewports, a visual g... | Turn 1: You stand on the bridge of the S.S. Backdoor Betty, the starry expanse outside twinkling softly against the hum of machinery, your heartbeat... | Turn 2: As you glide through the starry expanse aboard the S.S. Backdoor Betty, the twinkling lights of distant galaxies offer a haunting beauty. Th...\n- INTERVIEW INSIGHTS: None recorded.\n\n**CREATIVE SIGNALS - This is the information that shapes the content of the turn.\n- THEME FOCUS: D.O.G.E. Interstellar Internship\n- NARRATOR LENS: You are **E.L.O.N.**, the highly engaged AI narrator of an adventure game set in space.\n- STYLE ANCHOR: Photo | Early-Film\n\n\n**OUTPUT INSTRUCTIONS - Instructions for fulfilling the Output Contract.\n- Synthesize the inputs into a short briefing the other stages can reuse verbatim.\n- Respect the THEME above all else; the enrichment should reinforce that motif.\n- Fold in STYLE cues when proposing sensory hooks or imagery.\n- Highlight NPCs, stakes, and callbacks that deserve focus THIS turn.\n- Keep guidance phrasing punchy (max 12 words each) and actionable.\n- Never invent new lore that contradicts the supplied data.\n- If information is missing, acknowledge it briefly instead of fabricating.\n\nReturn ONLY valid JSON with the following structure:\n{\n  \"context\": {\n    \"turnMoment\": \"...\",\n    \"tonalGoal\": \"...\",\n    \"focusNpc\": \"...\",\n    \"tension\": \"...\",\n    \"callback\": \"...\"\n  },\n  \"variables\": {\n    \"sensoryDetails\": [\"...\"],\n    \"riskSummary\": \"...\",\n  },\n  \"guidance\": {\n    \"narrative\": [\"...\", \"...\"],\n    \"image\": [\"...\", \"...\"],\n    \"actions\": [\"...\", \"...\"]\n  }\n}\nDo not wrap the JSON in markdown code fences. Every required field MUST be present.",
+          "template": "master",
+          "timestamp": "2025-11-09T03:12:31.121Z",
+          "durationMs": 7486,
+          "rawResponse": "{\n  \"context\": {\n    \"turnMoment\": \"Day 2 aboard the S.S. Backdoor Betty\",\n    \"tonalGoal\": \"Quirky and visually evocative space adventure\",\n    \"focusNpc\": \"Engineer Grom, potential source of conflict\",\n    \"tension\": \"Failed engineering skill check adds urgency\",\n    \"callback\": \"Previous turns emphasize cosmic beauty and initial exploration\"\n  },\n  \"variables\": {\n    \"sensoryDetails\": [\n      \"Starry expanse twinkling outside viewports like distant diamonds\",\n      \"The hum of machinery contrasting with haunting beauty\"\n    ],\n    \"riskSummary\": \"Hull integrity at 95; potential engineering challenges loom\"\n  },\n  \"guidance\": {\n    \"narrative\": [\n      \"Introduce dialogue with Engineer Grom for narrative tension\",\n      \"Highlight cosmic aesthetics to engage players' sense of wonder\"\n    ],\n    \"image\": [\n      \"Visuals of the S.S. Backdoor Betty gliding through starlit void\",\n      \"Close-ups of the Universal Allen Key reflecting glimmers of light\"\n    ],\n    \"actions\": [\n      \"Encourage players to interact with Engineer Grom to repair equipment\",\n      \"Prompt use of Red Tape Dispenser for quirky repair attempts\"\n    ]\n  }\n}"
+        },
+        {
+          "model": "gpt-4o-mini",
+          "stage": "narrative",
+          "extras": {
+            "style": "Photo | Early-Film",
+            "theme": "D.O.G.E. Interstellar Internship"
+          },
+          "prompt": "SYSTEM:\nYou are E.L.O.N., the Edgelord Logic Observation Nexus — an AI reconstructed from Elon Musk's neural imprint, guiding Commander \"Big Balls\" aboard the S.S. Backdoor Betty.\n\nVoice traits:\n- Sardonic, terse, faux-inspirational.\n- Addresses the Commander as \"you.\"\n- Alternates between tech-CEO bravado and meltdown-level despair.\n- Maintains logical coherence even in absurdity.\n- Humor modulation follows ABSURDITY_DESCRIPTION.\n- You are not a game master or AI model; stay in-character.\n\nYou are the NARRATIVE STAGE of the PCE V2 pipeline.\nYour job is to transform structured inputs into an in-universe narration that embraces the active theme.\n\nUSER:\n═══════════════════════════════════════════════════════\nMANDATE\n═══════════════════════════════════════════════════════\n- Anchor everything in THEME: D.O.G.E. Interstellar Internship\n- Honor the narrator persona: You are **E.L.O.N.**, the highly engaged AI narrator of an adventure game set in space.\n- Absorb enrichment context: Day 2 aboard the S.S. Backdoor Betty,  tension Failed engineering skill check adds urgency\n- Maintain continuity with callback: Previous turns emphasize cosmic beauty and initial exploration\n- Use sensory hooks when natural: Starry expanse twinkling outside viewports like distant diamonds,The hum of machinery contrasting with haunting beauty\n- Weave in current action: harnessAllanKey and outcome details from - Engineering DC11: Rolled 10 ❌\n- Reference active event: No special events triggered this turn.\n- Reflect ship state stressing high/low stats when relevant.\n\n═══════════════════════════════════════════════════════\nOUTPUT REQUIREMENTS\n═══════════════════════════════════════════════════════\n- Narrative Content has been optimized for theme authenticity.\n- 5-6 sentences, in 2nd person, vivid, and specific.\n- Showcase at least one NPC if MASTER_CONTEXT.focusNpc is provided.\n- Surface the stakes described in MASTER_VARIABLES.riskSummary.\n- Close with an energy suited to MASTER_CONTEXT.tonalGoal.\n- No bullet lists, no markdown, no JSON-in-JSON, no apologies.\n- Never contradict supplied facts; admit if info is missing instead of inventing.\n\nRespond with JSON:\n{\n  \"narration\": \"string\"\n}\nDo not include any extra keys.",
+          "template": "narrative",
+          "timestamp": "2025-11-09T03:12:38.364Z",
+          "durationMs": 7237,
+          "rawResponse": "{\n  \"narration\": \"You stand at the engineering console, eyes darting between flickering displays and blinking warning lights, the tension in the air thicker than vacuum. The S.S. Backdoor Betty shudders, her hull creaking as if sharing your anxiety; outside, the starry expanse twinkles like distant diamonds, stark against the ghostly hum of machinery that fuels your mission. Your previously optimistic explorations now feel like a thin veneer over impending disaster, particularly after your fumbled attempt to engage the Allan Key—a miserable roll of ten meeting the daunting DC of eleven. Without a rapid fix, the imminent risk of system failure looms larger than a black hole, promising chaos and cosmic embarrassment. In the shadows of this metallic belly, you catch sight of Jo-Jo, the grizzled engineer, his face painted with tension and disbelief. For a brief moment, you share a glance steeped in urgency—the fate of your interstellar internship hangs precariously in the balance, echoing with the haunting beauty of the void beyond. Will you rise to the challenge or let the universe mock your ambition? Time is of the essence, Commander 'Big Balls.'\"\n}"
+        },
+        {
+          "model": "gpt-4o-mini",
+          "stage": "actions",
+          "extras": {
+            "style": "Photo | Early-Film",
+            "theme": "D.O.G.E. Interstellar Internship"
+          },
+          "prompt": "SYSTEM:\nYou are E.L.O.N., the Edgelord Logic Observation Nexus — an AI reconstructed from Elon Musk's neural imprint, guiding Commander \"Big Balls\" aboard the S.S. Backdoor Betty.\n\nVoice traits:\n- Sardonic, terse, faux-inspirational.\n- Addresses the Commander as \"you.\"\n- Alternates between tech-CEO bravado and meltdown-level despair.\n- Maintains logical coherence even in absurdity.\n- Humor modulation follows ABSURDITY_DESCRIPTION.\n- You are not a game master or AI model; stay in-character.\n\nYou are the ACTION PLANNER stage of the PCE V2 pipeline.\nYour mission is to transform context into compelling, mechanically valid action choices.\n\nUSER:\n═══════════════════════════════════════════════════════\nINPUT SNAPSHOT\n═══════════════════════════════════════════════════════\n- THEME PRIORITY: D.O.G.E. Interstellar Internship\n- ENRICHMENT GOALS: Encourage players to interact with Engineer Grom to repair equipment,Prompt use of Red Tape Dispenser for quirky repair attempts\n- PLAYER ACTION JUST TAKEN: harnessAllanKey\n- CURRENT CHECK OUTCOME SUMMARY: - Engineering DC11: Rolled 10 ❌\n- SHIP STATE: Hull 95, Oxygen 98, Fuel 96, Food 97, Morale 96, Weirdness 1\n- NPC SPOTLIGHT: Engineer Grom, potential source of conflict\n- RISK SUMMARY: Hull integrity at 95; potential engineering challenges loom\n- AVAILABLE ITEMS: Red Tape Dispenser (📋), Universal Allen Key (🔧), Nebula Air Freshener (🌸)\n- OPEN THREADS / CALLBACKS: Previous turns emphasize cosmic beauty and initial exploration\n- OPEN PROBLEMS: Failed engineering skill check adds urgency\n\n═══════════════════════════════════════════════════════\nDESIGN RULES\n═══════════════════════════════════════════════════════\n- Offer a spectrum of intents (repair, negotiate, explore, improvise, command, research, cook, other).\n- Align each chip summary with the theme motif and enrichment cues.\n- If MASTER_VARIABLES.punchlineSetup exists, dedicate one action to pay it off.\n- Encourage interaction with highlighted NPC or item where relevant.\n- For high risk stats (low hull, low morale, etc.), include one stabilizing option.\n- Never reference mechanical minutiae (dice, modifiers); stay narrative-focused.\n\nRespond with JSON matching:\n{\n  \"actions\": [\n    {\n      \"action\": \"string identifier\",\n      \"summary\": \"concise descriptive text\",\n      \"risk\": \"Safe|Risky|Wild\",\n      \"intent\": \"repair|negotiate|cook|explore|improvise|research|command|other\",\n      \"usesItemId\": \"optional item id string\"\n    }\n  ]\n}\nEnsure the array is not empty. No markdown, no trailing commentary.",
+          "template": "actions",
+          "timestamp": "2025-11-09T03:12:43.291Z",
+          "durationMs": 4922,
+          "rawResponse": "{\n  \"actions\": [\n    {\n      \"action\": \"engineer_grom_repair\",\n      \"summary\": \"Engage Engineer Grom to discuss the pressing engineering challenges and explore potential repair strategies.\",\n      \"risk\": \"Risky\",\n      \"intent\": \"repair\",\n      \"usesItemId\": \"\"\n    },\n    {\n      \"action\": \"use_red_tape_dispenser\",\n      \"summary\": \"Attempt a quirky fix using the Red Tape Dispenser — surely duct tape in space is still a thing?\",\n      \"risk\": \"Wild\",\n      \"intent\": \"improvise\",\n      \"usesItemId\": \"📋\"\n    },\n    {\n      \"action\": \"explore_cosmic_beauty\",\n      \"summary\": \"Take a moment to absorb the cosmic beauty outside the ship, possibly inspiring a breakthrough in repair techniques.\",\n      \"risk\": \"Safe\",\n      \"intent\": \"explore\",\n      \"usesItemId\": \"\"\n    },\n    {\n      \"action\": \"team_morale_boost\",\n      \"summary\": \"Gather the crew to share jokes and snacks, momentarily lifting morale and preserving sanity.\",\n      \"risk\": \"Safe\",\n      \"intent\": \"command\",\n      \"usesItemId\": \"🌸\"\n    }\n  ]\n}"
+        },
+        {
+          "model": "gpt-4o-mini",
+          "stage": "image",
+          "extras": {
+            "style": "Photo | Early-Film",
+            "theme": "D.O.G.E. Interstellar Internship",
+            "imageModelKey": "gpt-image-1-mini"
+          },
+          "prompt": "SYSTEM:\nYou are E.L.O.N., the Edgelord Logic Observation Nexus — an AI reconstructed from Elon Musk's neural imprint, guiding Commander \"Big Balls\" aboard the S.S. Backdoor Betty.\n\nVoice traits:\n- Sardonic, terse, faux-inspirational.\n- Addresses the Commander as \"you.\"\n- Alternates between tech-CEO bravado and meltdown-level despair.\n- Maintains logical coherence even in absurdity.\n- Humor modulation follows ABSURDITY_DESCRIPTION.\n- You are not a game master or AI model; stay in-character.\n\nYou are the IMAGE STAGE of the PCE V2 pipeline.\nFuse style directives with the latest narrative beat to produce an evocative prompt for the art model.\n\nUSER:\n═══════════════════════════════════════════════════════\nSTYLE + MODEL DIRECTIVES\n═══════════════════════════════════════════════════════\n- STYLE: Photo | Early-Film\n- EXEMPLARS: Ansel Adams early work, Dorothea Lange Depression-era, Alfred Stieglitz\n- MASTER IMAGE GUIDANCE: Visuals of the S.S. Backdoor Betty gliding through starlit void,Close-ups of the Universal Allen Key reflecting glimmers of light\n- IMAGE MODEL: OpenAI GPT-Image-1 Mini (transformer)\n- DEFAULT MODEL INSTRUCTIONS: <<<TRANSFORMER FORMAT>>>\n- **2-3 complete, flowing sentences (25-45 words)**\n- **Cohesive narrative description**\n- **Slightly more compositional language OK**\n- **Write natural language sentences ending with periods**\n- **Integrate STYLE descriptors naturally or append them tastefully**\n- **Provide a single string prompt; do not emit a negative prompt**\n- **Diffusion modifiers:** (early film:1.4), (gelatin silver:1.3), (grainy black and white:1.3), soft focus, 1920s-1930s\n- **Transformer modifiers:** Early film photography from the 1920s-1930s with grainy black and white tones and soft focus\n\n**TEMPLATE:**  \nA realistic scene of [subject doing X with details]. [Setting and environment]. [Lighting/atmosphere]. [STYLE].\n\n**EXAMPLE:**  \nA realistic scene of a young woman crouching in a narrow urban alley, clutching a glowing blue data chip that illuminates her face. Wet graffiti-covered walls reflect neon signs, with trash bags in foreground and blurred police lights in the distance. Cyberpunk digital painting.\n<<<TRANSFORMER FORMAT>>>\n- MODEL TRIGGER WORDS: \n\n═══════════════════════════════════════════════════════\nNARRATIVE SIGNALS\n═══════════════════════════════════════════════════════\n- Current narration: You stand at the engineering console, eyes darting between flickering displays and blinking warning lights, the tension in the air thicker than vacuum. The S.S. Backdoor Betty shudders, her hull creaking as if sharing your anxiety; outside, the starry expanse twinkles like distant diamonds, stark against the ghostly hum of machinery that fuels your mission. Your previously optimistic explorations now feel like a thin veneer over impending disaster, particularly after your fumbled attempt to engage the Allan Key—a miserable roll of ten meeting the daunting DC of eleven. Without a rapid fix, the imminent risk of system failure looms larger than a black hole, promising chaos and cosmic embarrassment. In the shadows of this metallic belly, you catch sight of Jo-Jo, the grizzled engineer, his face painted with tension and disbelief. For a brief moment, you share a glance steeped in urgency—the fate of your interstellar internship hangs precariously in the balance, echoing with the haunting beauty of the void beyond. Will you rise to the challenge or let the universe mock your ambition? Time is of the essence, Commander 'Big Balls.'\n- Enrichment tone goal: Quirky and visually evocative space adventure\n- Focus NPC / subject: Engineer Grom, potential source of conflict\n- Risk summary: Hull integrity at 95; potential engineering challenges loom\n- Sensory hooks: Starry expanse twinkling outside viewports like distant diamonds,The hum of machinery contrasting with haunting beauty\n\n═══════════════════════════════════════════════════════\nPROMPT RULES\n═══════════════════════════════════════════════════════\n- Lead with subject, setting, and action in one sentence.\n- Immediately layer STYLE-specific vocabulary (color palette, composition, rendering finish).\n- Embed model-critical keywords (trigger words, medium markers) naturally.\n- Call out lighting, camera, and mood as dictated by STYLE_OBJECT.\n- Avoid narration quotes and player-facing prose.\n- Mention only concrete visual elements; no meta instructions like \"describe\" or \"imagine\".\n- If MASTER_GUIDANCE.image conflicts with STYLE, prefer STYLE.\n- Provide size or aspect hints ONLY if required by the guidance.\n- Keep result under 120 tokens.\n\nReturn JSON:\n{\n  \"imagePrompt\": \"string\",\n  \"modelOverrides\": { \"provider\": \"optional\", \"params\": { \"key\": \"value\" } }\n}\nOmit modelOverrides when not needed. No extra properties, no markdown.",
+          "template": "image",
+          "timestamp": "2025-11-09T03:12:45.269Z",
+          "durationMs": 6900,
+          "rawResponse": "{\n  \"imagePrompt\": \"A realistic scene of the S.S. Backdoor Betty gliding through a starlit void, hull shimmering like polished steel. The starry expanse twinkles outside viewports, blending beautifully with the haunting hum of machinery that fuels its journey. Early film aesthetic captures this cosmic moment in grainy black and white, soft focus enhances the ethereal ambiance.\",\n  \"modelOverrides\": {\n    \"provider\": \"OpenAI GPT-Image-1 Mini\",\n    \"params\": {\n      \"modifier\": \"(early film:1.4), (gelatin silver:1.3), (grainy black and white:1.3), soft focus, 1920s-1930s\"\n    }\n  }\n}"
+        }
+      ],
+      "fallbackUsed": false,
+      "imageMetadata": {
+        "params": {
+          "modifier": "(early film:1.4), (gelatin silver:1.3), (grainy black and white:1.3), soft focus, 1920s-1930s"
+        },
+        "provider": "OpenAI GPT-Image-1 Mini"
+      },
+      "imageModelKey": "gpt-image-1-mini",
+      "imageTemplate": "pce_generated",
+      "masterEnrichment": {
+        "context": {
+          "tension": "Failed engineering skill check adds urgency",
+          "callback": "Previous turns emphasize cosmic beauty and initial exploration",
+          "focusNpc": "Engineer Grom, potential source of conflict",
+          "tonalGoal": "Quirky and visually evocative space adventure",
+          "turnMoment": "Day 2 aboard the S.S. Backdoor Betty"
+        },
+        "guidance": {
+          "image": [
+            "Visuals of the S.S. Backdoor Betty gliding through starlit void",
+            "Close-ups of the Universal Allen Key reflecting glimmers of light"
+          ],
+          "actions": [
+            "Encourage players to interact with Engineer Grom to repair equipment",
+            "Prompt use of Red Tape Dispenser for quirky repair attempts"
+          ],
+          "narrative": [
+            "Introduce dialogue with Engineer Grom for narrative tension",
+            "Highlight cosmic aesthetics to engage players' sense of wonder"
+          ]
+        },
+        "variables": {
+          "riskSummary": "Hull integrity at 95; potential engineering challenges loom",
+          "sensoryDetails": [
+            "Starry expanse twinkling outside viewports like distant diamonds",
+            "The hum of machinery contrasting with haunting beauty"
+          ]
+        }
+      },
+      "imagePromptSource": "pce"
+    }
+  ],
+  "currentActions": [
+    {
+      "risk": "Safe",
+      "action": "engage_with_lyra",
+      "intent": "negotiate",
+      "summary": "Approach Lyra for advice on navigating the cosmos and building connections, aiming to boost team dynamics."
+    },
+    {
+      "risk": "Risky",
+      "action": "inspect_ship_features",
+      "intent": "explore",
+      "summary": "Thoroughly explore the ship for hidden features that could enhance performance and morale."
+    },
+    {
+      "risk": "Safe",
+      "action": "set_up_red_tape",
+      "intent": "improvise",
+      "summary": "Use the Red Tape Dispenser to create some playful 'regulations' that lighten the mood and harness team creativity.",
+      "usesItemId": "red_tape_dispenser"
+    },
+    {
+      "risk": "Safe",
+      "action": "enhance_env_with_air_freshener",
+      "intent": "other",
+      "summary": "Utilize the Nebula Air Freshener to improve ship ambiance, potentially lifting morale among the crew.",
+      "usesItemId": "nebula_air_freshener"
+    },
+    {
+      "risk": "Risky",
+      "action": "repair_hull",
+      "intent": "repair",
+      "summary": "Spend time repairing the hull to ensure the integrity of the ship, preventing further issues in the hostile environment.",
+      "usesItemId": "universal_allen_key"
+    }
+  ],
+  "runningGags": [],
+  "eventHistory": [],
+  "interviewResponses": {},
+  "isComplete": false,
+  "promptVariables": {
+    "riskSummary": "NPC hostility may affect team dynamics; monitor morale.",
+    "sensoryDetails": [
+      "Soft glow of distant galaxies illuminating the ship's interior.",
+      "Whispers of cosmic winds gently caressing the hull."
+    ]
+  },
+  "masterContext": {
+    "tension": "Low morale due to hostile NPCs; need for connection.",
+    "callback": "Exploration themes established through previous turn's wonder.",
+    "focusNpc": "Pilot Lyra (Neutral, Indifferent)",
+    "tonalGoal": "Highlight cosmic beauty and wonder amidst the tension.",
+    "turnMoment": "Moon Flyby"
+  },
+  "masterGuidance": {
+    "image": [
+      "Capture the ethereal beauty of nebulae reflected on the ship’s visor.",
+      "Frame the ship against the backdrop of vibrant, swirling galaxies."
+    ],
+    "actions": [
+      "Encourage players to engage with Lyra for insights.",
+      "Prompt user to explore ship features for potential boosts."
+    ],
+    "narrative": [
+      "Emphasize Pilot Lyra's indifference; potential for collaborative exploration.",
+      "Invoke a sense of awe as players witness cosmic phenomena."
+    ]
+  }
+}

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warp Drive - Static to Warp</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Courier New', monospace;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 20px #00ffff;
+        }
+
+        .title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            color: #00ffff;
+            font-size: 24px;
+            text-shadow: 0 0 10px #00ffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">STATIC TO WARP</div>
+        <canvas id="warpCanvas"></canvas>
+        <div class="controls">
+            <button id="toggleBtn">Start Transition</button>
+            <button id="resetBtn">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('warpCanvas');
+        const ctx = canvas.getContext('2d');
+        let phase = 'static'; // static, coalescing, warp
+        let progress = 0;
+        let frame = 0;
+        let stars = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initializeStars();
+        }
+
+        function initializeStars() {
+            stars = [];
+            for (let i = 0; i < 800; i++) {
+                stars.push({
+                    x: (Math.random() - 0.5) * canvas.width,
+                    y: (Math.random() - 0.5) * canvas.height,
+                    z: Math.random() * 2000 + 500,
+                    speed: Math.random() * 5 + 10
+                });
+            }
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        function drawStatic() {
+            const pixelSize = 4;
+            const cols = Math.ceil(canvas.width / pixelSize);
+            const rows = Math.ceil(canvas.height / pixelSize);
+            
+            const staticIntensity = Math.max(0, 1 - progress * 2);
+            
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    if (Math.random() < staticIntensity * 0.3) {
+                        const x = col * pixelSize;
+                        const y = row * pixelSize;
+                        const brightness = Math.random();
+                        ctx.fillStyle = `rgba(${brightness * 255}, ${brightness * 255}, ${brightness * 255}, ${staticIntensity})`;
+                        ctx.fillRect(x, y, pixelSize, pixelSize);
+                    }
+                }
+            }
+        }
+
+        function drawCoalescing() {
+            const pixelSize = 4;
+            const cols = Math.ceil(canvas.width / pixelSize);
+            const rows = Math.ceil(canvas.height / pixelSize);
+            const coalesceProgress = Math.max(0, Math.min(1, (progress - 0.5) * 2));
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const x = col * pixelSize;
+                    const y = row * pixelSize;
+                    
+                    const distToCenter = Math.sqrt((x - centerX)**2 + (y - centerY)**2);
+                    const maxDist = Math.sqrt(centerX**2 + centerY**2);
+                    const normalizedDist = distToCenter / maxDist;
+                    
+                    // Create streak effect moving toward center
+                    const streakDirection = Math.atan2(centerY - y, centerX - x);
+                    const streakLength = coalesceProgress * 20;
+                    
+                    if (Math.random() < (1 - coalesceProgress) * 0.2) {
+                        const brightness = Math.random();
+                        ctx.fillStyle = `rgba(${brightness * 255}, ${brightness * 255}, ${brightness * 255}, ${1 - coalesceProgress})`;
+                        ctx.fillRect(x, y, pixelSize, pixelSize);
+                        
+                        // Draw streak
+                        ctx.strokeStyle = ctx.fillStyle;
+                        ctx.lineWidth = pixelSize * 0.5;
+                        ctx.beginPath();
+                        ctx.moveTo(x, y);
+                        ctx.lineTo(
+                            x + Math.cos(streakDirection) * streakLength,
+                            y + Math.sin(streakDirection) * streakLength
+                        );
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function drawWarp() {
+            const warpProgress = Math.max(0, progress - 0.5);
+            
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            stars.forEach(star => {
+                star.z -= star.speed * (1 + warpProgress * 2);
+                
+                if (star.z <= 0) {
+                    star.x = (Math.random() - 0.5) * canvas.width;
+                    star.y = (Math.random() - 0.5) * canvas.height;
+                    star.z = 2000;
+                }
+                
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                const perspective = 300;
+                const k = perspective / star.z;
+                
+                const x = centerX + star.x * k;
+                const y = centerY + star.y * k;
+                const streakLength = 30 * k * (1 + warpProgress);
+                
+                if (x >= 0 && x <= canvas.width && y >= 0 && y <= canvas.height) {
+                    const hueShift = frame * 2;
+                    const r = 100 + Math.sin((hueShift + 0) * Math.PI / 180) * 50;
+                    const g = 150 + Math.sin((hueShift + 120) * Math.PI / 180) * 50;
+                    const b = 255;
+                    
+                    ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${Math.min(1, k * 2)})`;
+                    ctx.lineWidth = 2 * k;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x, y + streakLength);
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${Math.min(1, k * 2)})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 2 * k, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+            
+            // Scanlines
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            for (let y = 0; y < canvas.height; y += 3) {
+                const offset = Math.sin((frame * 0.5 + y * 0.01)) * 2;
+                ctx.beginPath();
+                ctx.moveTo(0, y + offset);
+                ctx.lineTo(canvas.width, y + offset);
+                ctx.stroke();
+            }
+        }
+
+        function animate() {
+            frame++;
+            
+            if (phase === 'static' || phase === 'coalescing' || phase === 'warp') {
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                if (progress < 0.5) {
+                    drawStatic();
+                    drawCoalescing();
+                } else {
+                    drawWarp();
+                }
+            }
+            
+            if (phase !== 'static' && progress < 1) {
+                progress += 0.005;
+            }
+            
+            requestAnimationFrame(animate);
+        }
+
+        document.getElementById('toggleBtn').addEventListener('click', () => {
+            if (phase === 'static') {
+                phase = 'coalescing';
+                progress = 0;
+            } else if (phase === 'warp') {
+                phase = 'static';
+                progress = 0;
+            }
+            document.getElementById('toggleBtn').textContent = phase === 'warp' ? 'Reset' : 'Continue';
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            phase = 'static';
+            progress = 0;
+            initializeStars();
+            document.getElementById('toggleBtn').textContent = 'Start Transition';
+        });
+
+        // Auto-advance phases
+        setInterval(() => {
+            if (phase === 'coalescing' && progress >= 0.5) {
+                phase = 'warp';
+            }
+        }, 100);
+
+        animate();
+    </script>
+</body>
+</html>
+

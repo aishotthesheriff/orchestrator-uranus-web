@@ -16,13 +16,44 @@ interface ReferenceRelease {
   notes: string | null;
   published_at: string;
   is_current: number;
+  /** False when the release's folder is missing on this server, so it cannot be activated here. */
+  filesOnDisk?: boolean;
+  /** 1 = active rows only; 2 = also every content row, enough to load an empty database. */
+  formatVersion?: number | null;
+  /** Rows per content table stored in the release (format 2). */
+  workspaceRows?: Record<string, number> | null;
 }
 
-interface CurrentReference {
-  version: string;
-  publishedAt: string;
-  publishedBy: string;
-  notes?: string;
+/** What a release holds, shown under its name. */
+function ReleaseContents({ release }: { release: ReferenceRelease }) {
+  if (release.filesOnDisk === false) {
+    return (
+      <p className="text-xs text-amber-600" data-testid={`release-contents-${release.version}`}>
+        Files are not on this server; this release cannot be activated here.
+      </p>
+    );
+  }
+  if (release.formatVersion === 2 && release.workspaceRows) {
+    const tables = Object.entries(release.workspaceRows);
+    const total = tables.reduce((sum, [, rows]) => sum + rows, 0);
+    return (
+      <p
+        className="text-xs text-muted-foreground"
+        title={tables.map(([table, rows]) => `${table}: ${rows}`).join("\n")}
+        data-testid={`release-contents-${release.version}`}
+      >
+        Complete release: {total} rows in {tables.length} tables, including inactive ones. Can load an empty database.
+      </p>
+    );
+  }
+  if (release.formatVersion === 1) {
+    return (
+      <p className="text-xs text-muted-foreground" data-testid={`release-contents-${release.version}`}>
+        Older format: active rows only, without interview questions or Inspector scenarios.
+      </p>
+    );
+  }
+  return null;
 }
 
 export default function DevToolsReferencePublisher() {
@@ -36,7 +67,7 @@ export default function DevToolsReferencePublisher() {
   // Fetch current reference
   const { data: currentReference, isLoading: isLoadingCurrent } = useQuery({
     queryKey: ["current-reference"],
-    queryFn: async (): Promise<CurrentReference> => {
+    queryFn: async (): Promise<ReferenceRelease | undefined> => {
       const response = await apiRequest("GET", "/api/admin/reference/current");
       if (!response.ok) throw new Error("Failed to fetch current reference");
       const data = await response.json();
@@ -191,18 +222,19 @@ export default function DevToolsReferencePublisher() {
                   {currentReference.version}
                 </Badge>
                 <span className="text-sm text-muted-foreground">
-                  Published by {currentReference.publishedBy}
+                  Published by {currentReference.published_by}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="h-4 w-4" />
-                {new Date(currentReference.publishedAt).toLocaleString()}
+                {new Date(currentReference.published_at).toLocaleString()}
               </div>
               {currentReference.notes && (
                 <p className="text-sm text-muted-foreground">
                   {currentReference.notes}
                 </p>
               )}
+              <ReleaseContents release={currentReference} />
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
@@ -220,7 +252,9 @@ export default function DevToolsReferencePublisher() {
             Publish New Reference
           </CardTitle>
           <CardDescription>
-            Create a new reference release from the current database state
+            Create a new reference release from the current database state. The release holds
+            what the game loads (active rows) and a full copy of every content table, so an
+            empty database can be set up from it.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -328,8 +362,9 @@ export default function DevToolsReferencePublisher() {
                         {release.notes}
                       </p>
                     )}
+                    <ReleaseContents release={release} />
                   </div>
-                  {!release.is_current && (
+                  {!release.is_current && release.filesOnDisk !== false && (
                     <Button
                       size="sm"
                       variant="outline"

@@ -1,0 +1,13 @@
+{
+  "items": "items.json",
+  "events": "events.json",
+  "npcs": "npcs.json",
+  "prompts": "prompts.json",
+  "image_prompts": "image_prompts.json",
+  "settings": "settings.json",
+  "image_models": "image_models.json",
+  "mod_story_themes": "mod_story_themes.json",
+  "mod_visual_styles": "mod_visual_styles.json",
+  "llm_models": "llm_models.json",
+  "system_defaults": "system_defaults.json"
+}

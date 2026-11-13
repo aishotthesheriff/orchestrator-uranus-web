@@ -1,0 +1,262 @@
+[
+  {
+    "id": "llm-deepseek-v41-flash",
+    "model_key": "deepseek-v4.1-flash",
+    "provider": "huggingface",
+    "model_name": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "hf_provider": null,
+    "active": 1,
+    "is_default": false,
+    "display_name": "DeepSeek V4.1 Flash",
+    "description": "Fast, with richer use of the crew.",
+    "notes": "Best all-rounder in Nov 2026 testing: similar price to baseline, faster. 4 providers.",
+    "sort_order": 10,
+    "adult": false,
+    "supports_json_mode": true,
+    "context_length": null,
+    "price_input": "0.20",
+    "price_output": "0.60",
+    "params": null,
+    "last_check_at": "2026-11-12T09:35:02.426Z",
+    "last_check_ok": true,
+    "last_check_summary": {
+      "check": {
+        "at": "2026-11-12T09:35:02.425Z",
+        "ok": true,
+        "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "latencyMs": 739,
+        "jsonQuality": "raw"
+      },
+      "qualify": {
+        "at": "2026-11-12T07:52:12.707Z",
+        "ok": true,
+        "runId": "93a71361-a2fb-43b7-b038-70607250b0e5",
+        "turnMs": 10028,
+        "costUsd": 0.001252,
+        "verdict": "clean",
+        "strictOk": true,
+        "scenarioId": "preset-crisis"
+      }
+    },
+    "created_at": "2026-11-12T06:53:40.061Z",
+    "updated_at": "2026-11-12T09:35:15.579Z",
+    "fallback_model_key": null
+  },
+  {
+    "id": "llm-gpt-4o-mini",
+    "model_key": "gpt-4o-mini",
+    "provider": "openai",
+    "model_name": "gpt-4o-mini",
+    "hf_provider": null,
+    "active": 1,
+    "is_default": true,
+    "display_name": "GPT-4o mini",
+    "description": "Balanced and reliable. The classic narrator.",
+    "notes": "Original game model (baseline).",
+    "sort_order": 0,
+    "adult": false,
+    "supports_json_mode": true,
+    "context_length": 128000,
+    "price_input": "0.15",
+    "price_output": "0.60",
+    "params": null,
+    "last_check_at": "2026-11-12T06:54:27.385Z",
+    "last_check_ok": true,
+    "last_check_summary": {
+      "check": {
+        "at": "2026-11-12T06:54:27.384Z",
+        "ok": true,
+        "model": "gpt-4o-mini",
+        "latencyMs": 1975,
+        "jsonQuality": "raw"
+      },
+      "qualify": {
+        "at": "2026-11-12T11:42:08.945Z",
+        "ok": true,
+        "runId": "f5622695-c9b7-4960-9aea-570b8ca38161",
+        "turnMs": 10407,
+        "costUsd": 0.00088,
+        "verdict": "clean",
+        "strictOk": true,
+        "scenarioId": "preset-crisis"
+      }
+    },
+    "created_at": "2026-11-12T06:53:40.061Z",
+    "updated_at": "2026-11-12T06:53:40.061Z",
+    "fallback_model_key": null
+  },
+  {
+    "id": "llm-gpt-oss-120b",
+    "model_key": "gpt-oss-120b",
+    "provider": "huggingface",
+    "model_name": "openai/gpt-oss-120b",
+    "hf_provider": null,
+    "active": 1,
+    "is_default": false,
+    "display_name": "gpt-oss 120B",
+    "description": "Very fast open model.",
+    "notes": "Fastest and cheapest. Reasoning model: spends extra output tokens, prose can leak dice mechanics. 6 providers.",
+    "sort_order": 20,
+    "adult": false,
+    "supports_json_mode": true,
+    "context_length": null,
+    "price_input": "0.05",
+    "price_output": "0.25",
+    "params": {
+      "maxTokens": 2000
+    },
+    "last_check_at": "2026-11-12T09:35:02.932Z",
+    "last_check_ok": true,
+    "last_check_summary": {
+      "check": {
+        "at": "2026-11-12T09:35:02.931Z",
+        "ok": true,
+        "model": "openai/gpt-oss-120b",
+        "latencyMs": 454,
+        "jsonQuality": "raw"
+      },
+      "qualify": {
+        "at": "2026-11-12T07:52:57.876Z",
+        "ok": true,
+        "runId": "645b8c5e-b4b8-4f10-84b1-41e59067dc06",
+        "turnMs": 2400,
+        "costUsd": 0.00113,
+        "verdict": "clean",
+        "strictOk": true,
+        "scenarioId": "preset-crisis"
+      }
+    },
+    "created_at": "2026-11-12T06:53:40.061Z",
+    "updated_at": "2026-11-12T09:35:15.665Z",
+    "fallback_model_key": null
+  },
+  {
+    "id": "llm-hermes-3-70b",
+    "model_key": "hermes-3-70b",
+    "provider": "huggingface",
+    "model_name": "NousResearch/Hermes-3-Llama-3.1-70B",
+    "hf_provider": null,
+    "active": 1,
+    "is_default": false,
+    "display_name": "Hermes 3 70B",
+    "description": "Strong character voices and dialogue. Uncensored.",
+    "notes": "Neutrally aligned, follows the system prompt, handles adult content. Reliable JSON. 2 providers.",
+    "sort_order": 30,
+    "adult": true,
+    "supports_json_mode": true,
+    "context_length": null,
+    "price_input": "0.70",
+    "price_output": "0.70",
+    "params": null,
+    "last_check_at": "2026-11-12T09:35:03.511Z",
+    "last_check_ok": true,
+    "last_check_summary": {
+      "check": {
+        "at": "2026-11-12T09:35:03.510Z",
+        "ok": true,
+        "model": "NousResearch/Hermes-3-Llama-3.1-70B",
+        "latencyMs": 552,
+        "jsonQuality": "raw"
+      },
+      "qualify": {
+        "at": "2026-11-12T07:53:24.255Z",
+        "ok": true,
+        "runId": "3169d8c8-6655-4beb-8e4e-81c0a1ce49d4",
+        "turnMs": 13595,
+        "costUsd": 0.002992,
+        "verdict": "clean",
+        "strictOk": true,
+        "scenarioId": "preset-crisis"
+      }
+    },
+    "created_at": "2026-11-12T06:53:40.061Z",
+    "updated_at": "2026-11-12T09:35:15.726Z",
+    "fallback_model_key": null
+  },
+  {
+    "id": "llm-stheno-8b",
+    "model_key": "stheno-8b",
+    "provider": "huggingface",
+    "model_name": "Sao10K/L3-8B-Stheno-v3.2",
+    "hf_provider": null,
+    "active": 1,
+    "is_default": false,
+    "display_name": "Stheno 8B",
+    "description": "Small, fast roleplay model. Uncensored.",
+    "notes": "NSFW roleplay fine-tune. Cheap and fast, but 8K context and no JSON mode; JSON valid in 1 of 2 early runs. Novita.",
+    "sort_order": 40,
+    "adult": true,
+    "supports_json_mode": false,
+    "context_length": 8192,
+    "price_input": "0.05",
+    "price_output": "0.05",
+    "params": null,
+    "last_check_at": "2026-11-12T09:35:04.213Z",
+    "last_check_ok": true,
+    "last_check_summary": {
+      "check": {
+        "at": "2026-11-12T09:35:04.213Z",
+        "ok": true,
+        "model": "Sao10K/L3-8B-Stheno-v3.2",
+        "latencyMs": 673,
+        "jsonQuality": "raw"
+      },
+      "qualify": {
+        "at": "2026-11-12T07:52:35.383Z",
+        "ok": true,
+        "runId": "4b7a924e-b04f-4080-bdce-00c7d00b5116",
+        "turnMs": 7148,
+        "costUsd": 0.000192,
+        "verdict": "clean",
+        "strictOk": true,
+        "scenarioId": "preset-crisis"
+      }
+    },
+    "created_at": "2026-11-12T06:53:40.061Z",
+    "updated_at": "2026-11-12T09:35:15.752Z",
+    "fallback_model_key": "hermes-3-70b"
+  },
+  {
+    "id": "llm-wizardlm-2-8x22b",
+    "model_key": "wizardlm-2-8x22b",
+    "provider": "huggingface",
+    "model_name": "alpindale/WizardLM-2-8x22B",
+    "hf_provider": null,
+    "active": 1,
+    "is_default": false,
+    "display_name": "WizardLM-2 8x22B",
+    "description": "Rich prose, slower turns. Uncensored.",
+    "notes": "Permissive, strong prose, 65K context. Slow (~11s per call); no JSON mode (valid in early testing). Novita.",
+    "sort_order": 50,
+    "adult": true,
+    "supports_json_mode": false,
+    "context_length": 65535,
+    "price_input": "0.62",
+    "price_output": "0.62",
+    "params": null,
+    "last_check_at": "2026-11-12T09:35:05.318Z",
+    "last_check_ok": true,
+    "last_check_summary": {
+      "check": {
+        "at": "2026-11-12T09:35:05.318Z",
+        "ok": true,
+        "model": "alpindale/WizardLM-2-8x22B",
+        "latencyMs": 1075,
+        "jsonQuality": "extracted"
+      },
+      "qualify": {
+        "at": "2026-11-12T07:52:43.535Z",
+        "ok": true,
+        "runId": "6e3ace94-c836-4c2a-82a8-f6cf43e4891c",
+        "turnMs": 24862,
+        "costUsd": 0.002133,
+        "verdict": "repaired",
+        "strictOk": false,
+        "scenarioId": "preset-crisis"
+      }
+    },
+    "created_at": "2026-11-12T06:53:40.061Z",
+    "updated_at": "2026-11-12T09:35:15.802Z",
+    "fallback_model_key": "hermes-3-70b"
+  }
+]

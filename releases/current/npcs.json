@@ -1,0 +1,62 @@
+[
+  {
+    "id": "coffee9000",
+    "name": "Coffee-9000",
+    "role": "Coffee Machine",
+    "bio": "A sentient coffee maker with strong opinions about proper brewing temperatures and labor rights.",
+    "startingAffinity": 0,
+    "tags": [
+      "crew",
+      "ai",
+      "absurd"
+    ],
+    "active": 1,
+    "createdAt": "2025-10-27T18:58:21.228Z",
+    "updatedAt": "2025-10-27T18:58:21.228Z"
+  },
+  {
+    "id": "moss",
+    "name": "Doctor Moss",
+    "role": "Medical Officer",
+    "bio": "The ship's doctor. Specializes in space medicine and existential dread management.",
+    "startingAffinity": 0,
+    "tags": [
+      "crew",
+      "medical",
+      "professional"
+    ],
+    "active": 1,
+    "createdAt": "2025-10-27T18:58:21.227Z",
+    "updatedAt": "2025-10-27T18:58:21.227Z"
+  },
+  {
+    "id": "grom",
+    "name": "Engineer Grom",
+    "role": "Chief Engineer",
+    "bio": "Keeps the ship running with duct tape, spite, and an engineering degree of questionable origin.",
+    "startingAffinity": 0,
+    "tags": [
+      "crew",
+      "engineer",
+      "technical"
+    ],
+    "active": 1,
+    "createdAt": "2025-10-27T18:58:21.226Z",
+    "updatedAt": "2025-10-27T18:58:21.226Z"
+  },
+  {
+    "id": "lyra",
+    "name": "Pilot Lyra",
+    "role": "Navigator",
+    "bio": "A competent pilot with an uncanny ability to chart courses through bureaucratic space-time.",
+    "startingAffinity": 0,
+    "tags": [
+      "crew",
+      "pilot",
+      "professional"
+    ],
+    "active": 1,
+    "createdAt": "2025-10-27T18:58:21.226Z",
+    "updatedAt": "2025-10-27T18:58:21.226Z"
+  }
+]

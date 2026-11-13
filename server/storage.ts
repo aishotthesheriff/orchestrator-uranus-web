@@ -5,6 +5,7 @@ import type { ActionInput } from "@shared/schema";
 import { getOrchestrator } from "./orchestrator";
 import { generateIdempotencyKey, generateImageJobIdempotencyKey } from "./orchestrator/idempotency";
 import { dbOperationDuration } from "./metrics";
+import { getContentTableSpec } from "./reference/contentTables";
 const DISABLE_ORCHESTRATOR_ENQUEUE =
   process.env.DISABLE_ORCHESTRATOR_ENQUEUE === 'true' || process.env.NODE_ENV === 'test';
 
@@ -90,6 +91,8 @@ export interface IStorage {
   getAllReferenceReleases(): Promise<ReferenceRelease[]>;
   updateReferenceRelease(version: string, updates: Partial<InsertReferenceRelease>): Promise<ReferenceRelease>;
   setCurrentReferenceRelease(version: string): Promise<void>;
+  /** Every row of a content table (active and inactive) as raw database rows, ordered by primary key. */
+  dumpContentTable(table: string): Promise<Record<string, unknown>[]>;
 
   // Transaction methods
   processTurnWithTransaction(
@@ -1544,6 +1547,15 @@ export class DatabaseStorage implements IStorage {
     await pool.query('UPDATE reference_releases SET is_current = 0');
     // Then set the specified version as current
     await pool.query('UPDATE reference_releases SET is_current = 1 WHERE version = $1', [version]);
+  }
+
+  async dumpContentTable(table: string): Promise<Record<string, unknown>[]> {
+    // The table name is interpolated, so it must come from the fixed list.
+    const spec = getContentTableSpec(table);
+    const result = await pool.query(`SELECT * FROM ${spec.table}`);
+    // Sorted here, not in SQL, so the order is the same on every database and collation.
+    const key = (row: Record<string, unknown>) => String(row[spec.primaryKey]);
+    return [...result.rows].sort((a, b) => (key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0));
   }
 
   async processTurnWithTransaction(

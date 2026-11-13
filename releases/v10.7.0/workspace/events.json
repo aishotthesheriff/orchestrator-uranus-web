@@ -1,0 +1,231 @@
+[
+  {
+    "id": "07179791-b0ab-4199-af1d-7636f6f721c6",
+    "name": "Quantum Mold Outbreak",
+    "segment": "Outer Darkness",
+    "skill": "Culinary",
+    "dc": 16,
+    "trigger_condition": {
+      "stat": "food",
+      "type": "stat",
+      "value": 60,
+      "operator": ">"
+    },
+    "pass_effect": "food+5,weirdness+1",
+    "fail_effect": "food-5,weirdness+1",
+    "tags": [
+      "gross",
+      "science"
+    ],
+    "active": 1,
+    "created_at": "2025-10-27T18:58:21.217Z",
+    "updated_at": "2025-10-27T18:58:21.217Z"
+  },
+  {
+    "id": "1bb153e0-d815-4b22-92d1-e7ddf2368858",
+    "name": "Paperwork Singularity",
+    "segment": "Any",
+    "skill": "Bureaucracy",
+    "dc": 12,
+    "trigger_condition": {
+      "type": "day_modulo",
+      "divisor": 5,
+      "remainder": 0
+    },
+    "pass_effect": "oxygen+2",
+    "fail_effect": "hull-1",
+    "tags": [
+      "bureaucracy",
+      "cosmic"
+    ],
+    "active": 1,
+    "created_at": "2025-10-27T18:58:21.216Z",
+    "updated_at": "2025-10-27T18:58:21.216Z"
+  },
+  {
+    "id": "2e3eeaea-9242-4d31-8252-7e061e45614e",
+    "name": "Oxygen Recycler Hiccup",
+    "segment": "Any",
+    "skill": "Engineering",
+    "dc": 14,
+    "trigger_condition": {
+      "stat": "oxygen",
+      "type": "stat",
+      "value": 40,
+      "operator": "<"
+    },
+    "pass_effect": "oxygen+5",
+    "fail_effect": "oxygen-8",
+    "tags": [
+      "crisis",
+      "technical"
+    ],
+    "active": 1,
+    "created_at": "2025-10-27T18:58:21.218Z",
+    "updated_at": "2025-10-27T18:58:21.218Z"
+  },
+  {
+    "id": "495873f2-b1bf-4dc5-ad0d-80c94f7b61ac",
+    "name": "Cosmic HOA Inspection",
+    "segment": "Jupiter & Saturn",
+    "skill": "Deception",
+    "dc": 15,
+    "trigger_condition": {
+      "type": "random",
+      "chance": 0.12
+    },
+    "pass_effect": "morale+1",
+    "fail_effect": "fuel-5,morale-1",
+    "tags": [
+      "authority",
+      "travel"
+    ],
+    "active": 1,
+    "created_at": "2025-10-27T18:58:21.216Z",
+    "updated_at": "2025-10-27T18:58:21.216Z"
+  },
+  {
+    "id": "54a0e0fb-d07b-43f2-b476-3fd837a36faa",
+    "name": "Fuel Leak Discovery",
+    "segment": "Jupiter & Saturn",
+    "skill": "Engineering",
+    "dc": 15,
+    "trigger_condition": {
+      "type": "random",
+      "chance": 0.15
+    },
+    "pass_effect": "fuel+3,hull+2",
+    "fail_effect": "fuel-10,hull-3",
+    "tags": [
+      "crisis",
+      "repair",
+      "technical"
+    ],
+    "active": 1,
+    "created_at": "2025-10-27T18:58:21.219Z",
+    "updated_at": "2025-10-27T18:58:21.219Z"
+  },
+  {
+    "id": "54ec0791-95bb-4133-a6cd-6a1ae23897f7",
+    "name": "Coffee Machine Mutiny",
+    "segment": "Any",
+    "skill": "Diplomacy",
+    "dc": 14,
+    "trigger_condition": {
+      "type": "or",
+      "conditions": [
+        {
+          "stat": "weirdness",
+          "type": "stat",
+          "value": 2,
+          "operator": ">="
+        },
+        {
+          "stat": "food",
+          "type": "stat",
+          "value": 50,
+          "operator": "<"
+        }
+      ]
+    },
+    "pass_effect": "morale+2",
+    "fail_effect": "morale-2,weirdness+1",
+    "tags": [
+      "absurd",
+      "crew",
+      "morale"
+    ],
+    "active": 1,
+    "created_at": "2025-10-27T18:58:21.214Z",
+    "updated_at": "2025-10-27T18:58:21.214Z"
+  },
+  {
+    "id": "6b4c7c6b-04eb-460b-b5c3-cae3e9d6146a",
+    "name": "Morale Boosting Discovery",
+    "segment": "Any",
+    "skill": "Diplomacy",
+    "dc": 12,
+    "trigger_condition": {
+      "stat": "morale",
+      "type": "stat",
+      "value": 35,
+      "operator": "<"
+    },
+    "pass_effect": "morale+6",
+    "fail_effect": "morale-3",
+    "tags": [
+      "crew",
+      "discovery",
+      "social"
+    ],
+    "active": 1,
+    "created_at": "2025-10-27T18:58:21.220Z",
+    "updated_at": "2025-10-27T18:58:21.220Z"
+  },
+  {
+    "id": "800b5314-a784-497d-9e75-74537a3a3c02",
+    "name": "Reality Auditor Inspection",
+    "segment": "Approaching Uranus",
+    "skill": "Vibes",
+    "dc": 18,
+    "trigger_condition": {
+      "stat": "weirdness",
+      "type": "stat",
+      "value": 5,
+      "operator": ">="
+    },
+    "pass_effect": "weirdness-2",
+    "fail_effect": "freeze-system",
+    "tags": [
+      "absurd",
+      "authority"
+    ],
+    "active": 1,
+    "created_at": "2025-10-27T18:58:21.217Z",
+    "updated_at": "2025-10-27T18:58:21.217Z"
+  },
+  {
+    "id": "9cd1ae88-690d-4859-b86b-73c2dafdbe41",
+    "name": "Bureaucratic Snail Stowaway",
+    "segment": "Any",
+    "skill": "Diplomacy",
+    "dc": 13,
+    "trigger_condition": {
+      "type": "day_modulo",
+      "divisor": 7,
+      "remainder": 3
+    },
+    "pass_effect": "bureaucracy-bonus",
+    "fail_effect": "day+1",
+    "tags": [
+      "bureaucracy",
+      "crew"
+    ],
+    "active": 1,
+    "created_at": "2025-10-27T18:58:21.218Z",
+    "updated_at": "2025-10-27T18:58:21.218Z"
+  },
+  {
+    "id": "f6394aa8-45df-4fc7-a1ed-d7d910b9474b",
+    "name": "Food Preservation Malfunction",
+    "segment": "Outer Darkness",
+    "skill": "Culinary",
+    "dc": 13,
+    "trigger_condition": {
+      "stat": "food",
+      "type": "stat",
+      "value": 30,
+      "operator": "<"
+    },
+    "pass_effect": "food+8",
+    "fail_effect": "food-5,morale-2",
+    "tags": [
+      "food",
+      "survival",
+      "technical"
+    ],
+    "active": 1,
+    "created_at": "2025-10-27T18:58:21.220Z",
+    "updated_at": "2025-10-27T18:58:21.220Z"
+  }
+]

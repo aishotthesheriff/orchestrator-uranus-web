@@ -1,0 +1,69 @@
+{
+  "version": "v10.7.0",
+  "publishedBy": "dev",
+  "publishedAt": "2026-11-13T11:28:34.989Z",
+  "notes": "Release format 2: adds a full copy of every content table (active and inactive rows), so an empty database can be set up from the release. No content changes since v10.6.0.",
+  "formatVersion": 2,
+  "workspace": {
+    "items": {
+      "file": "workspace/items.json",
+      "rows": 8,
+      "sha256": "192de10e20f633a4be659b802b785abfd80ccfaab56c7427f39ac4c5b84393e5"
+    },
+    "events": {
+      "file": "workspace/events.json",
+      "rows": 10,
+      "sha256": "d1e9d85c17695c4e540d18ea5adbc488807f7efd231f6e9597e2e07cf5e2226b"
+    },
+    "npc_templates": {
+      "file": "workspace/npc_templates.json",
+      "rows": 4,
+      "sha256": "4744b517765c5ace42536395b6389364433a89d5c1feb4379bb0852c7045d588"
+    },
+    "prompt_templates": {
+      "file": "workspace/prompt_templates.json",
+      "rows": 11,
+      "sha256": "2d0aeaefa46ed349f6277379c4d15c45d0492e3182187a95b1d5e1b9f49f713b"
+    },
+    "image_prompts": {
+      "file": "workspace/image_prompts.json",
+      "rows": 10,
+      "sha256": "2c8666f5248becb5425447d24aba42d494b4eb3c19c86f4966d794a690f2e4ac"
+    },
+    "image_models": {
+      "file": "workspace/image_models.json",
+      "rows": 12,
+      "sha256": "21201fc034ae0dfaad1f6f03fde80b8272461ae5f105cc0b8897291364c5f9a2"
+    },
+    "llm_models": {
+      "file": "workspace/llm_models.json",
+      "rows": 6,
+      "sha256": "0b8ed3c7e7bd045d38055f4a473ce0dabf703d3b1ab739a0fe0024bdd8475942"
+    },
+    "mod_story_themes": {
+      "file": "workspace/mod_story_themes.json",
+      "rows": 8,
+      "sha256": "026e948c9fea69fbcfb1b13bef54dcba10ef7da491188e8f8ac7c7c4f1a38b19"
+    },
+    "mod_visual_styles": {
+      "file": "workspace/mod_visual_styles.json",
+      "rows": 109,
+      "sha256": "35aa86bebf2a365f04cba189cbfc767e837f29036864fc3f61b2bde1cbac3f24"
+    },
+    "app_settings": {
+      "file": "workspace/app_settings.json",
+      "rows": 10,
+      "sha256": "ee1c7827dbabebd6b6691926d2a8a0f44a56dc5788b1f5e2e1a4b27d9852c419"
+    },
+    "interview_questions": {
+      "file": "workspace/interview_questions.json",
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "pce_test_scenarios": {
+      "file": "workspace/pce_test_scenarios.json",
+      "rows": 4,
+      "sha256": "af287cfec44b6693d2586927b14cf57ec58a8d5976bda2ba27cff13dd78beb2f"
+    }
+  }
+}

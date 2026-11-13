@@ -13,8 +13,13 @@ vite.config.ts.*
 # Docker volumes
 postgres_data/
 
-# Reference releases
-/releases/
+# Reference releases: only the active copy and the release it was made from are tracked,
+# so a fresh clone can set up a database (npm run db:init). Older releases stay local.
+# When a new release is published, replace the version below with the new one.
+/releases/*
+!/releases/README.md
+!/releases/current/
+!/releases/v10.7.0/
 
 # Log files
 /logs/

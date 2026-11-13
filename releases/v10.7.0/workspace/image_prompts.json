@@ -1,0 +1,211 @@
+[
+  {
+    "id": "238eed4f-e907-47f9-81d1-a3206ff020ef",
+    "name": "day_arrival",
+    "prompt_template": "Arrival at Uranus: {{CURRENT_NARRATIVE}}. Planet and rings dominate the frame; ship foreground for scale. Mood: {{ABSURDITY_DESCRIPTION}}.",
+    "inherit_visual_style": 1,
+    "size": "1024x1024",
+    "quality": "auto",
+    "description": "Climactic arrival at destination",
+    "scene_types": [
+      "arrival",
+      "destination",
+      "travel"
+    ],
+    "tags": [
+      "arrival",
+      "milestone"
+    ],
+    "active": 1,
+    "created_at": "2025-10-29T21:57:18.290Z",
+    "updated_at": "2025-10-29T21:57:18.290Z"
+  },
+  {
+    "id": "263d0d35-9417-4374-8e51-07ed6ca7b34f",
+    "name": "ship_exterior",
+    "prompt_template": "Exterior view of spaceship in {{SEGMENT}} region. Scene: {{CURRENT_NARRATIVE}}. Ship shows visible repair patches and mismatched panels.",
+    "inherit_visual_style": 1,
+    "size": "1024x1024",
+    "quality": "auto",
+    "description": "External ship views and space travel scenes",
+    "scene_types": [
+      "exterior",
+      "space",
+      "travel"
+    ],
+    "tags": [
+      "location",
+      "action"
+    ],
+    "active": 1,
+    "created_at": "2025-10-27T18:58:21.230Z",
+    "updated_at": "2025-10-27T18:58:21.230Z"
+  },
+  {
+    "id": "65f28af1-d20f-4e66-9ecd-aa71096a3590",
+    "name": "arrival_departure",
+    "prompt_template": "Ship arriving or departing in {{SEGMENT}} region: {{CURRENT_NARRATIVE}}. Ship in motion with dramatic lighting and cosmic backdrop. Sense of journey and adventure.",
+    "inherit_visual_style": 1,
+    "size": "1024x1024",
+    "quality": "auto",
+    "description": "Beginning and ending journey moments",
+    "scene_types": [
+      "arrival",
+      "departure",
+      "travel"
+    ],
+    "tags": [
+      "journey",
+      "milestone"
+    ],
+    "active": 1,
+    "created_at": "2025-10-27T18:58:21.232Z",
+    "updated_at": "2025-10-27T18:58:21.232Z"
+  },
+  {
+    "id": "814aa0fe-7125-4657-a605-c966e5481ee1",
+    "name": "general_scene",
+    "prompt_template": "{{CURRENT_NARRATIVE}}. Setting: {{SEGMENT}} region of space. Mood: {{ABSURDITY_DESCRIPTION}}.",
+    "inherit_visual_style": 1,
+    "size": "1024x1024",
+    "quality": "auto",
+    "description": "General purpose scene visualization for any narrative moment",
+    "scene_types": [
+      "general",
+      "default"
+    ],
+    "tags": [
+      "versatile",
+      "narrative"
+    ],
+    "active": 1,
+    "created_at": "2025-10-27T18:58:21.229Z",
+    "updated_at": "2025-10-27T18:58:21.229Z"
+  },
+  {
+    "id": "a679aff4-954c-4efe-bfeb-1b2c637c5768",
+    "name": "cosmic_encounter",
+    "prompt_template": "Cosmic phenomenon or encounter in {{SEGMENT}} region: {{CURRENT_NARRATIVE}}. Vibrant nebulas, impossible geometry, and surreal space elements. Mood: {{ABSURDITY_DESCRIPTION}}.",
+    "inherit_visual_style": 1,
+    "size": "1024x1024",
+    "quality": "auto",
+    "description": "Strange space phenomena and alien encounters",
+    "scene_types": [
+      "cosmic",
+      "weird",
+      "space"
+    ],
+    "tags": [
+      "cosmic",
+      "surreal"
+    ],
+    "active": 1,
+    "created_at": "2025-10-27T18:58:21.231Z",
+    "updated_at": "2025-10-27T18:58:21.231Z"
+  },
+  {
+    "id": "af8c8130-4025-4022-8938-bf3e72b24285",
+    "name": "character_interaction",
+    "prompt_template": "Character-focused scene aboard ship: {{CURRENT_NARRATIVE}}. Characters present: {{NPC_SUMMARY}}. Focus on character expressions and interactions. Mood: {{ABSURDITY_DESCRIPTION}}.",
+    "inherit_visual_style": 1,
+    "size": "1024x1024",
+    "quality": "auto",
+    "description": "NPC interactions and crew dynamics",
+    "scene_types": [
+      "character",
+      "crew",
+      "dialogue"
+    ],
+    "tags": [
+      "character",
+      "social"
+    ],
+    "active": 1,
+    "created_at": "2025-10-27T18:58:21.231Z",
+    "updated_at": "2025-10-27T18:58:21.231Z"
+  },
+  {
+    "id": "e11c8ade-40f1-4875-afe8-ed2f3359ab43",
+    "name": "crisis_moment",
+    "prompt_template": "Dramatic crisis aboard spaceship: {{CURRENT_NARRATIVE}}. Flashing warning lights, sparks, and comedic chaos. Mood: {{ABSURDITY_DESCRIPTION}}.",
+    "inherit_visual_style": 1,
+    "size": "1024x1024",
+    "quality": "auto",
+    "description": "High-stakes emergency and action scenes",
+    "scene_types": [
+      "crisis",
+      "action",
+      "emergency"
+    ],
+    "tags": [
+      "action",
+      "drama"
+    ],
+    "active": 1,
+    "created_at": "2025-10-27T18:58:21.231Z",
+    "updated_at": "2025-10-27T18:58:21.231Z"
+  },
+  {
+    "id": "e53e0ecb-d92e-46fc-97ce-0a322a8c8587",
+    "name": "day_launch",
+    "prompt_template": "A Launch Day scene of the \"S.S. Backdoor Betty\" rocketing from Earth. Exterior view.\n\nMODIFIERS: N/A",
+    "inherit_visual_style": 1,
+    "size": "1024x1024",
+    "quality": "auto",
+    "description": "Launch day cinematic departure scene",
+    "scene_types": [
+      "launch",
+      "departure",
+      "travel"
+    ],
+    "tags": [
+      "launch",
+      "journey"
+    ],
+    "active": 1,
+    "created_at": "2025-10-29T21:57:18.290Z",
+    "updated_at": "2025-10-29T22:49:45.263Z"
+  },
+  {
+    "id": "e5b37a89-3616-4509-99df-124b0f7040b8",
+    "name": "technical_problem",
+    "prompt_template": "Ship technical malfunction: {{CURRENT_NARRATIVE}}. Interior view with crew working on repairs, exposed wiring, makeshift fixes. Mood: {{ABSURDITY_DESCRIPTION}}.",
+    "inherit_visual_style": 1,
+    "size": "1024x1024",
+    "quality": "auto",
+    "description": "Engineering problems and repair scenes",
+    "scene_types": [
+      "technical",
+      "repair",
+      "engineering"
+    ],
+    "tags": [
+      "technical",
+      "problem"
+    ],
+    "active": 1,
+    "created_at": "2025-10-27T18:58:21.232Z",
+    "updated_at": "2025-10-27T18:58:21.232Z"
+  },
+  {
+    "id": "fc42a0dd-fc03-4a92-bcca-d28a37d8ed73",
+    "name": "ship_interior",
+    "prompt_template": "Interior of spaceship during: {{CURRENT_NARRATIVE}}. Crew visible: {{NPC_SUMMARY}}. Mood: {{ABSURDITY_DESCRIPTION}}.",
+    "inherit_visual_style": 1,
+    "size": "1024x1024",
+    "quality": "auto",
+    "description": "Scenes taking place inside the ship",
+    "scene_types": [
+      "interior",
+      "crew",
+      "ship"
+    ],
+    "tags": [
+      "location",
+      "character"
+    ],
+    "active": 1,
+    "created_at": "2025-10-27T18:58:21.230Z",
+    "updated_at": "2025-10-27T18:58:21.230Z"
+  }
+]

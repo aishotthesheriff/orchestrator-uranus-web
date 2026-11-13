@@ -1,0 +1,172 @@
+[
+  {
+    "id": "stasis_lunchbox",
+    "name": "Quantum Stasis Lunchbox",
+    "description": "Reduces food consumption by 2/day; yesterday's lunch, today",
+    "icon": "🍱",
+    "skillBonusSkill": null,
+    "skillBonusValue": null,
+    "sceneEffectTags": [
+      "food"
+    ],
+    "sceneEffectEffect": null,
+    "efficiency": {
+      "food": 2
+    },
+    "tags": [
+      "food",
+      "efficiency",
+      "quantum"
+    ],
+    "active": 1,
+    "createdAt": "2025-10-27T18:58:21.225Z",
+    "updatedAt": "2025-10-27T18:58:21.225Z"
+  },
+  {
+    "id": "efficient_fuel_regulator",
+    "name": "Efficient Fuel Regulator",
+    "description": "Reduces fuel consumption by 2/day; borrows from tomorrow",
+    "icon": "⛽",
+    "skillBonusSkill": "Engineering",
+    "skillBonusValue": 1,
+    "sceneEffectTags": null,
+    "sceneEffectEffect": null,
+    "efficiency": {
+      "fuel": 2
+    },
+    "tags": [
+      "technical",
+      "efficiency",
+      "tool"
+    ],
+    "active": 1,
+    "createdAt": "2025-10-27T18:58:21.225Z",
+    "updatedAt": "2025-10-27T18:58:21.225Z"
+  },
+  {
+    "id": "bureaucratic_snail",
+    "name": "Bureaucratic Snail (pet)",
+    "description": "+1 Diplomacy; it filed itself as emotional support",
+    "icon": "🐌",
+    "skillBonusSkill": "Diplomacy",
+    "skillBonusValue": 1,
+    "sceneEffectTags": null,
+    "sceneEffectEffect": null,
+    "efficiency": null,
+    "tags": [
+      "social",
+      "bureaucracy",
+      "pet"
+    ],
+    "active": 1,
+    "createdAt": "2025-10-27T18:58:21.224Z",
+    "updatedAt": "2025-10-27T18:58:21.224Z"
+  },
+  {
+    "id": "quantum_whoopee_cushion",
+    "name": "Quantum Whoopee Cushion",
+    "description": "Advantage on Vibes checks; science is unreliable",
+    "icon": "💨",
+    "skillBonusSkill": null,
+    "skillBonusValue": null,
+    "sceneEffectTags": [
+      "absurd"
+    ],
+    "sceneEffectEffect": "vibes-advantage",
+    "efficiency": null,
+    "tags": [
+      "absurd",
+      "cosmic",
+      "prank"
+    ],
+    "active": 1,
+    "createdAt": "2025-10-27T18:58:21.223Z",
+    "updatedAt": "2025-10-27T18:58:21.223Z"
+  },
+  {
+    "id": "nebula_freshener",
+    "name": "Nebula Air Freshener",
+    "description": "+1 Morale on crew scenes; reduces morale loss by 1/day",
+    "icon": "🌸",
+    "skillBonusSkill": null,
+    "skillBonusValue": null,
+    "sceneEffectTags": [
+      "crew"
+    ],
+    "sceneEffectEffect": "morale+1",
+    "efficiency": {
+      "morale": 1
+    },
+    "tags": [
+      "social",
+      "crew",
+      "comfort"
+    ],
+    "active": 1,
+    "createdAt": "2025-10-27T18:58:21.223Z",
+    "updatedAt": "2025-10-27T18:58:21.223Z"
+  },
+  {
+    "id": "expired_cheesecake",
+    "name": "Expired Cheesecake",
+    "description": "+3 Culinary checks but -5 Food on use",
+    "icon": "🍰",
+    "skillBonusSkill": "Culinary",
+    "skillBonusValue": 3,
+    "sceneEffectTags": [
+      "gross"
+    ],
+    "sceneEffectEffect": "food-5",
+    "efficiency": null,
+    "tags": [
+      "biological",
+      "gross",
+      "food"
+    ],
+    "active": 1,
+    "createdAt": "2025-10-27T18:58:21.222Z",
+    "updatedAt": "2025-10-27T18:58:21.222Z"
+  },
+  {
+    "id": "universal_allen_key",
+    "name": "Universal Allen Key",
+    "description": "+2 Engineering; reduces oxygen loss by 1/day (fixes leaks)",
+    "icon": "🔧",
+    "skillBonusSkill": "Engineering",
+    "skillBonusValue": 2,
+    "sceneEffectTags": null,
+    "sceneEffectEffect": null,
+    "efficiency": {
+      "oxygen": 1
+    },
+    "tags": [
+      "technical",
+      "tool"
+    ],
+    "active": 1,
+    "createdAt": "2025-10-27T18:58:21.222Z",
+    "updatedAt": "2025-10-27T18:58:21.222Z"
+  },
+  {
+    "id": "red_tape",
+    "name": "Red Tape Dispenser",
+    "description": "+2 Bureaucracy; reduces Weirdness on authority scenes",
+    "icon": "📋",
+    "skillBonusSkill": "Bureaucracy",
+    "skillBonusValue": 2,
+    "sceneEffectTags": [
+      "bureaucracy",
+      "authority"
+    ],
+    "sceneEffectEffect": "weirdness-1",
+    "efficiency": null,
+    "tags": [
+      "bureaucracy",
+      "authority",
+      "tool"
+    ],
+    "active": 1,
+    "createdAt": "2025-10-27T18:58:21.221Z",
+    "updatedAt": "2025-10-27T18:58:21.221Z"
+  }
+]

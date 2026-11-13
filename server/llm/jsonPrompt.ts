@@ -78,8 +78,11 @@ export async function logLlmCall(
           turnNumber: turnNumber || null,
           timestamp: new Date().toISOString(),
         };
-        // Emit to all connected clients (broadcast)
-        io.emit('llmLog', logData);
+        // Prompts and replies are one player's story: send them to that game's room only
+        // (members are checked in server/socketAuth.ts). Calls with no game are not sent.
+        if (gameId) {
+          io.to(gameId).emit('llmLog', logData);
+        }
       }
     }
   } catch (error) {

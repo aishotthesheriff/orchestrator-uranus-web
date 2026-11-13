@@ -18,6 +18,7 @@ import {
 import { e2eLatency, metricsRegister } from "./metrics";
 import { requireAdmin } from "./middleware/adminAuth";
 import { generateToken, requireAuth } from "./middleware/jwt";
+import { authenticateSocket, handleJoinGame } from "./socketAuth";
 import { resolvePceSelections, getPceDefaults } from "./pce/settings.js";
 import { buildMetaPrompt, buildPcePrompt } from "./pce/promptBuilder.js";
 import { buildModelInstructionSet } from "./pce/modelInstructions.js";
@@ -1467,19 +1468,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setSocketIO(io);
   
   // Handle WebSocket connections
+  // Who is signed in (same auth_token cookie as the REST routes); room access is checked below
+  io.use(authenticateSocket);
+
   io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
-    
-    // Join game room
-    socket.on('joinGame', (gameId: string) => {
-      socket.join(gameId);
-      console.log(`Socket ${socket.id} joined game ${gameId}`);
+
+    // Join game room: only the signed-in owner of the game may
+    socket.on('joinGame', async (gameId: string, ack?: unknown) => {
+      await handleJoinGame(socket, gameId, ack, (id) => storage.getGameState(id));
     });
-    
+
     // Leave game room
     socket.on('leaveGame', (gameId: string) => {
+      if (typeof gameId !== 'string') return;
       socket.leave(gameId);
-      console.log(`Socket ${socket.id} left game ${gameId}`);
     });
   });
   

@@ -65,7 +65,7 @@ export async function createProvisionalManifest(
     `INSERT INTO turn_execution_manifests (
       id, game_id, turn_number, queue_entry_id, attempt, version, manifest,
       manifest_hash, precompute_hash, trace_id, request_id, created_at, updated_at
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())`,
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(3), NOW(3))`,
     [
       manifestId,
       gameId,
@@ -109,7 +109,7 @@ export async function updatePrecomputeSection(
 
   await pool.query(
     `UPDATE turn_execution_manifests
-     SET manifest = $1, precompute_hash = $2, manifest_hash = $3, updated_at = NOW()
+     SET manifest = $1, precompute_hash = $2, manifest_hash = $3, updated_at = NOW(3)
      WHERE id = $4`,
     [JSON.stringify(manifest), precomputeHash, manifestHash, manifestId]
   );
@@ -136,7 +136,7 @@ export async function updateRequestSection(
 
   await pool.query(
     `UPDATE turn_execution_manifests
-     SET manifest = $1, manifest_hash = $2, updated_at = NOW()
+     SET manifest = $1, manifest_hash = $2, updated_at = NOW(3)
      WHERE id = $3`,
     [JSON.stringify(manifest), manifestHash, manifestId]
   );
@@ -163,7 +163,7 @@ export async function updateApplySection(
 
   await pool.query(
     `UPDATE turn_execution_manifests
-     SET manifest = $1, manifest_hash = $2, updated_at = NOW()
+     SET manifest = $1, manifest_hash = $2, updated_at = NOW(3)
      WHERE id = $3`,
     [JSON.stringify(manifest), manifestHash, manifestId]
   );

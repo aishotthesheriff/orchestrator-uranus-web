@@ -11,7 +11,7 @@ vite.config.ts.*
 .env.production
 
 # Docker volumes
-postgres_data/
+mariadb_data/
 
 # Reference releases: only the active copy and the release it was made from are tracked,
 # so a fresh clone can set up a database (npm run db:init). Older releases stay local.
@@ -30,3 +30,5 @@ logs/
 # Dockerfile
 # docker-compose.yml
 # .dockerignore
+# Local database archives (contain user data)
+backups/

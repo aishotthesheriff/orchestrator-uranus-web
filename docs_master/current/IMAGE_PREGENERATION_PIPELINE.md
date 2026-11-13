@@ -14,7 +14,7 @@ A **standalone application** (the *image pre-generation pipeline*) consumes a **
 
 ### 1.2 Standalone Constraint
 
-- **No database.** No PostgreSQL, no shared storage, no connection to the game’s DB.
+- **No database.** No MariaDB, no shared storage, no connection to the game’s DB.
 - **No server dependency.** The pipeline does not call the game’s HTTP API or import its server runtime.
 - **Self-contained.** It may include copied or vendored logic (e.g. provider calls, variable substitution) and optionally a **copy** of reference files from `releases/current`.
 
@@ -36,7 +36,7 @@ The pipeline is a separate application. It does **not** reuse the game’s serve
 | **Model config (size, quality, provider, model name)** | Copy from `releases/current` (e.g. `image_models.json`, `system_defaults.json`) and read as static JSON at startup, or accept config in the input JSON / env. |
 | **Prompt templates** | Copy from `releases/current` (e.g. `prompts.json`, `image_prompts.json`) and implement simple `{{VARIABLE}}` substitution from record fields. |
 | **Visual styles / themes** | Optional: copy `mod_visual_styles.json`, `mod_story_themes.json` and use when resolving templates or building prompts. |
-| **Cache (optional)** | **File-based only:** e.g. directory keyed by hash of (prompt + variables), or a local JSON index mapping key → file path. No Postgres, no game DB. |
+| **Cache (optional)** | **File-based only:** e.g. directory keyed by hash of (prompt + variables), or a local JSON index mapping key → file path. No MariaDB, no game DB. |
 | **Secrets** | Same env vars as needed for providers (e.g. `OPENAI_API_KEY`, Hugging Face token). No game DB or session. |
 
 **Design principle:** The pipeline may **copy** concepts and data from this repo (and from `releases/current`), but it **does not depend on** the game’s database or server at runtime.
@@ -232,7 +232,7 @@ To avoid re-calling the provider for identical prompt + model + variables:
 - **Key:** e.g. `SHA256(prompt + model_key + sorted variables)`.
 - **Storage:** Directory under `cache_dir`, e.g. `cache/{key_prefix}/{key}.png`, plus a small index (JSON or SQLite) mapping key → path and metadata.
 - **Lookup:** Before calling the provider, compute the key; if the file exists (and optionally is not expired), copy or link it to `output_dir` and record `cache_hit: true` in the manifest.
-- **Scope:** Local to the pipeline run or machine; no sharing with the game’s Postgres cache.
+- **Scope:** Local to the pipeline run or machine; no sharing with the game’s MariaDB cache.
 
 ---
 

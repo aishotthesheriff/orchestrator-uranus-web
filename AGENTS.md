@@ -9,7 +9,7 @@ This document enumerates the major runtime agents that collaborate to deliver Qu
 | Player Client Agent | Drive gameplay UI, network calls, and socket reactions. | `client/src/hooks/useGameLogic.ts:23`, `client/src/lib/queryClient.ts:1`, `client/src/lib/socket.ts:1` |
 | Gateway & Security Agent | Terminate HTTP, enforce security controls, and expose system health. | `server/index.ts:1`, `server/middleware/rateLimiting.ts:1`, `server/middleware/securityLogging.ts:1` |
 | Game Orchestrator Agent | Provide REST/WS APIs, validate input, and bootstrap background services. | `server/routes.ts:28` |
-| Data Persistence Agent | Translate domain models to Postgres, guarantee transactional safety. | `server/storage.ts:1` |
+| Data Persistence Agent | Translate domain models to MariaDB, guarantee transactional safety. | `server/storage.ts:1` |
 | Turn Processor Agent | Execute queued player actions and emit completed turns. | `server/orchestrator/workers/turnPrecomputeWorker.ts:1`, `server/orchestrator/workers/turnApplyWorker.ts:1`, `server/gameLogic.ts:26`, `server/pce/graph/index.ts:1`, `server/llm/models.ts:1` |
 | Image Processor Agent | Resolve scene art via cache-first generation and notify clients. | `server/orchestrator/workers/imageWorker.ts:1`, `server/aiService.ts:1`, `server/imageStorage.ts:1` |
 | Reference Steward Agent | Load, cache, and activate reference releases and defaults. | `server/reference/referenceLoader.ts:1`, `server/reference/publishReference.ts:1` |
@@ -42,17 +42,18 @@ This document enumerates the major runtime agents that collaborate to deliver Qu
 
 - Owns the public API surface: game lifecycle, interview tools, DevTools catalog management, and image generation endpoints.
 - On startup, instantiates orchestrator workers (`TurnPrecomputeWorker`, `TurnApplyWorker`, `ImageWorker`) alongside the image cache cleanup service, then registers the Socket.IO namespace for client communication.
-- Bridges synchronous HTTP work with async pipelines by enqueuing jobs in Postgres and returning lightweight receipts (e.g., `{ turnJobId, status: 'processing' }`).
+- Bridges synchronous HTTP work with async pipelines by enqueuing jobs in MariaDB and returning lightweight receipts (e.g., `{ turnJobId, status: 'processing' }`).
 - Handles admin workflows—publishing/activating reference data—and exposes safe read-only endpoints for client defaults.
 
 ### Data Persistence Agent
-**Mandate:** Provide a transactional abstraction over Postgres while translating between snake_case rows and TypeScript models.  
+**Mandate:** Provide a transactional abstraction over MariaDB while translating between snake_case rows and TypeScript models.  
 **Primary Module:** `server/storage.ts:1`.
 
 - Offers typed getters/setters covering users, games, jobs, prompts, interview content, image cache metadata, and reference releases.
 - Implements `processTurnWithTransaction` to lock a game row, apply turn logic, and persist updates atomically, preventing double-processing when multiple workers compete.
 - Manages cache-friendly helpers (e.g., user preference memoization) and handles unique-index conflicts gracefully by retrieving existing records.
 - Supplies maintenance utilities (e.g., generated-image deletion, reference release activation) consumed by other agents.
+- Talks to MariaDB through the pool in `server/db.ts`; the schema is `server/db/schema/`. A new database is set up from the newest published release with `npm run db:init`. See [`DATABASE.md`](docs_master/current/DATABASE.md).
 
 ### Turn Processor Agent
 **Mandate:** Drain the turn job queue, run deterministic game logic, and broadcast completed turns.  
@@ -81,6 +82,7 @@ This document enumerates the major runtime agents that collaborate to deliver Qu
 - Supplies helper APIs (`getCurrentReference`, `getReferenceByVersion`) that all downstream agents use when they need authoritative content.
 - Provides admin endpoints for publishing new versions, toggling the active release, and listing release history, enabling content teams to iterate safely.
 - Falls back gracefully when metadata files are missing, logging warnings rather than crashing the server at startup.
+- A release also carries every content row (`workspace/`), so an empty database can be loaded from it and checked against it (`server/reference/importRelease.ts`, Verify in Dev Tools).
 
 ### Maintenance & Observability Agent
 **Mandate:** Keep the image cache healthy and expose the telemetry operators rely on.  

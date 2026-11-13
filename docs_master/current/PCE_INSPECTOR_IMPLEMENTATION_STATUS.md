@@ -1,3 +1,5 @@
+> **Note (November 2026):** The database moved from PostgreSQL to MariaDB. The Inspector tables are now part of `server/db/schema/001_baseline.sql`, and the four preset scenarios come from the published release (`npm run db:init`). The `psql` steps and `server/migrations/` paths below are history. See [DATABASE.md](DATABASE.md).
+
 # PCE Inspector: Implementation Status
 
 **Last Updated:** 2025-01-27  

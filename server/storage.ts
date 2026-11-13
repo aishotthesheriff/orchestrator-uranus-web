@@ -1,5 +1,6 @@
 import type { User, InsertUser, GameState, PromptTemplate, InsertPromptTemplate, LlmLog, InsertLlmLog, Event, InsertEvent, ItemRow, InsertItem, NpcTemplate, InsertNpcTemplate, ImagePrompt, InsertImagePrompt, GeneratedImage, InsertGeneratedImage, InterviewQuestion, InsertInterviewQuestion, ReferenceRelease, InsertReferenceRelease, ImageJob, InsertImageJob, TurnJob, InsertTurnJob, AppSetting, ImageModel, LlmModel, ModVisualStyles, ModStoryThemes, GameStats, NPC, Turn, ActionChip, Segment, PceTestScenario, PceTestRun, PceTestMetrics, PceTemplateVersion } from "@shared/schema";
-import { pool } from "./db";
+import { createLimiter, pool, poolLimit, withTransaction } from "./db";
+import { isUniqueViolation as isUniqueViolationError } from "./db/errors";
 import { randomUUID } from "crypto";
 import type { ActionInput } from "@shared/schema";
 import { getOrchestrator } from "./orchestrator";
@@ -196,6 +197,9 @@ export interface IStorage {
     version: Omit<PceTemplateVersion, 'id' | 'createdAt'>
   ): Promise<PceTemplateVersion>;
 }
+
+/** Turn transactions may hold at most half the pool; the other half serves the queries they make. */
+const turnTransactionSlots = createLimiter(Math.max(1, Math.floor(poolLimit() / 2)));
 
 export class DatabaseStorage implements IStorage {
   // In-memory cache for user preferences (username -> preferences)
@@ -535,7 +539,7 @@ export class DatabaseStorage implements IStorage {
         password: randomUUID(),
       });
     } catch (error: any) {
-      const isUniqueViolation = typeof error === "object" && error !== null && "code" in error && error.code === "23505";
+      const isUniqueViolation = isUniqueViolationError(error);
       if (!isUniqueViolation) {
         throw error;
       }
@@ -772,7 +776,7 @@ export class DatabaseStorage implements IStorage {
         username = $1, seed = $2, day = $3, turn_number = $4, segment = $5, absurdity = $6,
         stats = $7, npcs = $8, equipped_items = $9, turns = $10, current_actions = $11,
         running_gags = $12, event_history = $13, interview_responses = $14, is_complete = $15,
-        failure_reason = $16, updated_at = NOW()
+        failure_reason = $16, updated_at = NOW(3)
        WHERE id = $17`,
       [
         state.username,
@@ -877,7 +881,7 @@ export class DatabaseStorage implements IStorage {
       values.push(updates.active);
     }
 
-    updateFields.push(`updated_at = NOW()`);
+    updateFields.push(`updated_at = NOW(3)`);
     values.push(id);
 
     const result = await pool.query(
@@ -1014,7 +1018,7 @@ export class DatabaseStorage implements IStorage {
       values.push(updates.active);
     }
 
-    updateFields.push(`updated_at = NOW()`);
+    updateFields.push(`updated_at = NOW(3)`);
     values.push(id);
 
     const result = await pool.query(
@@ -1107,7 +1111,7 @@ export class DatabaseStorage implements IStorage {
       values.push(updates.active);
     }
 
-    updateFields.push(`updated_at = NOW()`);
+    updateFields.push(`updated_at = NOW(3)`);
     values.push(id);
 
     const result = await pool.query(
@@ -1180,7 +1184,7 @@ export class DatabaseStorage implements IStorage {
       values.push(updates.active);
     }
 
-    updateFields.push(`updated_at = NOW()`);
+    updateFields.push(`updated_at = NOW(3)`);
     values.push(id);
 
     const result = await pool.query(
@@ -1268,7 +1272,7 @@ export class DatabaseStorage implements IStorage {
       values.push(updates.active);
     }
 
-    updateFields.push(`updated_at = NOW()`);
+    updateFields.push(`updated_at = NOW(3)`);
     values.push(id);
 
     const result = await pool.query(
@@ -1342,7 +1346,7 @@ export class DatabaseStorage implements IStorage {
       values.push(updates.active);
     }
 
-    updateFields.push(`updated_at = NOW()`);
+    updateFields.push(`updated_at = NOW(3)`);
     values.push(id);
 
     const result = await pool.query(
@@ -1407,7 +1411,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateImageAccess(id: string): Promise<void> {
     await pool.query(
-      'UPDATE generated_images SET accessed_at = NOW(), access_count = access_count + 1 WHERE id = $1',
+      'UPDATE generated_images SET accessed_at = NOW(3), access_count = access_count + 1 WHERE id = $1',
       [id]
     );
   }
@@ -1562,6 +1566,21 @@ export class DatabaseStorage implements IStorage {
     gameId: string,
     processor: (state: GameState) => Promise<GameState>
   ): Promise<GameState> {
+    // The processor runs while this transaction holds a connection, and it makes further
+    // queries on other connections. Without a cap, enough simultaneous turns would take
+    // every connection and leave none for the work that lets any of them finish.
+    const releaseSlot = await turnTransactionSlots.acquire();
+    try {
+      return await this.runTurnTransaction(gameId, processor);
+    } finally {
+      releaseSlot();
+    }
+  }
+
+  private async runTurnTransaction(
+    gameId: string,
+    processor: (state: GameState) => Promise<GameState>
+  ): Promise<GameState> {
     const timer = dbOperationDuration.startTimer({ operation: 'transaction', table: 'games' });
     const client = await pool.connect();
     try {
@@ -1608,7 +1627,7 @@ export class DatabaseStorage implements IStorage {
           username = $1, seed = $2, day = $3, turn_number = $4, segment = $5, absurdity = $6,
           stats = $7, npcs = $8, equipped_items = $9, turns = $10, current_actions = $11,
           running_gags = $12, event_history = $13, interview_responses = $14, is_complete = $15,
-          failure_reason = $16, updated_at = NOW()
+          failure_reason = $16, updated_at = NOW(3)
          WHERE id = $17`,
         [
           updatedState.username,
@@ -1704,7 +1723,7 @@ export class DatabaseStorage implements IStorage {
       return mappedJob;
     } catch (error) {
       // Handle unique constraint violation (duplicate active job for same game/turn)
-      const isUniqueViolation = typeof error === "object" && error !== null && "code" in error && error.code === "23505";
+      const isUniqueViolation = isUniqueViolationError(error);
       if (isUniqueViolation) {
         console.warn(`[Storage] Duplicate image job detected for game ${job.gameId}, turn ${job.turnNumber}. Fetching existing job.`);
         // Return the existing job for this game/turn combination
@@ -1807,22 +1826,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async claimPendingImageJobs(limit: number): Promise<ImageJob[]> {
-    const result = await pool.query(
-      `WITH claimed AS (
-        SELECT id FROM image_jobs 
-        WHERE status = 'pending' 
-        ORDER BY created_at 
-        LIMIT $1 
-        FOR UPDATE SKIP LOCKED
-      )
-      UPDATE image_jobs 
-      SET status = 'processing' 
-      WHERE id IN (SELECT id FROM claimed)
-      RETURNING *`,
-      [limit]
-    );
-    
-    const jobs = result.rows.map(row => this.mapImageJob(row)!);
+    const rows = await this.claimPendingRows('image_jobs', limit);
+
+    const jobs = rows.map(row => this.mapImageJob(row)!);
     
     if (jobs.length > 0) {
       console.log('[Storage] claimPendingImageJobs found jobs', {
@@ -1948,22 +1954,31 @@ export class DatabaseStorage implements IStorage {
   }
 
   async claimPendingTurnJobs(limit: number): Promise<TurnJob[]> {
-    const result = await pool.query(
-      `WITH claimed AS (
-        SELECT id FROM turn_jobs 
-        WHERE status = 'pending' 
-        ORDER BY created_at 
-        LIMIT $1 
-        FOR UPDATE SKIP LOCKED
-      )
-      UPDATE turn_jobs 
-      SET status = 'processing' 
-      WHERE id IN (SELECT id FROM claimed)
-      RETURNING *`,
-      [limit]
-    );
-    
-    return result.rows.map(row => this.mapTurnJob(row)!);
+    const rows = await this.claimPendingRows('turn_jobs', limit);
+    return rows.map(row => this.mapTurnJob(row)!);
+  }
+
+  /**
+   * Moves up to `limit` pending jobs to 'processing' and returns them, oldest first.
+   * Rows locked by another claimer are skipped, so two callers never get the same job.
+   */
+  private async claimPendingRows(table: 'turn_jobs' | 'image_jobs', limit: number): Promise<any[]> {
+    return withTransaction(async (client) => {
+      const picked = await client.query(
+        `SELECT id FROM ${table}
+         WHERE status = 'pending'
+         ORDER BY created_at
+         LIMIT $1
+         FOR UPDATE SKIP LOCKED`,
+        [limit]
+      );
+      const ids: string[] = picked.rows.map((row: any) => row.id);
+      if (ids.length === 0) return [];
+      const placeholders = ids.map((_, i) => `$${i + 1}`).join(', ');
+      await client.query(`UPDATE ${table} SET status = 'processing' WHERE id IN (${placeholders})`, ids);
+      const claimed = await client.query(`SELECT * FROM ${table} WHERE id IN (${placeholders}) ORDER BY created_at`, ids);
+      return claimed.rows;
+    });
   }
 
   async getAllSettings(): Promise<AppSetting[]> {
@@ -1977,7 +1992,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSetting(key: string): Promise<AppSetting | undefined> {
-    const result = await pool.query('SELECT * FROM app_settings WHERE key = $1', [key]);
+    const result = await pool.query('SELECT * FROM app_settings WHERE `key` = $1', [key]);
     return result.rows[0] || undefined;
   }
 
@@ -1985,14 +2000,14 @@ export class DatabaseStorage implements IStorage {
     const existing = await this.getSetting(key);
     if (existing) {
       const result = await pool.query(
-        `UPDATE app_settings SET value = $1, description = $2, active = $3, updated_at = NOW()
-         WHERE key = $4 RETURNING *`,
+        `UPDATE app_settings SET value = $1, description = $2, active = $3, updated_at = NOW(3)
+         WHERE \`key\` = $4 RETURNING *`,
         [value, description ?? existing.description ?? null, active, key]
       );
       return result.rows[0];
     } else {
       const result = await pool.query(
-        `INSERT INTO app_settings (key, value, description, active)
+        `INSERT INTO app_settings (\`key\`, value, description, active)
          VALUES ($1, $2, $3, $4) RETURNING *`,
         [key, value, description ?? null, active]
       );
@@ -2128,7 +2143,7 @@ export class DatabaseStorage implements IStorage {
         values.push(input.isDefault);
       }
 
-      updateFields.push(`updated_at = NOW()`);
+      updateFields.push(`updated_at = NOW(3)`);
       values.push(input.modelKey);
 
       const result = await pool.query(
@@ -2171,12 +2186,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deactivateImageModel(modelKey: string): Promise<void> {
-    await pool.query('UPDATE image_models SET active = 0, updated_at = NOW() WHERE model_key = $1', [modelKey]);
+    await pool.query('UPDATE image_models SET active = 0, updated_at = NOW(3) WHERE model_key = $1', [modelKey]);
   }
 
   async reorderImageModels(order: { modelKey: string; sortOrder: number }[]): Promise<void> {
     for (const row of order) {
-      await pool.query('UPDATE image_models SET sort_order = $1, updated_at = NOW() WHERE model_key = $2', [row.sortOrder, row.modelKey]);
+      await pool.query('UPDATE image_models SET sort_order = $1, updated_at = NOW(3) WHERE model_key = $2', [row.sortOrder, row.modelKey]);
     }
   }
 
@@ -2271,7 +2286,7 @@ export class DatabaseStorage implements IStorage {
       }
       if (input.isDefault === true) {
         await client.query(
-          'UPDATE llm_models SET is_default = FALSE, updated_at = NOW() WHERE is_default = TRUE AND model_key <> $1',
+          'UPDATE llm_models SET is_default = FALSE, updated_at = NOW(3) WHERE is_default = TRUE AND model_key <> $1',
           [input.modelKey]
         );
       }
@@ -2281,7 +2296,7 @@ export class DatabaseStorage implements IStorage {
         const provided = columns.filter(([field]) => (input as any)[field] !== undefined);
         const sets = provided.map(([, col], i) => `${col} = $${i + 1}`);
         const values = provided.map(([field, , conv]) => conv((input as any)[field]));
-        sets.push('updated_at = NOW()');
+        sets.push('updated_at = NOW(3)');
         values.push(input.modelKey);
         const result = await client.query(
           `UPDATE llm_models SET ${sets.join(', ')} WHERE model_key = $${values.length} RETURNING *`,
@@ -2318,7 +2333,7 @@ export class DatabaseStorage implements IStorage {
 
   async deactivateLlmModel(modelKey: string): Promise<void> {
     await pool.query(
-      'UPDATE llm_models SET active = 0, is_default = FALSE, updated_at = NOW() WHERE model_key = $1',
+      'UPDATE llm_models SET active = 0, is_default = FALSE, updated_at = NOW(3) WHERE model_key = $1',
       [modelKey]
     );
   }
@@ -2330,15 +2345,26 @@ export class DatabaseStorage implements IStorage {
    */
   async recordLlmModelCheck(modelKey: string, ok: boolean | null, summary: Record<string, unknown>): Promise<void> {
     // Deliberately leaves updated_at alone: a check is not an edit.
-    const merge = `last_check_summary = COALESCE(last_check_summary, '{}'::jsonb) || $1::jsonb`;
-    if (ok === null) {
-      await pool.query(`UPDATE llm_models SET ${merge} WHERE model_key = $2`, [JSON.stringify(summary), modelKey]);
-      return;
-    }
-    await pool.query(
-      `UPDATE llm_models SET ${merge}, last_check_at = NOW(), last_check_ok = $3 WHERE model_key = $2`,
-      [JSON.stringify(summary), modelKey, ok]
-    );
+    // The new keys are merged over the stored summary (top level only), with the row locked
+    // so two checks finishing together cannot overwrite each other.
+    await withTransaction(async (client) => {
+      const current = await client.query(
+        'SELECT last_check_summary FROM llm_models WHERE model_key = $1 FOR UPDATE',
+        [modelKey]
+      );
+      if (current.rows.length === 0) return;
+      const stored = current.rows[0].last_check_summary;
+      const existing = typeof stored === 'string' ? JSON.parse(stored) : stored ?? {};
+      const merged = JSON.stringify({ ...existing, ...summary });
+      if (ok === null) {
+        await client.query('UPDATE llm_models SET last_check_summary = $1 WHERE model_key = $2', [merged, modelKey]);
+        return;
+      }
+      await client.query(
+        'UPDATE llm_models SET last_check_summary = $1, last_check_at = NOW(3), last_check_ok = $3 WHERE model_key = $2',
+        [merged, modelKey, ok]
+      );
+    });
   }
 
   // Story theme modifiers CRUD
@@ -2468,7 +2494,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (input.id) {
-      updateFields.push(`updated_at = NOW()`);
+      updateFields.push(`updated_at = NOW(3)`);
       values.push(input.id);
       const result = await pool.query(
         `UPDATE mod_story_themes SET ${updateFields.join(', ')} WHERE id = $${paramIndex} RETURNING *`,
@@ -2552,7 +2578,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deactivateStoryTheme(id: string): Promise<void> {
-    await pool.query('UPDATE mod_story_themes SET active = 0, updated_at = NOW() WHERE id = $1', [id]);
+    await pool.query('UPDATE mod_story_themes SET active = 0, updated_at = NOW(3) WHERE id = $1', [id]);
   }
 
   // Visual style modifiers CRUD
@@ -2691,7 +2717,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (input.id) {
-      updateFields.push(`updated_at = NOW()`);
+      updateFields.push(`updated_at = NOW(3)`);
       values.push(input.id);
       const result = await pool.query(
         `UPDATE mod_visual_styles SET ${updateFields.join(', ')} WHERE id = $${paramIndex} RETURNING *`,
@@ -2779,7 +2805,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deactivateVisualStyle(id: string): Promise<void> {
-    await pool.query('UPDATE mod_visual_styles SET active = 0, updated_at = NOW() WHERE id = $1', [id]);
+    await pool.query('UPDATE mod_visual_styles SET active = 0, updated_at = NOW(3) WHERE id = $1', [id]);
   }
 
   // ============================================
@@ -2792,7 +2818,7 @@ export class DatabaseStorage implements IStorage {
     let paramIndex = 1;
 
     if (filters?.tags) {
-      query += ` AND tags ILIKE $${paramIndex++}`;
+      query += ` AND tags LIKE $${paramIndex++}`;
       params.push(`%${filters.tags}%`);
     }
 
@@ -2828,7 +2854,7 @@ export class DatabaseStorage implements IStorage {
       ) VALUES (
         $1, $2, $3, $4, $5, COALESCE($6, '[]'),
         $7, $8, $9, $10, $11, $12,
-        $13, NOW(), NOW()
+        $13, NOW(3), NOW(3)
       )
       RETURNING *`,
       [
@@ -2879,7 +2905,7 @@ export class DatabaseStorage implements IStorage {
       return existing;
     }
 
-    fields.push('updated_at = NOW()');
+    fields.push('updated_at = NOW(3)');
     values.push(id);
 
     const result = await pool.query(
@@ -2910,7 +2936,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (filters?.tags) {
-      query += ` AND tags ILIKE $${paramIndex++}`;
+      query += ` AND tags LIKE $${paramIndex++}`;
       params.push(`%${filters.tags}%`);
     }
 
@@ -2951,7 +2977,7 @@ export class DatabaseStorage implements IStorage {
         notes, tags, starred
       ) VALUES (
         $1, $2, $3, $4, $5,
-        $6, $7, $8, $9, NOW(),
+        $6, $7, $8, $9, NOW(3),
         $10, $11, $12, $13,
         $14, $15, $16
       )
@@ -3036,7 +3062,7 @@ export class DatabaseStorage implements IStorage {
         $6, $7, $8,
         $9, $10, $11,
         $12, $13,
-        NOW(), $14
+        NOW(3), $14
       )
       RETURNING *`,
       [
@@ -3075,7 +3101,7 @@ export class DatabaseStorage implements IStorage {
         system_content, content, created_by, created_at, notes
       ) VALUES (
         $1, $2, $3, $4,
-        $5, $6, $7, NOW(), $8
+        $5, $6, $7, NOW(3), $8
       )
       RETURNING *`,
       [
@@ -3110,7 +3136,7 @@ export class DatabaseStorage implements IStorage {
       `INSERT INTO turn_execution_manifests (
         id, game_id, turn_number, queue_entry_id, attempt, version, manifest,
         manifest_hash, precompute_hash, trace_id, request_id, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(3), NOW(3))
       RETURNING *`,
       [
         id,
@@ -3254,7 +3280,7 @@ export class DatabaseStorage implements IStorage {
       throw new Error('No update fields provided');
     }
 
-    updateFields.push(`updated_at = NOW()`);
+    updateFields.push(`updated_at = NOW(3)`);
     values.push(id);
 
     const result = await pool.query(

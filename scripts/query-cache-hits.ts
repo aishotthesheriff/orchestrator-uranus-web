@@ -1,36 +1,13 @@
-import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
-import pkg from 'pg';
+/**
+ * Prints the image cache hits recorded in llm_logs for the most recent game.
+ *
+ * Usage: npx tsx scripts/query-cache-hits.ts     (DATABASE_URL from the environment or .env)
+ */
+import { loadEnv } from './lib/env';
 
-const { Pool } = pkg;
+loadEnv();
 
-// Try to load .env file if it exists
-if (existsSync(join(process.cwd(), '.env'))) {
-  const envContent = readFileSync(join(process.cwd(), '.env'), 'utf-8');
-  envContent.split('\n').forEach((line) => {
-    const trimmed = line.trim();
-    if (trimmed && !trimmed.startsWith('#')) {
-      const [key, ...valueParts] = trimmed.split('=');
-      const value = valueParts.join('=');
-      if (key && value && !process.env[key]) {
-        process.env[key] = value;
-      }
-    }
-  });
-}
-
-if (!process.env.DATABASE_URL) {
-  console.error('DATABASE_URL must be set.');
-  console.error('Either:');
-  console.error('1. Set DATABASE_URL in your .env file');
-  console.error('2. Pass it as an environment variable');
-  console.error('   DATABASE_URL=postgresql://... npx tsx scripts/query-cache-hits.ts');
-  process.exit(1);
-}
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+const { pool } = await import('../server/db');
 
 async function queryCacheHits() {
   try {
@@ -39,7 +16,7 @@ async function queryCacheHits() {
       SELECT DISTINCT game_id, MAX(created_at) as last_activity
       FROM llm_logs 
       WHERE function_name IN ('generateImage', 'checkImageCache')
-        AND metadata->>'cacheHit' = 'true'
+        AND JSON_VALUE(metadata, '$.cacheHit') = '1'
       GROUP BY game_id
       ORDER BY last_activity DESC
       LIMIT 5;
@@ -67,20 +44,20 @@ async function queryCacheHits() {
       SELECT 
         function_name,
         turn_number,
-        metadata->>'cacheStrategy' as strategy,
-        metadata->>'similarityScore' as similarity_score,
-        metadata->>'cacheHit' as cache_hit,
-        metadata->>'templateName' as template,
-        metadata->>'cachedImageId' as cached_image_id,
-        metadata->>'narrativeSimilarity' as narrative_similarity,
-        metadata->>'contextSimilarity' as context_similarity,
-        metadata->>'visualSimilarity' as visual_similarity,
+        JSON_VALUE(metadata, '$.cacheStrategy') as strategy,
+        JSON_VALUE(metadata, '$.similarityScore') as similarity_score,
+        JSON_VALUE(metadata, '$.cacheHit') as cache_hit,
+        JSON_VALUE(metadata, '$.templateName') as template,
+        JSON_VALUE(metadata, '$.cachedImageId') as cached_image_id,
+        JSON_VALUE(metadata, '$.narrativeSimilarity') as narrative_similarity,
+        JSON_VALUE(metadata, '$.contextSimilarity') as context_similarity,
+        JSON_VALUE(metadata, '$.visualSimilarity') as visual_similarity,
         execution_time_ms,
         created_at
       FROM llm_logs 
       WHERE function_name IN ('generateImage', 'checkImageCache')
         AND game_id = $1
-        AND metadata->>'cacheHit' = 'true'
+        AND JSON_VALUE(metadata, '$.cacheHit') = '1'
       ORDER BY turn_number, created_at DESC;
     `;
 
@@ -98,17 +75,17 @@ async function queryCacheHits() {
         SELECT 
           function_name,
           turn_number,
-          metadata->>'cacheStrategy' as strategy,
-          metadata->>'similarityScore' as similarity_score,
-          metadata->>'cacheHit' as cache_hit,
-          metadata->>'templateName' as template,
+          JSON_VALUE(metadata, '$.cacheStrategy') as strategy,
+          JSON_VALUE(metadata, '$.similarityScore') as similarity_score,
+          JSON_VALUE(metadata, '$.cacheHit') as cache_hit,
+          JSON_VALUE(metadata, '$.templateName') as template,
           execution_time_ms,
           created_at
         FROM llm_logs 
         WHERE function_name IN ('generateImage', 'checkImageCache')
           AND game_id = $1
-          AND created_at >= '2025-11-03 01:30:00'::timestamp
-          AND created_at <= '2025-11-03 01:35:00'::timestamp
+          AND created_at >= '2025-11-03 01:30:00'
+          AND created_at <= '2025-11-03 01:35:00'
         ORDER BY turn_number, created_at DESC;
       `;
       

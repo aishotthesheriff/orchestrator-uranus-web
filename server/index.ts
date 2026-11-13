@@ -173,10 +173,14 @@ app.get("/api/health", async (_req, res) => {
     const pendingImageJobs = await storage.getPendingImageJobs(1000);
     
     // Reference check
+    // "ok" means the release files load. inSync means the database names the same release.
     let referenceStatus = 'ok';
+    let referenceSync: { version: string | null; dbVersion: string | null; inSync: boolean } = { version: null, dbVersion: null, inSync: false };
     try {
       const { getCurrentReference } = await import('./reference/referenceLoader');
       await getCurrentReference();
+      const { referenceSyncStatus } = await import('./reference/importRelease');
+      referenceSync = await referenceSyncStatus();
     } catch (error) {
       referenceStatus = 'error';
     }
@@ -193,7 +197,7 @@ app.get("/api/health", async (_req, res) => {
       timestamp: new Date().toISOString(),
       checks: {
         database: { status: 'ok', latencyMs: dbLatency },
-        reference: { status: referenceStatus },
+        reference: { status: referenceStatus, ...referenceSync },
         queues: {
           turnJobs: pendingTurnJobs.length,
           imageJobs: pendingImageJobs.length

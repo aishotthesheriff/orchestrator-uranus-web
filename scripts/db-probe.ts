@@ -188,7 +188,7 @@ async function main() {
     return "'Joey' and 'joey' are different users";
   });
 
-  await check("One active row per slot (replaces a Postgres partial unique index)", true, async () => {
+  await check("At most one active row per slot (unique index on a generated column)", true, async () => {
     // p1 holds slot g1:1 while pending. A second pending row for the same slot must be refused.
     let refused = false;
     try {

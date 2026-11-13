@@ -105,7 +105,7 @@ export async function finishExperiment(
 ): Promise<EvalExperiment> {
   const result = await pool.query(
     `UPDATE eval_experiments
-        SET status = $2, name = COALESCE($3, name), summary = $4, langsmith_url = $5, error = $6, completed_at = NOW()
+        SET status = $2, name = COALESCE($3, name), summary = $4, langsmith_url = $5, error = $6, completed_at = NOW(3)
       WHERE id = $1
       RETURNING *`,
     [
@@ -134,7 +134,7 @@ export async function getExperiment(id: string): Promise<EvalExperiment | null> 
 export async function failInterruptedExperiments(): Promise<number> {
   const result = await pool.query(
     `UPDATE eval_experiments
-        SET status = 'failed', error = 'Interrupted by a server restart', completed_at = NOW()
+        SET status = 'failed', error = 'Interrupted by a server restart', completed_at = NOW(3)
       WHERE status = 'running'`
   );
   return result.rowCount ?? 0;

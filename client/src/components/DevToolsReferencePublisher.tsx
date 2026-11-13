@@ -56,13 +56,75 @@ function ReleaseContents({ release }: { release: ReferenceRelease }) {
   return null;
 }
 
+/** Result of comparing the database with its current release (GET /api/admin/reference/verify). */
+interface VerifyResult {
+  ok: boolean;
+  version: string | null;
+  checks: { name: string; ok: boolean; expected: number; actual: number; differences: string[] }[];
+  problems: string[];
+}
+
+/** The outcome of a Verify run: one line when everything matches, otherwise what differs. */
+function VerifyOutcome({ result }: { result: VerifyResult }) {
+  if (result.ok) {
+    return (
+      <p className="text-sm text-green-600" data-testid="verify-result">
+        The database matches release {result.version}: {result.checks.length} checks passed.
+        Unpublished edits made in Dev Tools would show up here as differences.
+      </p>
+    );
+  }
+  const failed = result.checks.filter((check) => !check.ok);
+  return (
+    <div className="rounded border border-amber-500/50 bg-amber-500/10 p-3 text-sm space-y-2" data-testid="verify-result">
+      <p className="font-medium">
+        The database differs from release {result.version ?? "(none)"}. If you edited content in Dev Tools
+        since publishing, this is expected: publish a new release to capture it.
+      </p>
+      {result.problems.length > 0 && (
+        <ul className="list-disc pl-5">
+          {result.problems.map((problem) => (
+            <li key={problem}>{problem}</li>
+          ))}
+        </ul>
+      )}
+      {failed.map((check) => (
+        <div key={check.name}>
+          <p className="font-medium">
+            {check.name}: {check.actual} in the database, {check.expected} in the release
+          </p>
+          <ul className="list-disc pl-5 break-words">
+            {check.differences.map((difference) => (
+              <li key={difference}>{difference}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function DevToolsReferencePublisher() {
   const [newVersion, setNewVersion] = useState("");
   const [notes, setNotes] = useState("");
   const [author, setAuthor] = useState("dev");
   const [publishWarnings, setPublishWarnings] = useState<string[]>([]);
+  const [verifyResult, setVerifyResult] = useState<VerifyResult | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Compare the database with the current release
+  const verifyMutation = useMutation({
+    mutationFn: async (): Promise<VerifyResult> => {
+      const response = await apiRequest("GET", "/api/admin/reference/verify");
+      if (!response.ok) throw new Error("Failed to verify the database against the release");
+      return response.json();
+    },
+    onSuccess: (result) => setVerifyResult(result),
+    onError: (error) => {
+      toast({ title: "Verify Failed", description: error.message, variant: "destructive" });
+    },
+  });
 
   // Fetch current reference
   const { data: currentReference, isLoading: isLoadingCurrent } = useQuery({
@@ -109,6 +171,7 @@ export default function DevToolsReferencePublisher() {
       });
       // Problems that did not block the publish but are worth fixing (e.g. story model checks).
       setPublishWarnings(result?.warnings ?? []);
+      setVerifyResult(null);
       setNewVersion("");
       setNotes("");
       queryClient.invalidateQueries({ queryKey: ["reference-releases"] });
@@ -235,6 +298,23 @@ export default function DevToolsReferencePublisher() {
                 </p>
               )}
               <ReleaseContents release={currentReference} />
+              <div className="pt-2 space-y-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => verifyMutation.mutate()}
+                  disabled={verifyMutation.isPending}
+                  data-testid="verify-release"
+                >
+                  {verifyMutation.isPending ? (
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                  )}
+                  Verify database against this release
+                </Button>
+                {verifyResult && <VerifyOutcome result={verifyResult} />}
+              </div>
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">

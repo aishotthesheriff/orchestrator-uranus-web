@@ -2,7 +2,7 @@
 
 ## Core Expectations
 - Always read `docs_master/current/SYSTEM_OVERVIEW.md` and `AGENTS.md` before large changes to understand runtime responsibilities.
-- Assume TypeScript, React 18, Express, and Postgres; follow existing patterns rather than inventing new frameworks.
+- Assume TypeScript, React 18, Express, and MariaDB; follow existing patterns rather than inventing new frameworks.
 - Prefer incremental, well-explained changes. If intent is unclear, ask for clarification before editing.
 - Whenever you sense an assertion on my part, you want to try and prove me wrong, before starting work, because it saves us time.
 

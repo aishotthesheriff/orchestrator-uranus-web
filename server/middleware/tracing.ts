@@ -20,7 +20,9 @@ declare global {
  */
 export function tracingMiddleware(req: Request, res: Response, next: NextFunction): void {
   // Extract trace ID from header or generate new one
-  const traceId = req.headers['x-trace-id'] as string || randomUUID();
+  // A client may send its own id; it is stored in columns of 128 characters, so it is cut to fit.
+  const supplied = req.headers['x-trace-id'];
+  const traceId = (typeof supplied === 'string' && supplied.trim().slice(0, 128)) || randomUUID();
   
   // Attach to request object
   req.traceId = traceId;

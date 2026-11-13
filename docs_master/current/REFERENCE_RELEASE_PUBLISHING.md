@@ -148,10 +148,23 @@ interface ReferenceData {
 }
 ```
 
+#### Release format 2: the workspace
+
+Since v10.7.0 a release also holds a `workspace/` folder: one JSON file per content table with **every row, active and inactive, exactly as stored**. The content tables are listed in `server/reference/contentTables.ts`: the ten catalog tables, `app_settings`, `interview_questions` and `pce_test_scenarios`. `metadata.json` records `formatVersion: 2` and, for each workspace file, its row count and SHA-256.
+
+The game never reads the workspace. It exists so an empty database can be loaded from a release alone (`npm run db:init`) and so the database can be checked against a release (`npm run db:verify-release`, or **Verify** in Dev Tools). See [DATABASE.md](DATABASE.md).
+
+Other rules:
+
+- `manifest.json` holds file names, not absolute paths, so a release works wherever the app is installed. Older releases recorded container paths; activation finds their files by name.
+- A release version is also a folder name: 1 to 64 letters, digits, dots, dashes or underscores. `current` is reserved.
+- A content table that cannot be read fails the publish. A runtime table that cannot be read is published empty and reported as a warning.
+- Only `releases/current/` and the version it was made from are tracked in git. After publishing, update the version in `.gitignore` and commit both folders.
+
 ### Technologies & Frameworks
 
 - **Node.js `fs/promises`**: File system operations for reading/writing JSON files
-- **PostgreSQL**: Metadata persistence via `storage` abstraction
+- **MariaDB**: Metadata persistence via `storage` abstraction
 - **Express.js**: REST API endpoints for admin operations
 - **React Query**: Client-side caching and invalidation
 - **TypeScript**: Type safety across server and client

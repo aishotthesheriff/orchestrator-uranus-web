@@ -8,6 +8,7 @@ import { generateImage, testGenerateImage, generateInterviewAnswer } from "./aiS
 import { getCurrentReference } from "./reference/referenceLoader";
 import { processTurnWithTransaction } from "./gameLogic";
 import { publishReference, activateReferenceRelease, getAllReferenceReleases, getCurrentReferenceRelease } from "./reference/publishReference";
+import { referenceSyncStatus, verifyRelease } from "./reference/importRelease";
 import type { Request, Response } from "express";
 import { 
   gameReadRateLimit, 
@@ -17,6 +18,7 @@ import {
 } from "./middleware/rateLimiting";
 import { e2eLatency, metricsRegister } from "./metrics";
 import { requireAdmin } from "./middleware/adminAuth";
+import { isMissingTable, missingTableName } from "./db/errors";
 import { generateToken, requireAuth } from "./middleware/jwt";
 import { authenticateSocket, handleJoinGame } from "./socketAuth";
 import { resolvePceSelections, getPceDefaults } from "./pce/settings.js";
@@ -897,6 +899,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const trimmedUsername = username.trim();
+      // The username column holds 64 characters; say so instead of failing in the database
+      if (trimmedUsername.length > 64) {
+        return res.status(400).json({ error: "Username must be 64 characters or fewer" });
+      }
 
       const user = await storage.ensureUser(trimmedUsername);
 
@@ -913,13 +919,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error creating user:", error);
       
-      // Check if this is a missing table error (42P01 = undefined_table)
-      const isMissingTable = error?.code === "42P01" || 
-                            (typeof error?.message === "string" && error.message.includes("does not exist"));
-      
-      if (isMissingTable) {
-        const tableName = error?.message?.match(/relation "([^"]+)" does not exist/)?.[1] || "unknown";
-        console.error(`Database table "${tableName}" missing. Please run: npm run db:push`);
+      // The schema has not been created in this database
+      if (isMissingTable(error)) {
+        const tableName = missingTableName(error) || "unknown";
+        console.error(`Database table "${tableName}" missing. Please run: npm run db:init`);
         return res.status(500).json({ 
           error: `Database table "${tableName}" not found. Please initialize the database schema.`,
           code: "DATABASE_SCHEMA_MISSING",
@@ -1380,6 +1383,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Compares the database with its current release, value by value. Read-only.
+  app.get("/api/admin/reference/verify", requireAdmin, async (_req, res) => {
+    try {
+      res.json({ success: true, ...(await verifyRelease()) });
+    } catch (error) {
+      console.error("Error verifying reference:", error);
+      res.status(500).json({
+        error: "Failed to verify reference",
+        details: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
   // GET /api/admin/games/search - Search games by username or game ID
   app.get("/api/admin/games/search", requireAdmin, async (req, res) => {
     try {
@@ -1505,6 +1521,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Pre-warm reference cache to avoid loading delay on first game start
   try {
     await getCurrentReference();
+    const sync = await referenceSyncStatus();
+    if (!sync.inSync) {
+      console.warn(
+        `[reference] The game loads release ${sync.version ?? "(none)"} from releases/current, ` +
+          `but the database's current release is ${sync.dbVersion ?? "(none)"}. ` +
+          `Dev Tools would publish from a database that does not match. Run: npm run db:init`
+      );
+    }
     console.log('Reference cache pre-warmed successfully');
   } catch (error) {
     console.warn('Failed to pre-warm reference cache:', error);

@@ -59,9 +59,18 @@ export function formatUtcDateTime(date: Date): string {
   return date.toISOString().replace("T", " ").replace("Z", "");
 }
 
-/** Converts a query parameter to what the driver should send. Only Dates are changed. */
+/**
+ * Converts a query parameter to what the driver should send:
+ * - Dates become UTC literals.
+ * - `undefined` becomes NULL.
+ * - Plain objects and arrays become JSON text (they are only ever bound to JSON columns).
+ * Strings, numbers, booleans, null and Buffers pass through.
+ */
 export function encodeParam(value: unknown): unknown {
-  return value instanceof Date ? formatUtcDateTime(value) : value;
+  if (value === undefined) return null;
+  if (value instanceof Date) return formatUtcDateTime(value);
+  if (value !== null && typeof value === "object" && !Buffer.isBuffer(value)) return JSON.stringify(value);
+  return value;
 }
 
 /**

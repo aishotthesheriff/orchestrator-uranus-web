@@ -1,9 +1,9 @@
 /**
  * The eval dataset: the saved PCE Inspector scenarios, mirrored into LangSmith.
  *
- * Postgres stays the source of truth. An example carries the scenario's id and the parts
+ * The database stays the source of truth. An example carries the scenario's id and the parts
  * of the request a reader needs to judge the result; the full game state is loaded from
- * Postgres by id when the experiment runs.
+ * the database by id when the experiment runs.
  */
 
 import type { ParsedTestScenario } from "@shared/schema";

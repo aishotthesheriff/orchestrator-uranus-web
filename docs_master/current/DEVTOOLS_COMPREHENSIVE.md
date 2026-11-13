@@ -108,7 +108,7 @@ DevTools operates as a **content management layer** that sits above the runtime 
 │              Data Persistence Agent                          │
 │              (server/storage.ts)                             │
 │                                                               │
-│  • Postgres database operations                             │
+│  • MariaDB  database operations                             │
 │  • Transactional safety                                      │
 │  • Type-safe model translation                               │
 └─────────────────────────────────────────────────────────────┘
@@ -146,7 +146,7 @@ DevTools operates as a **content management layer** that sits above the runtime 
 
 **Backend Integration:**
 - **Express.js** - HTTP server and routing
-- **PostgreSQL** - Persistent storage for all content
+- **MariaDB** - Persistent storage for all content
 - **Zod** - Schema validation for API requests/responses
 - **BullMQ** - Job queue system (for async operations)
 
@@ -1296,7 +1296,7 @@ Check server logs for:
 │        ▼               ▼               ▼                    │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐                  │
 │  │  Storage │  │Reference │  │   Cache   │                  │
-│  │ (Postgres)│ │ Steward  │  │ (Filesys) │                  │
+│  │ (MariaDB) │ │ Steward  │  │ (Filesys) │                  │
 │  └──────────┘  └──────────┘  └──────────┘                  │
 └─────────────────────────────────────────────────────────────┘
 ```

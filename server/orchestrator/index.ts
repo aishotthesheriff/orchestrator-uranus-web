@@ -3,7 +3,7 @@
  * Exports singleton JobOrchestrator instance
  */
 
-import { PostgresOrchestrator } from './postgresOrchestrator';
+import { MariaDbOrchestrator } from './mariaDbOrchestrator';
 import type { JobOrchestrator } from './types';
 
 let orchestratorInstance: JobOrchestrator | null = null;
@@ -13,7 +13,7 @@ let orchestratorInstance: JobOrchestrator | null = null;
  */
 export function getOrchestrator(): JobOrchestrator {
   if (!orchestratorInstance) {
-    orchestratorInstance = new PostgresOrchestrator();
+    orchestratorInstance = new MariaDbOrchestrator();
   }
   return orchestratorInstance;
 }

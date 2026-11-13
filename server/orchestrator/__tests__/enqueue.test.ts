@@ -3,24 +3,24 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { PostgresOrchestrator } from '../postgresOrchestrator';
+import { MariaDbOrchestrator } from '../mariaDbOrchestrator';
 import { getTestPool, cleanupTestTables } from '../../__tests__/setup/db';
 import { randomUUID } from 'crypto';
 
 const pool = getTestPool();
 
-describe('PostgresOrchestrator.enqueue', () => {
-  let orchestrator: PostgresOrchestrator;
+describe('MariaDbOrchestrator.enqueue', () => {
+  let orchestrator: MariaDbOrchestrator;
 
   beforeEach(async () => {
     await cleanupTestTables();
     // Use test pool for orchestrator
-    orchestrator = new PostgresOrchestrator(pool);
+    orchestrator = new MariaDbOrchestrator(pool);
   });
 
   afterEach(async () => {
-    // Clean up test data - cast UUID to text for LIKE comparison
-    await pool.query('DELETE FROM queue_entries WHERE id::text LIKE $1', ['test-%']);
+    // Clean up test data
+    await pool.query('DELETE FROM queue_entries WHERE id LIKE $1', ['test-%']);
   });
 
   it('should enqueue a job successfully', async () => {

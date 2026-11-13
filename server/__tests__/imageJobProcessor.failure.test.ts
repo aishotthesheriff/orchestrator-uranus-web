@@ -18,6 +18,9 @@ vi.mock('../aiService', async () => {
 
 // Mock metrics to avoid import issues
 vi.mock('../metrics', () => ({
+  dbOperationDuration: {
+    startTimer: () => () => {},
+  },
   imageJobDuration: {
     startTimer: () => () => {},
   },
@@ -61,6 +64,8 @@ describe('ImageJobProcessor - Failure Handling', () => {
       to: vi.fn().mockReturnValue({
         emit: vi.fn(),
       }),
+      // The processor logs how many sockets are in the game's room
+      sockets: { adapter: { rooms: new Map() } } as any,
     };
     
     processor = new ImageJobProcessor(mockIo as SocketIOServer);

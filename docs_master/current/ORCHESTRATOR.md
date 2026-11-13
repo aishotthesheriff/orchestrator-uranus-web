@@ -18,7 +18,7 @@ The Orchestrator addresses several critical requirements:
 
 1. **Asynchronous Processing**: Game turns require LLM calls and image generation that can take seconds to complete. The orchestrator allows HTTP endpoints to return immediately while work happens in the background.
 
-2. **Reliability**: By using PostgreSQL as the queue backend with transactional guarantees, jobs are never lost even if workers crash. Lease-based claiming prevents duplicate processing.
+2. **Reliability**: By using MariaDB as the queue backend with transactional guarantees, jobs are never lost even if workers crash. Lease-based claiming prevents duplicate processing.
 
 3. **Observability**: Every job execution is captured in execution manifests, providing complete audit trails for debugging, replay, and performance analysis.
 
@@ -61,9 +61,9 @@ interface JobOrchestrator {
 }
 ```
 
-#### 2. PostgresOrchestrator Implementation (`server/orchestrator/postgresOrchestrator.ts`)
+#### 2. MariaDbOrchestrator Implementation (`server/orchestrator/mariaDbOrchestrator.ts`)
 
-The PostgreSQL-backed implementation that stores queue state in database tables:
+The MariaDB-backed implementation that stores queue state in database tables:
 
 - **`queue_entries`**: Stores job metadata, status, priority, and scheduling information
 - **`queue_leases`**: Tracks active worker leases with expiration times
@@ -73,7 +73,7 @@ Key features:
 - Uses `FOR UPDATE SKIP LOCKED` for atomic job claiming
 - Implements priority-based scheduling (higher priority jobs processed first)
 - Supports delayed execution via `run_at` timestamps
-- Emits PostgreSQL `NOTIFY` events for worker wake-up signals
+- Workers find new entries by polling; there is no push notification
 
 #### 3. Worker Classes (`server/orchestrator/workers/`)
 
@@ -119,13 +119,13 @@ Per-queue settings controlling worker behavior:
 
 - **`leaseDurationMs`**: How long a worker holds a job lease
 - **`heartbeatIntervalMs`**: Frequency of lease extension heartbeats
-- **`pollFallbackMs`**: Polling interval when NOTIFY events are missed
+- **`pollFallbackMs`**: How often a worker polls its queue for new entries
 - **`maxAttempts`**: Retry limit before dead-lettering
 - **`retryDelayMs`**: Delay between retry attempts
 
 ### Technologies and Frameworks
 
-- **PostgreSQL**: Queue storage with ACID guarantees, `LISTEN/NOTIFY` for event-driven wake-ups
+- **MariaDB**: Queue storage with ACID guarantees; claims use `SELECT ... FOR UPDATE SKIP LOCKED`, and each state change is a short transaction retried on deadlock
 - **TypeScript**: Type-safe interfaces and implementations
 - **Node.js**: Async/await patterns, timers for polling and heartbeats
 - **Socket.IO**: Real-time event broadcasting to clients
@@ -141,10 +141,10 @@ Per-queue settings controlling worker behavior:
                        │
                        ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                  JobOrchestrator (Postgres)                      │
+│                  JobOrchestrator (MariaDB)                       │
 │  • queue_entries table                                           │
 │  • queue_leases table                                           │
-│  • NOTIFY events                                                 │
+│  • Polled by workers                                             │
 └──────┬──────────────────────┬──────────────────────┬───────────┘
        │                      │                      │
        ▼                      ▼                      ▼
@@ -168,7 +168,7 @@ Per-queue settings controlling worker behavior:
 
 **Key Interaction Patterns:**
 
-1. **Enqueue Flow**: HTTP handler → `orchestrator.enqueue()` → `queue_entries` INSERT → `NOTIFY` event
+1. **Enqueue Flow**: HTTP handler → `orchestrator.enqueue()` → `queue_entries` INSERT (picked up on the worker's next poll)
 2. **Claim Flow**: Worker polls → `orchestrator.claim()` → `FOR UPDATE SKIP LOCKED` → `queue_leases` INSERT
 3. **Process Flow**: Worker executes business logic → updates manifest → `lease.complete()` or `lease.fail()`
 4. **Event Flow**: Worker completion → Socket.IO emit → Client receives `turnComplete` / `imageReady`
@@ -445,7 +445,7 @@ try {
 **Causes & Solutions**:
 1. **Workers not running**: Check that workers are started in `server/routes.ts` (lines 2589-2598). Verify `ORCHESTRATOR_DISABLED` is not set.
 2. **Database connection issues**: Workers require database access. Check connection pool health.
-3. **NOTIFY events not firing**: PostgreSQL `LISTEN/NOTIFY` may be disabled. Workers fall back to polling, but with higher latency.
+3. **Poll interval too long**: Workers pick up new entries on their next poll (`pollFallbackMs`, 5 seconds by default). Lower it if turns start late.
 
 **Diagnosis**:
 ```sql
@@ -603,7 +603,7 @@ Key metrics exposed at `/metrics`:
 
 #### Reliability
 
-- **Job Persistence**: All jobs must be durably stored in PostgreSQL before HTTP response is sent
+- **Job Persistence**: All jobs must be durably stored in MariaDB before HTTP response is sent
 - **At-Least-Once Delivery**: Jobs are guaranteed to be processed at least once (idempotency handles duplicates)
 - **Lease Safety**: Leases prevent concurrent processing; expired leases are automatically released
 - **Transaction Integrity**: Game state updates occur within database transactions to prevent partial updates
@@ -657,7 +657,7 @@ Test orchestrator interface in isolation:
 
 ```typescript
 // server/orchestrator/__tests__/enqueue.test.ts
-describe('PostgresOrchestrator', () => {
+describe('MariaDbOrchestrator', () => {
   it('enqueues job with idempotency key', async () => {
     const id1 = await orchestrator.enqueue({
       queue: 'turn-precompute',
@@ -734,7 +734,7 @@ Shows the relationship between HTTP layer, orchestrator, workers, and storage:
 ```
 [HTTP Request] → [Routes] → [Orchestrator] → [Queue Tables]
                                               ↓
-[Workers] ← [NOTIFY/Poll] ← [Queue Entries] ← [Enqueue]
+[Workers] ← [Poll] ← [Queue Entries] ← [Enqueue]
     ↓
 [Business Logic] → [Storage] → [Socket.IO] → [Clients]
 ```
@@ -812,7 +812,7 @@ Visual representation of key metrics:
 - `server/storage.ts`: Job and game state persistence
 - `server/gameLogic.ts`: Deterministic turn processing logic
 - `server/aiService.ts`: LLM and image generation services
-- `server/db.ts`: PostgreSQL connection pool
+- `server/db.ts`: MariaDB connection pool
 
 **Downstream Consumers:**
 - `server/routes.ts`: HTTP endpoints that enqueue jobs
@@ -832,7 +832,7 @@ Visual representation of key metrics:
 The orchestrator is designed for extensibility:
 
 1. **New Queue Types**: Add queue configuration in `server/config/queues.ts` and create corresponding worker
-2. **Custom Backends**: Implement `JobOrchestrator` interface for non-PostgreSQL backends (Redis, SQS, etc.)
+2. **Custom Backends**: Implement `JobOrchestrator` interface for other backends (Redis, SQS, etc.)
 3. **Manifest Enhancements**: Extend `TurnExecutionManifest` type to capture additional metadata
 4. **Worker Plugins**: Add processing stages by extending worker `processJob()` methods
 
@@ -840,7 +840,7 @@ The orchestrator is designed for extensibility:
 
 ## Summary
 
-The Orchestrator system provides a robust, observable, and scalable foundation for asynchronous game processing. By leveraging PostgreSQL's transactional guarantees and implementing lease-based job claiming, it ensures reliable execution while maintaining high performance. The manifest system enables complete auditability, making debugging and performance optimization straightforward.
+The Orchestrator system provides a robust, observable, and scalable foundation for asynchronous game processing. By leveraging MariaDB's transactional guarantees and implementing lease-based job claiming, it ensures reliable execution while maintaining high performance. The manifest system enables complete auditability, making debugging and performance optimization straightforward.
 
 Key takeaways for architects and game mechanics specialists:
 

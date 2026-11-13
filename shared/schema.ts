@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// Database table type definitions (PostgreSQL types)
+// Database table type definitions (MariaDB; the schema itself is server/db/schema/)
 export interface AppSettings {
   key: string;
   value: string;

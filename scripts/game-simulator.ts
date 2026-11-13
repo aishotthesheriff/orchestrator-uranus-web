@@ -223,7 +223,9 @@ class Simulator {
     
     this.socket = io(this.options.serverUrl, {
       autoConnect: false,
-      transports: ['websocket', 'polling']
+      transports: ['websocket', 'polling'],
+      // Joining a game room requires the same sign-in cookie as the REST routes
+      extraHeaders: { Cookie: this.cookieJar.getCookieHeader() }
     });
 
     this.socket.on('connect', () => {

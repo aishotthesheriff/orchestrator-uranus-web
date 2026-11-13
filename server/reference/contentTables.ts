@@ -20,11 +20,16 @@ export interface ContentTableSpec {
   dateColumns: readonly string[];
   /** Columns holding true/false (not the 0/1 integer flags such as `active`). */
   booleanColumns: readonly string[];
+  /** Columns holding exact decimals; "0.20" and "0.200000" are the same value. */
+  decimalColumns?: readonly string[];
+  /** The runtime file (active rows, as the game loads them) this table is published to. */
+  runtimeFile: string | null;
 }
 
 export const CONTENT_TABLES: readonly ContentTableSpec[] = [
   {
     table: "items",
+    runtimeFile: "items.json",
     primaryKey: "id",
     jsonColumns: ["scene_effect_tags", "efficiency", "tags"],
     dateColumns: ["created_at", "updated_at"],
@@ -32,6 +37,7 @@ export const CONTENT_TABLES: readonly ContentTableSpec[] = [
   },
   {
     table: "events",
+    runtimeFile: "events.json",
     primaryKey: "id",
     jsonColumns: ["trigger_condition", "tags"],
     dateColumns: ["created_at", "updated_at"],
@@ -39,6 +45,7 @@ export const CONTENT_TABLES: readonly ContentTableSpec[] = [
   },
   {
     table: "npc_templates",
+    runtimeFile: "npcs.json",
     primaryKey: "id",
     jsonColumns: ["tags"],
     dateColumns: ["created_at", "updated_at"],
@@ -46,6 +53,7 @@ export const CONTENT_TABLES: readonly ContentTableSpec[] = [
   },
   {
     table: "prompt_templates",
+    runtimeFile: "prompts.json",
     primaryKey: "id",
     jsonColumns: [],
     dateColumns: ["created_at", "updated_at", "last_tested_at"],
@@ -53,6 +61,7 @@ export const CONTENT_TABLES: readonly ContentTableSpec[] = [
   },
   {
     table: "image_prompts",
+    runtimeFile: "image_prompts.json",
     primaryKey: "id",
     jsonColumns: ["scene_types", "tags"],
     dateColumns: ["created_at", "updated_at"],
@@ -60,6 +69,7 @@ export const CONTENT_TABLES: readonly ContentTableSpec[] = [
   },
   {
     table: "image_models",
+    runtimeFile: "image_models.json",
     primaryKey: "id",
     jsonColumns: ["allowed_sizes", "capabilities", "provider_params"],
     dateColumns: ["created_at", "updated_at"],
@@ -67,6 +77,8 @@ export const CONTENT_TABLES: readonly ContentTableSpec[] = [
   },
   {
     table: "llm_models",
+    runtimeFile: "llm_models.json",
+    decimalColumns: ["price_input", "price_output"],
     primaryKey: "id",
     jsonColumns: ["params", "last_check_summary"],
     dateColumns: ["last_check_at", "created_at", "updated_at"],
@@ -74,6 +86,7 @@ export const CONTENT_TABLES: readonly ContentTableSpec[] = [
   },
   {
     table: "mod_story_themes",
+    runtimeFile: "mod_story_themes.json",
     primaryKey: "id",
     jsonColumns: [],
     dateColumns: ["created_at", "updated_at"],
@@ -81,6 +94,7 @@ export const CONTENT_TABLES: readonly ContentTableSpec[] = [
   },
   {
     table: "mod_visual_styles",
+    runtimeFile: "mod_visual_styles.json",
     primaryKey: "id",
     jsonColumns: [],
     dateColumns: ["created_at", "updated_at"],
@@ -88,6 +102,7 @@ export const CONTENT_TABLES: readonly ContentTableSpec[] = [
   },
   {
     table: "app_settings",
+    runtimeFile: "settings.json",
     primaryKey: "key",
     jsonColumns: [],
     dateColumns: ["updated_at"],
@@ -95,6 +110,7 @@ export const CONTENT_TABLES: readonly ContentTableSpec[] = [
   },
   {
     table: "interview_questions",
+    runtimeFile: null,
     primaryKey: "id",
     jsonColumns: ["tags"],
     dateColumns: ["created_at", "updated_at"],
@@ -103,6 +119,7 @@ export const CONTENT_TABLES: readonly ContentTableSpec[] = [
   {
     // The *_json columns of this table are plain text that happens to hold JSON; they stay strings.
     table: "pce_test_scenarios",
+    runtimeFile: null,
     primaryKey: "id",
     jsonColumns: [],
     dateColumns: ["created_at", "updated_at"],

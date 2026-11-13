@@ -114,12 +114,12 @@ Steps 2 and 3 live in `server/llm/json.ts`; steps 4 and 5 in `withRecovery` (`se
 | Player list | `server/routes/llmModelsReference.ts` → `/api/reference/llm-models` |
 | Dev Tools UI | `client/src/pages/devtools/LlmModelsTab.tsx`, `client/src/pages/devtools/llm/` |
 | Player picker | `client/src/hooks/useStoryModels.ts`, `WelcomePage.tsx`, `UserSettingsDialog.tsx` |
-| Schema | `server/migrations/20261112_add_llm_models.sql` |
+| Schema | `server/db/schema/001_baseline.sql` (`llm_models`) |
 
 ## Operations
 
 - **Environment:** `HF_TOKEN` for Hugging Face; `AI_INTEGRATIONS_OPENAI_API_KEY` (or `OPENAI_API_KEY`) for OpenAI. `LLM_REQUEST_TIMEOUT_MS` sets the per-request timeout (default 90000).
-- **Existing databases:** run `npm run db:bootstrap`. It is safe to re-run and applies the migration, which adds the table, `users.llm_model_key`, `mod_story_themes.llm_model_key`, and seed rows (only `gpt-4o-mini` active).
+- **Databases:** the `llm_models` table, `users.llm_model_key` and `mod_story_themes.llm_model_key` are part of the baseline schema (`npm run db:migrate`). The catalog rows come from the published release (`npm run db:init`); see [DATABASE.md](DATABASE.md).
 - **Logs:** every stage call, including failures, is in LLM Logs with its model. Filter by model name.
 - **Tests:** `npx vitest run server/llm server/pce/graph server/evals client/src/hooks` (set `DATABASE_URL` to any value; nothing connects).
 - **Comparing models on quality, not only structure:** run an eval experiment per model in Dev Tools > Evals. See [`OBSERVABILITY_AND_EVALS.md`](OBSERVABILITY_AND_EVALS.md).

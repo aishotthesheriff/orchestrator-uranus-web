@@ -33,7 +33,7 @@ Tracing is on only when `LANGSMITH_TRACING=true`, a key is set, and `NODE_ENV` i
 
 **What stays local regardless:** the `llm_logs` table, the Socket.IO log feed, Prometheus metrics and turn manifests are unchanged, and remain the record when tracing is off or a trace has aged out of LangSmith's retention.
 
-Database: apply `server/migrations/20261112_add_eval_experiments.sql` (included in `npm run db:bootstrap`).
+Database: the `eval_experiments` table is part of the baseline schema (`npm run db:migrate`).
 
 ---
 
@@ -72,7 +72,7 @@ All callers go through `runPceGraph` and differ only in options:
 
 Design points worth knowing before changing it:
 
-- **State holds only stage results**, so it is serializable. The turn context (game state, the closures that build prompt variables) travels in `config.configurable.pce`. This keeps a LangGraph checkpointer possible later; none is used today because the Postgres job queue already provides retries and durability.
+- **State holds only stage results**, so it is serializable. The turn context (game state, the closures that build prompt variables) travels in `config.configurable.pce`. This keeps a LangGraph checkpointer possible later; none is used today because the MariaDB job queue already provides retries and durability.
 - **Recovery is not LangGraph's `retryPolicy`.** That re-runs a node unchanged; recovery changes the request (higher token limit, then a different model) and keeps every attempt.
 - **A stage never throws.** It returns `{ ok: false }` with metadata, so the parallel `actions` and `image` nodes cannot cancel each other.
 - **A node and a state channel cannot share a name**, hence channels named `masterResult`, `narrativeResult`, and so on.
@@ -109,7 +109,7 @@ turn                              precompute worker starts the trace
     └── image.generate
 ```
 
-How the trace crosses the queue: `PostgresOrchestrator.enqueue` adds the current run's headers to the queue entry's `metadata.langsmith` whenever a job is enqueued from inside a traced run. `runTracedJob` (`server/orchestrator/workers/jobTracing.ts`) reads them when a worker claims the job and continues that trace; without headers it starts a new one. Nothing else in the queue changed.
+How the trace crosses the queue: `MariaDbOrchestrator.enqueue` adds the current run's headers to the queue entry's `metadata.langsmith` whenever a job is enqueued from inside a traced run. `runTracedJob` (`server/orchestrator/workers/jobTracing.ts`) reads them when a worker claims the job and continues that trace; without headers it starts a new one. Nothing else in the queue changed.
 
 Other things to know:
 
@@ -162,7 +162,7 @@ Rules are free and always run. Judges are model calls (`judges.ts`), graded 1-5 
 
 An experiment runs every saved PCE Inspector scenario once through the full pipeline with one model and one prompt set, and scores each turn.
 
-- **Dataset.** The scenarios are mirrored to a LangSmith dataset (`dataset.ts`). Postgres stays the source of truth; the dataset is re-synced before every experiment, and each example carries only the scenario id and what a judge needs.
+- **Dataset.** The scenarios are mirrored to a LangSmith dataset (`dataset.ts`). MariaDB stays the source of truth; the dataset is re-synced before every experiment, and each example carries only the scenario id and what a judge needs.
 - **Draft versus published.** Choosing "Draft" prompts scores the edits in the Prompts tab before a release is published. Run one experiment on Published as the baseline and one on Draft, then compare.
 - **Where results go.** LangSmith holds the experiment (runs, traces, scores, side-by-side comparison). A summary is kept in the `eval_experiments` table so Dev Tools can list and compare without LangSmith.
 - **One at a time.** An experiment runs inside the server process; a second request while one is running is refused, and a restart marks a running experiment as failed.

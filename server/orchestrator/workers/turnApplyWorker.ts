@@ -307,9 +307,9 @@ export class TurnApplyWorker {
 
       const transactionTimer = turnApplyPhaseDuration.startTimer({ phase: 'transaction' });
       const updatedState: GameState = await storage.processTurnWithTransaction(job.gameId, async (state) => {
-        // Get transaction ID (PostgreSQL transaction ID)
+        // A label for this apply, recorded in the manifest (not a database transaction id)
         const txResult = await storage.getGameState(state.id); // This will be within the transaction
-        transactionId = `pg-xact-${Date.now()}`; // Placeholder - actual tx ID would come from Postgres
+        transactionId = `xact-${Date.now()}`;
 
         // Compute previous state digest
         const previousDigest = this.computeStateDigest(state);

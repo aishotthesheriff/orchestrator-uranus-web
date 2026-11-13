@@ -84,7 +84,7 @@ The API coordinates these agents through HTTP endpoints, WebSocket events, and j
         ▼               ▼               ▼
 ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
 │   Storage    │ │ Orchestrator │ │  AI Service  │
-│   (Postgres) │ │   (Queues)   │ │   (LLM/Img)  │
+│   (MariaDB)  │ │   (Queues)   │ │   (LLM/Img)  │
 └──────────────┘ └──────────────┘ └──────────────┘
 ```
 
@@ -137,7 +137,7 @@ The API coordinates these agents through HTTP endpoints, WebSocket events, and j
 **Core Stack:**
 - **Express.js** - HTTP server framework
 - **Socket.IO** - WebSocket server for real-time notifications
-- **PostgreSQL** - Primary data store with `pg` driver
+- **MariaDB** - Primary data store with the `mariadb` driver
 - **TypeScript** - Type-safe implementation
 - **Zod** - Runtime schema validation
 
@@ -149,7 +149,7 @@ The API coordinates these agents through HTTP endpoints, WebSocket events, and j
 - **express-rate-limit** - Rate limiting middleware
 
 **Background Processing:**
-- **Custom Orchestrator** - Postgres-based job queue system
+- **Custom Orchestrator** - MariaDB-based job queue system
 - **Workers** - TurnPrecomputeWorker, TurnApplyWorker, ImageWorker
 
 **AI Integration:**
@@ -239,7 +239,7 @@ Game Runtime
 #### Environment Variables
 
 **Required:**
-- `DATABASE_URL` - PostgreSQL connection string
+- `DATABASE_URL` - MariaDB connection string
 - `SESSION_SECRET` (or `JWT_SECRET`) - Secret for JWT signing
 
 **Security:**
@@ -1038,7 +1038,7 @@ export default function() {
    ▼       ▼          ▼          ▼
 ┌─────┐ ┌─────┐  ┌────────┐ ┌──────┐
 │Storage│ │Queue│  │AI Service│ │Socket│
-│(Postgres)│ │(Jobs)│  │(LLM/Img)│ │(WS) │
+│(MariaDB) │ │(Jobs)│  │(LLM/Img)│ │(WS) │
 └─────┘ └─────┘  └────────┘ └──────┘
 ```
 
@@ -1160,7 +1160,7 @@ Start: POST /api/game/action
 
 - **Express.js** - [Documentation](https://expressjs.com/)
 - **Socket.IO** - [Documentation](https://socket.io/docs/v4/)
-- **PostgreSQL** - [Documentation](https://www.postgresql.org/docs/)
+- **MariaDB** - [Documentation](https://mariadb.com/kb/en/documentation/)
 - **Zod** - [Documentation](https://zod.dev/)
 
 ---

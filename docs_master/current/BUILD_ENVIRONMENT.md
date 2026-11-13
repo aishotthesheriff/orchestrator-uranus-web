@@ -5,14 +5,14 @@
 The Quest to Uranus build environment is designed to support both local development and production deployment through Docker containerization. The system uses a multi-stage Docker build process that optimizes for build speed, image size, and runtime security while maintaining consistency across development and production environments.
 
 **Purpose**: The build environment provides:
-- **Isolated Development**: Consistent Node.js and PostgreSQL environment across all developers
+- **Isolated Development**: Consistent Node.js and MariaDB environment across all developers
 - **Production Optimization**: Multi-stage builds that separate build-time dependencies from runtime requirements
 - **Heroku Compatibility**: Optimized for Heroku Container Registry deployments
 - **Security**: Non-root user execution, minimal attack surface with Alpine Linux base images
 - **Flexibility**: Supports both TypeScript source execution (via `tsx`) and compiled JavaScript bundles
 
 **Why It Exists**: 
-- Ensures all developers work with identical runtime environments (Node 20, PostgreSQL 15)
+- Ensures all developers work with identical runtime environments (Node 20, MariaDB 11.4)
 - Enables reproducible builds across different host operating systems
 - Simplifies deployment to containerized platforms (Heroku, AWS ECS, etc.)
 - Provides clear separation between development (bind-mounted volumes) and production (baked-in artifacts)
@@ -138,30 +138,38 @@ CMD ["npx", "tsx", "server/index.ts"]
 
 The `docker-compose.yml` file orchestrates two services:
 
-#### PostgreSQL Service
+#### MariaDB Service
 
 ```yaml
-postgres:
-  image: postgres:15
+mariadb:
+  image: mariadb:11.4
   environment:
-    POSTGRES_DB: uranus_dungeon
-    POSTGRES_USER: postgres
-    POSTGRES_PASSWORD: password
+    MARIADB_DATABASE: uranus_dungeon
+    MARIADB_USER: uranus
+    MARIADB_PASSWORD: password
+    MARIADB_ROOT_PASSWORD: password
+  command:
+    - --character-set-server=utf8mb4
+    - --collation-server=utf8mb4_unicode_ci
+    - --max-allowed-packet=64M
   volumes:
-    - postgres_data:/var/lib/postgresql/data
+    - mariadb_data:/var/lib/mysql
+    - ./docker/mariadb-init:/docker-entrypoint-initdb.d:ro
   ports:
-    - "5432:5432"
+    - "3306:3306"
   healthcheck:
-    test: ["CMD-SHELL", "pg_isready -U postgres"]
+    test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
     interval: 10s
     timeout: 5s
-    retries: 5
+    retries: 10
 ```
 
 **Features**:
-- Named volume (`postgres_data`) for data persistence
+- Named volume (`mariadb_data`) for data persistence
 - Health check ensures database is ready before app starts
-- Port 5432 exposed for direct database access
+- Port 3306 exposed for direct database access
+- `docker/mariadb-init/` creates the `uranus_dungeon_test` database on first start
+- A new, empty database is set up with `npm run db:init` (see [DATABASE.md](DATABASE.md))
 
 #### Application Service
 
@@ -170,12 +178,12 @@ app:
   build: .
   image: uranus-dungeon:${IMAGE_TAG:-latest}
   environment:
-    DATABASE_URL: postgresql://postgres:password@postgres:5432/uranus_dungeon
+    DATABASE_URL: mysql://uranus:password@mariadb:3306/uranus_dungeon
     NODE_ENV: ${NODE_ENV:-development}
     PORT: ${PORT:-5001}
     # ... additional env vars from .env
   depends_on:
-    postgres:
+    mariadb:
       condition: service_healthy
   ports:
     - "${PORT:-5001}:${PORT:-5001}"
@@ -193,7 +201,7 @@ app:
 - **Anonymous Volume**: `/app/node_modules` prevents host `node_modules` from overriding container-installed dependencies
 - **Data Volumes**: `generated_images`, `attached_assets`, `releases`, `logs` persist between container restarts
 
-**Service Dependencies**: App waits for PostgreSQL health check to pass before starting.
+**Service Dependencies**: App waits for MariaDB health check to pass before starting.
 
 ### Build Scripts
 
@@ -273,7 +281,7 @@ dist/
 | **esbuild** | 0.25.0 | Server bundler |
 | **TypeScript** | 5.6.3 | Type checking and compilation |
 | **tsx** | 4.20.5 | TypeScript execution runtime |
-| **PostgreSQL** | 15 | Database |
+| **MariaDB** | 11.4 | Database |
 | **Alpine Linux** | Latest | Minimal base image |
 
 ### Build Stages Summary
@@ -345,7 +353,7 @@ docker-compose logs -f
 
 # View logs (specific service)
 docker-compose logs -f app
-docker-compose logs -f postgres
+docker compose logs -f mariadb
 
 # Execute command in running container
 docker-compose exec app npm run check
@@ -364,17 +372,17 @@ docker-compose restart app
 #### Database Operations
 
 ```bash
-# Connect to PostgreSQL
-docker-compose exec postgres psql -U postgres -d uranus_dungeon
+# Connect to MariaDB
+docker compose exec mariadb mariadb -uuranus -ppassword uranus_dungeon
 
 # Run SQL commands
-docker-compose exec postgres psql -U postgres -d uranus_dungeon -c "SELECT COUNT(*) FROM games;"
+docker compose exec mariadb mariadb -uuranus -ppassword uranus_dungeon -e "SELECT COUNT(*) FROM games;"
 
 # Backup database
-docker-compose exec postgres pg_dump -U postgres uranus_dungeon > backup.sql
+docker compose exec mariadb mariadb-dump -uuranus -ppassword uranus_dungeon > backup.sql
 
 # Restore database
-docker-compose exec -T postgres psql -U postgres uranus_dungeon < backup.sql
+docker compose exec -T mariadb mariadb -uuranus -ppassword uranus_dungeon < backup.sql
 
 # Reset database (destructive)
 docker-compose down -v
@@ -391,7 +399,7 @@ docker build -t uranus-dungeon:latest .
 
 # Run production container
 docker run -p 5001:5001 \
-  -e DATABASE_URL="postgresql://..." \
+  -e DATABASE_URL="mysql://..." \
   -e OPENAI_API_KEY="..." \
   -e SESSION_SECRET="..." \
   uranus-dungeon:latest
@@ -459,7 +467,7 @@ The Dockerfile is optimized for layer caching:
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:password@postgres:5432/uranus_dungeon` |
+| `DATABASE_URL` | MariaDB connection string | `mysql://uranus:password@mariadb:3306/uranus_dungeon` |
 | `OPENAI_API_KEY` | OpenAI API key for LLM calls | `sk-...` |
 | `SESSION_SECRET` | Secret for session cookies | Random hex string (32+ chars) |
 
@@ -511,17 +519,17 @@ CONSOLE_LLM_LOG=false
 
 **Solutions**:
 ```bash
-# Check PostgreSQL is running
-docker-compose ps postgres
+# Check MariaDB is running
+docker compose ps mariadb
 
-# Check PostgreSQL logs
-docker-compose logs postgres
+# Check MariaDB logs
+docker compose logs mariadb
 
 # Verify health check
-docker-compose exec postgres pg_isready -U postgres
+docker compose exec mariadb healthcheck.sh --connect --innodb_initialized
 
-# Restart PostgreSQL
-docker-compose restart postgres
+# Restart MariaDB
+docker compose restart mariadb
 
 # Reset database (if corrupted)
 docker-compose down -v
@@ -529,7 +537,7 @@ docker-compose up
 ```
 
 **Root Causes**:
-- PostgreSQL container not started
+- MariaDB container not started
 - Health check failing (database not ready)
 - Incorrect `DATABASE_URL` in environment
 
@@ -633,8 +641,8 @@ docker-compose exec app ls -la /app
 docker-compose exec app ps aux
 
 # Check network connectivity
-docker-compose exec app ping postgres
-docker-compose exec app nc -zv postgres 5432
+docker compose exec app ping mariadb
+docker compose exec app nc -zv mariadb 3306
 ```
 
 #### Log Analysis
@@ -675,7 +683,7 @@ docker build --progress=plain -t uranus-dungeon:latest .
 |-------|---------|----------|
 | `Cannot find module` | Missing dependency or incorrect path | Run `npm ci` in container |
 | `EADDRINUSE` | Port already in use | Change `PORT` or kill existing process |
-| `ECONNREFUSED` | Database not reachable | Check PostgreSQL health, verify `DATABASE_URL` |
+| `ECONNREFUSED` | Database not reachable | Check MariaDB health, verify `DATABASE_URL` |
 | `ENOENT` | File or directory not found | Check volume mounts, verify paths |
 | `EACCES` | Permission denied | Fix file ownership, check user permissions |
 | `Health check failed` | Container not responding | Check application logs, verify `/api/health` endpoint |
@@ -1263,7 +1271,7 @@ services:
   app:
     environment:
       NODE_ENV: test
-      DATABASE_URL: postgresql://postgres:password@postgres:5432/uranus_dungeon_test
+      DATABASE_URL: mysql://uranus:password@mariadb:3306/uranus_dungeon_test
 ```
 
 **Usage**:
@@ -1553,7 +1561,7 @@ Developer Machine
     │   │   └─ Build assets (vite + esbuild)
     │   │
     │   └─ Runtime Stage
-    │       ├─ Start PostgreSQL
+    │       ├─ Start MariaDB   
     │       ├─ Wait for DB health check
     │       └─ Start App (tsx server/index.ts)
     │
@@ -1599,19 +1607,19 @@ Source Code
 └─────────────────────────────────────────────────────────────┘
 
 ┌──────────────────┐         ┌──────────────────┐
-│   PostgreSQL     │         │   Application    │
+│   MariaDB        │         │   Application    │
 │   Service        │         │   Service        │
 ├──────────────────┤         ├──────────────────┤
 │ Image:           │         │ Image:           │
-│ postgres:15      │         │ uranus-dungeon   │
+│ mariadb:11.4     │         │ uranus-dungeon   │
 │                  │         │                  │
-│ Port: 5432       │◄────────┤ Port: 5001       │
+│ Port: 3306       │◄────────┤ Port: 5001       │
 │                  │         │                  │
 │ Volume:          │         │ Volumes:         │
-│ postgres_data    │         │ - ./generated_   │
+│ mariadb_data     │         │ - ./generated_   │
 │                  │         │   images         │
 │ Health Check:    │         │ - ./releases     │
-│ pg_isready       │         │ - ./logs         │
+│ healthcheck.sh   │         │ - ./logs         │
 │                  │         │ - .:/app (dev)   │
 └──────────────────┘         └──────────────────┘
          │                            │
@@ -1676,7 +1684,7 @@ Layer 9: COPY source files
 - npm 9+ (comes with Node 20)
 
 **Runtime Dependencies**:
-- PostgreSQL 15
+- MariaDB 11.4
 - Node.js 20 (Alpine)
 - All npm packages (see `package.json`)
 

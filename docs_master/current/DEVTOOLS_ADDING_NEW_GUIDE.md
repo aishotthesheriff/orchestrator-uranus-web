@@ -99,7 +99,7 @@ Add a new DevTool tab when you need to:
 │                                                               │
 │  • Typed storage methods                                     │
 │  • Transactional safety                                      │
-│  • Postgres database operations                             │
+│  • MariaDB  database operations                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -126,7 +126,7 @@ Add a new DevTool tab when you need to:
 
 **Storage Layer Methods:**
 - **Location:** `server/storage.ts`
-- **Pattern:** Typed methods that interact with Postgres
+- **Pattern:** Typed methods that interact with MariaDB
 - **Responsibilities:**
   - CRUD operations for your resource
   - Transactional safety
@@ -143,7 +143,7 @@ Add a new DevTool tab when you need to:
 
 **Backend Stack:**
 - **Express.js** - HTTP server and routing
-- **PostgreSQL** - Persistent storage
+- **MariaDB** - Persistent storage
 - **Zod** - Schema validation
 - **TypeScript** - Type safety
 
@@ -167,7 +167,7 @@ Add a new DevTool tab when you need to:
    ↓
 5. Storage Layer (storage.updateItem())
    ↓
-6. Postgres Database
+6. MariaDB Database
    ↓
 7. Response → React Query Cache Invalidation
    ↓
@@ -1582,7 +1582,7 @@ React Component
     │               └── Storage method
     │                   │
     │                   ▼
-    │               Postgres Database
+    │               MariaDB  Database
     │                   │
     │                   ▼
     │               Response
@@ -1672,7 +1672,7 @@ React Component
 - `wouter` - Routing
 - `zod` - Schema validation
 - `express` - HTTP server
-- `postgres` - Database driver
+- `mariadb` - Database driver
 
 **Internal Dependencies:**
 - `@/lib/queryClient` - API helpers

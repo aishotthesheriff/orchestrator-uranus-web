@@ -92,10 +92,12 @@ export function sampledTurnFromManifest(manifestId: string, gameId: string, turn
 }
 
 async function writeManifestEvals(manifestId: string, evals: ManifestEvals): Promise<void> {
-  // jsonb_set leaves the rest of the manifest (and its hash, which covers the turn itself) untouched.
+  // Sets only the `evals` key, in one statement, so the rest of the manifest (and its hash,
+  // which covers the turn itself) is untouched. JSON_QUERY makes the value a JSON object;
+  // a bare parameter would be stored as a quoted string.
   await pool.query(
     `UPDATE turn_execution_manifests
-        SET manifest = jsonb_set(manifest, '{evals}', $2::jsonb, true), updated_at = NOW()
+        SET manifest = JSON_SET(manifest, '$.evals', JSON_QUERY($2, '$')), updated_at = NOW(3)
       WHERE id = $1`,
     [manifestId, JSON.stringify(evals)]
   );

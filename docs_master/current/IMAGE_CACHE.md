@@ -45,7 +45,7 @@ The cache is consulted during:
 
 **Location**: `server/storage.ts`
 
-The cache uses PostgreSQL for metadata storage and the filesystem for image files:
+The cache uses MariaDB for metadata storage and the filesystem for image files:
 
 **Database Table**: `generated_images`
 - **Primary Keys**: `prompt_hash` + `variables_hash` (for exact matches)
@@ -208,7 +208,7 @@ This policy preserves frequently-used images while removing stale or rarely-reus
 
 ### Technologies & Frameworks
 
-- **PostgreSQL**: Metadata storage with JSONB for flexible schema
+- **MariaDB**: Metadata storage with JSON columns for flexible schema
 - **Node.js File System (fs/promises)**: File I/O operations
 - **Crypto (SHA-256)**: Hash generation for cache keys
 - **TypeScript**: Type-safe interfaces and implementations
@@ -793,7 +793,7 @@ Turn Processing → processTurnImage()
 
 ### Dependencies
 
-- **PostgreSQL**: Database for cache metadata
+- **MariaDB**: Database for cache metadata
 - **Node.js fs/promises**: File system operations
 - **Crypto**: Hash generation (SHA-256)
 - **Image Generation Providers**: External APIs for generating new images (e.g., OpenAI)

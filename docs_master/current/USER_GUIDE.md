@@ -81,9 +81,9 @@ The system operates through coordinated agents (see [`AGENTS.md`](../AGENTS.md))
 
 **Server Stack:**
 - Node.js with Express
-- PostgreSQL for data persistence
+- MariaDB for data persistence
 - Socket.IO for WebSocket communication
-- BullMQ for job queues (via Postgres)
+- BullMQ for job queues (via MariaDB)
 - OpenAI API for LLM and image generation
 
 **Shared:**
@@ -119,7 +119,7 @@ Game Orchestrator (Routing)
     ↓
 ┌─────────────┬─────────────┬─────────────┐
 │   Storage   │ Orchestrator│  AI Service │
-│  (Postgres) │   (Queues)  │   (LLM/Img) │
+│  (MariaDB)  │   (Queues)  │   (LLM/Img) │
 └─────────────┴─────────────┴─────────────┘
     ↓
 WebSocket Event
@@ -1128,7 +1128,7 @@ UI Refreshes with New State
                ▼
         ┌─────────────┐
         │   Storage   │
-        │  (Postgres) │
+        │  (MariaDB)  │
         └─────────────┘
 ```
 

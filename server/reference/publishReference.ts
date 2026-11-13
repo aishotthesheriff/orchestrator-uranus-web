@@ -117,7 +117,9 @@ export interface RuntimeExportResult {
  * manifest.json into `dir`. Used by publishing, and by the release verifier to compare what
  * the database would publish now against a published release.
  */
-export async function exportReferenceTables(dir: string): Promise<RuntimeExportResult> {
+export async function exportReferenceTables(dir: string, options: { quiet?: boolean } = {}): Promise<RuntimeExportResult> {
+  const log = options.quiet ? () => {} : (message: string) => console.log(message);
+  const warn = options.quiet ? () => {} : (message: string) => console.warn(message);
   await fs.mkdir(dir, { recursive: true });
   const manifest: Record<string, string> = {};
   const errors: string[] = [];
@@ -128,7 +130,7 @@ export async function exportReferenceTables(dir: string): Promise<RuntimeExportR
       const data = await loadRuntimeTable(table);
       await fs.writeFile(path.join(dir, fileName), toJsonFile(data), "utf8");
       const count = Array.isArray(data) ? data.length : Object.keys(data as object).length;
-      console.log(`[publish] Exported ${table}: ${count} records`);
+      log(`[publish] Exported ${table}: ${count} records`);
     } catch (error) {
       console.error(`[publish] Error exporting ${table}:`, error);
       // Still create the file, empty, to keep the manifest consistent.
@@ -154,29 +156,29 @@ export async function exportReferenceTables(dir: string): Promise<RuntimeExportR
     if (defaultImageModel) {
       systemDefaults.image_model_key = defaultImageModel.modelKey;
     } else {
-      console.warn(`[publish] No default image model found (is_default = true)`);
+      warn(`[publish] No default image model found (is_default = true)`);
     }
 
     if (defaultVisualStyle) {
       systemDefaults.visual_style_key = defaultVisualStyle.visualStyleKey;
     } else {
-      console.warn(`[publish] No default visual style found (default = true)`);
+      warn(`[publish] No default visual style found (default = true)`);
     }
 
     if (defaultStoryTheme) {
       systemDefaults.story_theme_key = defaultStoryTheme.storyThemeKey;
     } else {
-      console.warn(`[publish] No default story theme found (default = true)`);
+      warn(`[publish] No default story theme found (default = true)`);
     }
 
     if (defaultLlmModel) {
       systemDefaults.llm_model_key = defaultLlmModel.modelKey;
     } else {
-      console.warn(`[publish] No default story (LLM) model found (is_default = true); the game will use its built-in model`);
+      warn(`[publish] No default story (LLM) model found (is_default = true); the game will use its built-in model`);
     }
 
     await fs.writeFile(path.join(dir, "system_defaults.json"), toJsonFile(systemDefaults), "utf8");
-    console.log(`[publish] Exported system_defaults: ${JSON.stringify(systemDefaults)}`);
+    log(`[publish] Exported system_defaults: ${JSON.stringify(systemDefaults)}`);
   } catch (error) {
     console.error(`[publish] Error exporting system_defaults:`, error);
     await fs.writeFile(path.join(dir, "system_defaults.json"), toJsonFile({}), "utf8");

@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# OBSOLETE: the app now needs MariaDB (10.6 or later), and this script provisions Heroku
+# Postgres. It is kept for reference only. See docs_master/current/DATABASE.md.
+echo "deploy-to-heroku.sh is obsolete: the app runs on MariaDB, which this script does not set up." >&2
+echo "See docs_master/current/DATABASE.md." >&2
+exit 1
+
 # Quest to Uranus - Heroku Deployment Script
 # This script automates the complete deployment process to Heroku Container Registry
 

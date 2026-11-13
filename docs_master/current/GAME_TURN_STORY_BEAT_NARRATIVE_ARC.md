@@ -302,7 +302,7 @@ export function checkFailState(stats: GameStats): string | null {
 
 **Core Technologies**:
 - **TypeScript**: Type-safe turn processing and state management
-- **PostgreSQL**: Transactional game state storage with row-level locking
+- **MariaDB**: Transactional game state storage with row-level locking
 - **Socket.IO**: Real-time turn completion notifications
 - **LLM APIs** (OpenAI): Narrative and content generation via PCE pipeline
 - **Seeded Random**: Deterministic skill check rolls using `(seed, day, intent)` tuple
@@ -614,7 +614,7 @@ const scaledDC = calculateDC(baseDC, turnNumber, state.stats.morale);
 
 **Diagnosis**:
 1. Check orchestrator worker logs for errors
-2. Verify PostgreSQL connection pool isn't exhausted
+2. Verify MariaDB connection pool isn't exhausted
 3. Inspect LLM API rate limits and quotas
 4. Review turn job manifest for precompute phase completion
 
@@ -1100,7 +1100,7 @@ Saturn          Darkness        Uranus
 - Arc progression requires: Game Logic (for day advancement), Game Engine (for segment calculation)
 
 **External Dependencies**:
-- PostgreSQL: Game state storage and job queue
+- MariaDB: Game state storage and job queue
 - LLM APIs: Narrative and content generation
 - Socket.IO: Real-time turn completion notifications
 

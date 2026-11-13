@@ -85,8 +85,18 @@ export async function createPendingTurnJobs(
  * Create a minimal precomputed intro turn content
  */
 export function createTestPrecomputedIntroTurn() {
+  const actions = [
+    {
+      action: 'test-action-1',
+      summary: 'Test action',
+      risk: 'Safe' as const,
+      intent: 'explore' as const,
+    },
+  ];
   return {
     turnContent: {
+      // The story pipeline returns the actions as part of the turn content
+      actions,
       narration: 'Test narration for intro turn',
       imagePrompt: 'Test image prompt',
       style: 'Test style',
@@ -100,13 +110,6 @@ export function createTestPrecomputedIntroTurn() {
       imagePromptSource: 'template',
       fallbackUsed: false,
     },
-    actions: [
-      {
-        action: 'test-action-1',
-        summary: 'Test action',
-        risk: 'Safe' as const,
-        intent: 'explore' as const,
-      },
-    ],
+    actions,
   };
 }

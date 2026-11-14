@@ -170,3 +170,12 @@ export class JobRepository extends BaseRepository {
     return this.mapTurnJob(result.rows[0])!;
   }
 }
+
+/** The JobRepository methods the storage facade exposes. */
+export interface IJobRepository extends Pick<JobRepository,
+  | 'getImageJob'
+  | 'countPendingJobs'
+  | 'updateImageJob'
+  | 'getTurnJob'
+  | 'updateTurnJob'
+> {}

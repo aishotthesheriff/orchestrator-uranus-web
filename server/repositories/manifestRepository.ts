@@ -124,3 +124,9 @@ export class ManifestRepository extends BaseRepository {
     return manifests.sort((a, b) => a.turnNumber - b.turnNumber);
   }
 }
+
+/** The ManifestRepository methods the storage facade exposes. */
+export interface IManifestRepository extends Pick<ManifestRepository,
+  | 'getTurnExecutionManifest'
+  | 'getGameManifests'
+> {}

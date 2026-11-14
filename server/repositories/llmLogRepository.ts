@@ -43,3 +43,10 @@ export class LlmLogRepository extends BaseRepository {
     await this.query('DELETE FROM llm_logs');
   }
 }
+
+/** The LlmLogRepository methods the storage facade exposes. */
+export interface ILlmLogRepository extends Pick<LlmLogRepository,
+  | 'createLlmLog'
+  | 'getLlmLogs'
+  | 'clearAllLlmLogs'
+> {}

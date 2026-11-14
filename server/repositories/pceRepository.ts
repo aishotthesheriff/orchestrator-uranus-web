@@ -249,3 +249,19 @@ export class PceRepository extends BaseRepository {
     return result.rows.map(row => this.mapPceTemplateVersion(row)!);
   }
 }
+
+/** The PceRepository methods the storage facade exposes. */
+export interface IPceRepository extends Pick<PceRepository,
+  | 'getPceTestScenarios'
+  | 'getPceTestScenario'
+  | 'createPceTestScenario'
+  | 'updatePceTestScenario'
+  | 'deletePceTestScenario'
+  | 'getPceTestRuns'
+  | 'getPceTestRun'
+  | 'createPceTestRun'
+  | 'updatePceTestRun'
+  | 'deletePceTestRun'
+  | 'getPceTestMetrics'
+  | 'getPceTemplateVersions'
+> {}

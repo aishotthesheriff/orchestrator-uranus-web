@@ -687,3 +687,31 @@ export class CatalogRepository extends BaseRepository {
     await this.query('UPDATE mod_visual_styles SET active = 0, updated_at = NOW(3) WHERE id = $1', [id]);
   }
 }
+
+/** The CatalogRepository methods the storage facade exposes. */
+export interface ICatalogRepository extends Pick<CatalogRepository,
+  | 'getActiveImageModels'
+  | 'getImageModelByKey'
+  | 'getDefaultImageModel'
+  | 'listImageModels'
+  | 'upsertImageModel'
+  | 'deactivateImageModel'
+  | 'reorderImageModels'
+  | 'listLlmModels'
+  | 'getActiveLlmModels'
+  | 'getLlmModelByKey'
+  | 'getDefaultLlmModel'
+  | 'upsertLlmModel'
+  | 'deactivateLlmModel'
+  | 'recordLlmModelCheck'
+  | 'listStoryThemes'
+  | 'getActiveStoryThemes'
+  | 'upsertStoryTheme'
+  | 'getDefaultStoryTheme'
+  | 'deactivateStoryTheme'
+  | 'listVisualStyles'
+  | 'getActiveVisualStyles'
+  | 'upsertVisualStyle'
+  | 'getDefaultVisualStyle'
+  | 'deactivateVisualStyle'
+> {}

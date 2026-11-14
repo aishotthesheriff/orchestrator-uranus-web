@@ -129,3 +129,16 @@ export class ImageCacheRepository extends BaseRepository {
     };
   }
 }
+
+/** The ImageCacheRepository methods the storage facade exposes. */
+export interface IImageCacheRepository extends Pick<ImageCacheRepository,
+  | 'createGeneratedImage'
+  | 'getGeneratedImage'
+  | 'getGeneratedImageByHash'
+  | 'getGeneratedImagesByTemplate'
+  | 'getAllGeneratedImages'
+  | 'updateImageAccess'
+  | 'deleteGeneratedImage'
+  | 'deleteGeneratedImages'
+  | 'getImageCacheStats'
+> {}

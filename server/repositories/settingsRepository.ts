@@ -38,3 +38,11 @@ export class SettingsRepository extends BaseRepository {
     }
   }
 }
+
+/** The SettingsRepository methods the storage facade exposes. */
+export interface ISettingsRepository extends Pick<SettingsRepository,
+  | 'getAllSettings'
+  | 'getActiveSettings'
+  | 'getSetting'
+  | 'upsertSetting'
+> {}

@@ -142,3 +142,14 @@ export class UserRepository extends BaseRepository {
     return this.mapUser(updatedRow)!;
   }
 }
+
+/** The UserRepository methods the storage facade exposes. */
+export interface IUserRepository extends Pick<UserRepository,
+  | 'getUser'
+  | 'getUserByUsername'
+  | 'searchUsersByUsername'
+  | 'ensureUser'
+  | 'createUser'
+  | 'getUserPreferences'
+  | 'updateUserPreferences'
+> {}

@@ -87,3 +87,14 @@ export class ReferenceRepository extends BaseRepository {
     return [...result.rows].sort((a, b) => (key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0));
   }
 }
+
+/** The ReferenceRepository methods the storage facade exposes. */
+export interface IReferenceRepository extends Pick<ReferenceRepository,
+  | 'createReferenceRelease'
+  | 'getReferenceRelease'
+  | 'getCurrentReferenceRelease'
+  | 'getAllReferenceReleases'
+  | 'updateReferenceRelease'
+  | 'setCurrentReferenceRelease'
+  | 'dumpContentTable'
+> {}

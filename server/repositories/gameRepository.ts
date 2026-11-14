@@ -165,3 +165,14 @@ export class GameRepository extends BaseRepository {
     }
   }
 }
+
+/** The GameRepository methods the storage facade exposes. */
+export interface IGameRepository extends Pick<GameRepository,
+  | 'getGameState'
+  | 'getGamesByUsername'
+  | 'getGameSummariesByUsername'
+  | 'getGameSummariesByUsernames'
+  | 'createGameState'
+  | 'deleteGameState'
+  | 'processTurnWithTransaction'
+> {}

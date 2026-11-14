@@ -260,10 +260,10 @@ Game Runtime
 
 Defined in `server/middleware/rateLimiting.ts`:
 
-- **Global Rate Limit**: 100 requests per 15 minutes per IP
-- **Game Start Rate Limit**: 5 requests per 15 minutes per authenticated user (falls back to IP)
-- **Game Read Rate Limit**: 200 requests per 15 minutes per authenticated user (falls back to IP)
-- **Game Action Rate Limit**: 20 requests per 15 minutes per authenticated user (falls back to IP)
+- **Global Rate Limit**: 600 API requests per 15 minutes per authenticated user (falls back to IP). Page files, images, live-update connections and `/api/health` are not counted.
+- **Game Start Rate Limit**: 15 requests per 15 minutes per authenticated user (falls back to IP)
+- **Game Read Rate Limit**: 600 requests per 15 minutes per authenticated user (falls back to IP)
+- **Game Action Rate Limit**: 90 requests per 15 minutes per authenticated user (falls back to IP)
 - **Image Generation Rate Limit**: 20 requests per minute per IP
 
 #### JWT Cookie Configuration

@@ -9,6 +9,14 @@ function getIdentifier(req: Request): string {
   return req.user?.userId || req.ip || 'unknown';
 }
 
+/**
+ * Who a request counts against: the signed-in player, otherwise the client address. Counting
+ * by address alone puts everyone on one network (or behind one proxy) into a single bucket.
+ */
+function limitKey(req: Request): string {
+  return req.user?.userId ? `user:${req.user.userId}` : `ip:${req.ip ?? 'unknown'}`;
+}
+
 // Helper to check session-based limits
 function checkSessionLimit(identifier: string, maxRequests: number, windowMs: number): boolean {
   const now = Date.now();
@@ -31,20 +39,24 @@ function checkSessionLimit(identifier: string, maxRequests: number, windowMs: nu
   return true;
 }
 
-// Global rate limiter - 100 requests per 15 minutes per IP
+// Global rate limiter - 600 requests per 15 minutes per player (or per address when signed
+// out). Only API calls count: page files, images and live-update connections do not, so
+// loading the game cannot use up the allowance.
 export const globalRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+  max: 600,
+  keyGenerator: limitKey,
+  skip: (req: Request) => !req.path.startsWith('/api/') || req.path === '/api/health',
   message: {
-    error: 'Too many requests from this IP, please try again later.',
+    error: 'Too many requests, please try again later.',
     retryAfter: '15 minutes'
   },
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req: Request, res: Response) => {
-    console.log(`Rate limit exceeded for IP: ${req.ip}, path: ${req.path}`);
+    console.log(`Rate limit exceeded for ${limitKey(req)}, path: ${req.path}`);
     res.status(429).json({
-      error: 'Too many requests from this IP, please try again later.',
+      error: 'Too many requests, please try again later.',
       retryAfter: '15 minutes'
     });
   }
@@ -69,10 +81,11 @@ export const aiRateLimit = rateLimit({
   }
 });
 
-// Game state reads - 200 requests per 15 minutes per IP
+// Game state reads - 600 requests per 15 minutes per player
 export const gameReadRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200,
+  max: 600,
+  keyGenerator: limitKey,
   message: {
     error: 'Too many game read requests from this IP, please try again later.',
     retryAfter: '15 minutes'
@@ -88,10 +101,11 @@ export const gameReadRateLimit = rateLimit({
   }
 });
 
-// Game start - 5 requests per 15 minutes per IP
+// Game start - 15 requests per 15 minutes per player
 export const gameStartRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5,
+  max: 15,
+  keyGenerator: limitKey,
   message: {
     error: 'Too many game start requests from this IP, please try again later.',
     retryAfter: '15 minutes'
@@ -107,10 +121,11 @@ export const gameStartRateLimit = rateLimit({
   }
 });
 
-// Game actions - 20 requests per 15 minutes per IP
+// Game actions - 90 requests per 15 minutes per player (a turn takes 15 to 40 seconds)
 export const gameActionRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20,
+  max: 90,
+  keyGenerator: limitKey,
   message: {
     error: 'Too many game action requests from this IP, please try again later.',
     retryAfter: '15 minutes'

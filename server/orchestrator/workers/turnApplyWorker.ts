@@ -20,6 +20,7 @@ import { createHash } from 'crypto';
 import { annotateSpan } from '../../observability/langsmith';
 import { HandledJobFailure, runTracedJob } from './jobTracing';
 import { maybeSampleTurn, sampledTurnFromManifest } from '../../evals/liveSampler';
+import { emitToRoom } from "../../socketRelay";
 
 export class TurnApplyWorker {
   private workerId: string;
@@ -200,7 +201,7 @@ export class TurnApplyWorker {
         transactionTimer();
 
         await lease.complete();
-        this.io.to(job.gameId).emit('turnComplete', { gameId: job.gameId, turnNumber: updatedState.turnNumber });
+        emitToRoom(this.io, job.gameId, 'turnComplete', { gameId: job.gameId, turnNumber: updatedState.turnNumber });
         totalTimer();
         return;
       }
@@ -406,7 +407,7 @@ export class TurnApplyWorker {
       await lease.complete({ manifestId, turnNumber: updatedState.turnNumber });
 
       // Notify clients
-      this.io.to(job.gameId).emit('turnComplete', { gameId: job.gameId, turnNumber: updatedState.turnNumber });
+      emitToRoom(this.io, job.gameId, 'turnComplete', { gameId: job.gameId, turnNumber: updatedState.turnNumber });
 
       // A fraction of turns is scored in the background (off unless a sample rate is set).
       if (manifestId) {

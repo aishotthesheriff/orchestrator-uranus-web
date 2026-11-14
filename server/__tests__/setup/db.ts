@@ -29,6 +29,7 @@ export function getTestStorage(): IStorage {
 
 /** Tables the tests write to, children before parents so foreign keys are respected. */
 const TEST_TABLES = [
+  'socket_events',
   'queue_leases',
   'turn_execution_manifests',
   'queue_entries',

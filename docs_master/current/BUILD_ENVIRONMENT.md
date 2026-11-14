@@ -12,7 +12,7 @@ The Quest to Uranus build environment is designed to support both local developm
 - **Flexibility**: Supports both TypeScript source execution (via `tsx`) and compiled JavaScript bundles
 
 **Why It Exists**: 
-- Ensures all developers work with identical runtime environments (Node 20, MariaDB 11.4)
+- Ensures all developers work with identical runtime environments (Node 20, MariaDB 11.8)
 - Enables reproducible builds across different host operating systems
 - Simplifies deployment to containerized platforms (Heroku, AWS ECS, etc.)
 - Provides clear separation between development (bind-mounted volumes) and production (baked-in artifacts)
@@ -142,7 +142,7 @@ The `docker-compose.yml` file orchestrates two services:
 
 ```yaml
 mariadb:
-  image: mariadb:11.4
+  image: mariadb:11.8
   environment:
     MARIADB_DATABASE: uranus_dungeon
     MARIADB_USER: uranus
@@ -281,7 +281,7 @@ dist/
 | **esbuild** | 0.25.0 | Server bundler |
 | **TypeScript** | 5.6.3 | Type checking and compilation |
 | **tsx** | 4.20.5 | TypeScript execution runtime |
-| **MariaDB** | 11.4 | Database |
+| **MariaDB** | 11.8 | Database |
 | **Alpine Linux** | Latest | Minimal base image |
 
 ### Build Stages Summary
@@ -1611,7 +1611,7 @@ Source Code
 │   Service        │         │   Service        │
 ├──────────────────┤         ├──────────────────┤
 │ Image:           │         │ Image:           │
-│ mariadb:11.4     │         │ uranus-dungeon   │
+│ mariadb:11.8     │         │ uranus-dungeon   │
 │                  │         │                  │
 │ Port: 3306       │◄────────┤ Port: 5001       │
 │                  │         │                  │
@@ -1684,7 +1684,7 @@ Layer 9: COPY source files
 - npm 9+ (comes with Node 20)
 
 **Runtime Dependencies**:
-- MariaDB 11.4
+- MariaDB 11.8
 - Node.js 20 (Alpine)
 - All npm packages (see `package.json`)
 

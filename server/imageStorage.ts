@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
+import { generatedImagesDir } from './paths';
 
 export interface ImageMetadata {
   templateName: string;
@@ -19,7 +20,7 @@ export interface StorageStats {
   newestFile: Date | null;
 }
 
-const STORAGE_DIR = path.join(process.cwd(), 'generated_images');
+const STORAGE_DIR = generatedImagesDir();
 
 // Ensure storage directory exists
 async function ensureStorageDir(): Promise<void> {

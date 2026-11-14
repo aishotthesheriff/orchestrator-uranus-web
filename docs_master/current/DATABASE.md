@@ -1,6 +1,6 @@
 # Database
 
-Quest to Uranus stores its data in **MariaDB 10.6 or later** (the local stack runs 11.4). This page covers how the schema is defined, how a new database is set up from a published release, how the app talks to the database, and what to know when writing SQL.
+Quest to Uranus stores its data in **MariaDB 10.6 or later** (the local stack runs 11.8, the version Hostinger runs). This page covers how the schema is defined, how a new database is set up from a published release, how the app talks to the database, and what to know when writing SQL.
 
 ## Quick reference
 
@@ -24,13 +24,13 @@ Scripts read `DATABASE_URL` from the environment, or from `.env` when it is not 
 |---|---|
 | `DATABASE_URL` | The database the app uses. |
 | `DATABASE_URL_TEST` | The database the tests use. Its name must end in `_test`. Tests never use `DATABASE_URL`. |
-| `DB_POOL_MAX` | Most connections the app opens (default 20). Set it below the host's per-user connection cap. |
+| `DB_POOL_MAX` | Most connections one app process opens (default 20). Set it below the host's per-user connection cap, divided by the number of app processes (Hostinger runs two). |
 
 Locally, `docker compose up -d` starts MariaDB with two databases, `uranus_dungeon` and `uranus_dungeon_test`, both owned by user `uranus` (password `password`), on port 3306.
 
 ## Schema
 
-The schema is the SQL in [`server/db/schema/`](../../server/db/schema/). `001_baseline.sql` creates every table. `npm run db:migrate` applies the files in name order and records each one, with a checksum, in the `schema_migrations` table.
+The schema is the SQL in [`server/db/schema/`](../../server/db/schema/). `001_baseline.sql` creates the tables the app started with; `002_socket_events.sql` adds the table that passes live updates between app processes (see [HOSTINGER_DEPLOYMENT.md](HOSTINGER_DEPLOYMENT.md)). `npm run db:migrate` applies the files in name order and records each one, with a checksum, in the `schema_migrations` table.
 
 To change the schema, add a new file (`002_....sql`). Rules for these files:
 
@@ -128,7 +128,7 @@ Things the wrapper does for you:
 - **Placeholders.** SQL is written with `$1, $2, ...`. They are translated to MariaDB's `?`, so a number can be reused or appear out of order.
 - **Dates.** A `Date` parameter is sent as UTC, and `DATETIME` columns come back as UTC `Date`s. The driver on its own would use the Node process's time zone.
 - **Parameters.** `undefined` becomes NULL. Plain objects and arrays are sent as JSON text.
-- **Session.** Every connection uses UTC, `READ COMMITTED` isolation, strict mode, and a 120-second lock wait.
+- **Session.** Every connection uses UTC, `READ COMMITTED` isolation, strict mode, a 100-second lock wait, and a one-hour idle timeout (`wait_timeout`). The last two are set for Hostinger: see [Hostinger limits](#hostinger-limits).
 
 ### Writing SQL for MariaDB
 
@@ -161,6 +161,26 @@ Tests that use the database run against `DATABASE_URL_TEST` (read from `.env` if
 ## Qualifying a server
 
 `npm run db:probe` reports a server's version and limits and tries every feature the app depends on in throwaway tables named `zz_probe_*`, which it drops afterwards. It exits with code 1 if the server cannot run the app. The hard requirements are MariaDB 10.6 or later and `max_allowed_packet` of at least 16 MB. Run it against a new host before deploying, and set `DB_POOL_MAX` from the connection cap it reports.
+
+## Hostinger limits
+
+Measured on 2026-11-13 with `npm run db:probe` against a scratch database on the Business web hosting plan (server `srv529.hstgr.io`). All 20 checks passed.
+
+| Setting | Value on Hostinger | What the app does about it |
+|---|---|---|
+| Version | MariaDB 11.8.9 | Needs 10.6 or later. The local stack runs 11.8. |
+| `max_allowed_packet` | 1024 MB | Nothing; the app needs 16 MB. |
+| Connections per user (`MAX_USER_CONNECTIONS`) | 75 | `DB_POOL_MAX` defaults to 20. Hostinger runs two app processes, so up to 40 can be in use; scripts count too. |
+| New connections per hour (`MAX_CONNECTIONS_PER_HOUR`) | 500 | The pool keeps spare connections for 10 minutes instead of reconnecting after every burst. |
+| Idle timeout (`wait_timeout`) | 20 seconds | Each connection sets its own `wait_timeout` to one hour. Without this the server closes pooled connections, and every reconnect counts against the hourly limit. Tested: with the default a connection was closed within 30 idle seconds; with the session setting it stayed open. |
+| Statement time limit (`MAX_STATEMENT_TIME`) | 120 seconds | The lock wait is 100 seconds, so a long wait ends as a lock timeout, which `withTransaction` retries, and not as a killed statement. No statement the app runs should take anywhere near 120 seconds. |
+| Default `sql_mode` | not strict | Each connection sets strict mode itself. |
+| Default isolation | `READ-COMMITTED` | Same as the app sets. |
+| Time zone | UTC | Each connection sets UTC itself anyway. |
+| Database size cap | 3072 MB | Nothing yet. `llm_logs` and `turn_execution_manifests` have no retention policy. |
+| Round trip from outside Hostinger | about 51 ms | Not relevant in production: the deployed app connects on `127.0.0.1`. |
+
+The limits were read from a user allowed to connect from one outside address. A user created for the app on Hostinger itself may be given different numbers, so run `npm run db:probe` once on the production database too.
 
 ## History
 

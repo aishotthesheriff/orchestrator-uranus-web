@@ -1,11 +1,12 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { logsDir as configuredLogsDir } from "./paths";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Ensure logs directory exists
-const logsDir = path.resolve(process.cwd(), "logs");
+const logsDir = configuredLogsDir();
 if (!fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir, { recursive: true });
 }

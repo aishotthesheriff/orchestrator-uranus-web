@@ -7,7 +7,7 @@
  * numbered placeholders ($1, $2, ...); see ./db/placeholders.
  */
 import * as mariadb from "mariadb";
-import { connectionOptions, encodeParam, parseDatabaseUrl } from "./db/mariadbConfig";
+import { connectionOptions, encodeParam, parseDatabaseUrl, POOL_IDLE_TIMEOUT_SECONDS } from "./db/mariadbConfig";
 import { splitUpdateReturning, translatePlaceholders } from "./db/placeholders";
 import { isRetryableLockError } from "./db/errors";
 
@@ -110,8 +110,10 @@ function getRawPool(): mariadb.Pool {
       ...connectionOptions(resolveDatabaseUrl()),
       connectionLimit: limit,
       // Keep a couple of connections warm; close the rest when idle (shared hosts cap connections).
+      // Spare connections are kept for ten minutes, not one: Hostinger also caps how many new
+      // connections a user may open per hour (500), so reconnecting after every burst is costly.
       minimumIdle: Math.min(2, limit),
-      idleTimeout: 60,
+      idleTimeout: POOL_IDLE_TIMEOUT_SECONDS,
       // A turn can hold a connection while a story is generated, so waiting briefly is normal.
       acquireTimeout: 15000,
       keepAliveDelay: 30000,

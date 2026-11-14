@@ -1,8 +1,10 @@
 services:
   mariadb:
     # Keep this version in step with the production server (see docs_master/current/DATABASE.md).
-    image: mariadb:11.4
+    image: mariadb:11.8
     environment:
+      # Lets a data volume made by an older image be upgraded in place when the version changes
+      MARIADB_AUTO_UPGRADE: "1"
       MARIADB_DATABASE: uranus_dungeon
       MARIADB_USER: uranus
       MARIADB_PASSWORD: password

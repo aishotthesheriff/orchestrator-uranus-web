@@ -7,6 +7,7 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { randomUUID } from 'crypto';
 import { pool, withTransaction } from '../db';
 import { isMissingTable, isUniqueViolation, missingTableName } from '../db/errors';
+import { POOL_IDLE_TIMEOUT_SECONDS, SESSION_WAIT_TIMEOUT_SECONDS } from '../db/mariadbConfig';
 import { MariaDbOrchestrator } from '../orchestrator/mariaDbOrchestrator';
 import { getQueueConfig } from '../config/queues';
 import { cleanupTestTables, closeTestPool, getTestStorage } from './setup/db';
@@ -37,6 +38,24 @@ async function insertTurnJob(createdAt = new Date()): Promise<string> {
   );
   return id;
 }
+
+describe('connection setup', () => {
+  it('applies the session settings the app relies on to every pooled connection', async () => {
+    const { rows } = await pool.query(
+      `SELECT @@session.time_zone AS time_zone, @@session.tx_isolation AS isolation,
+              @@session.sql_mode AS sql_mode, @@session.innodb_lock_wait_timeout AS lock_wait,
+              @@session.wait_timeout AS wait_timeout`
+    );
+    expect(rows[0].time_zone).toBe('+00:00');
+    expect(rows[0].isolation).toBe('READ-COMMITTED');
+    expect(rows[0].sql_mode).toContain('STRICT_TRANS_TABLES');
+    // Under Hostinger's 120 second statement limit, so a long wait is a retryable lock timeout.
+    expect(Number(rows[0].lock_wait)).toBe(100);
+    // Hostinger's own default is 20 seconds, which would close pooled connections.
+    expect(Number(rows[0].wait_timeout)).toBe(SESSION_WAIT_TIMEOUT_SECONDS);
+    expect(SESSION_WAIT_TIMEOUT_SECONDS).toBeGreaterThan(POOL_IDLE_TIMEOUT_SECONDS);
+  });
+});
 
 describe('value types', () => {
   it('returns JSON parsed, booleans as booleans, dates as UTC Dates, binary as Buffers', async () => {

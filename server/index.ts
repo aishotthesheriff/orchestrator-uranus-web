@@ -9,6 +9,7 @@ import { metricsRegister, memoryUsage as memoryMetric } from "./metrics";
 import { serveStatic } from "./static";
 import { storage } from "./storage";
 import { setupConsoleLogging, log } from "./logger";
+import { generatedImagesDir } from "./paths";
 import { getOrchestrator } from "./orchestrator";
 import { StuckJobSweeper } from "./orchestrator/stuckJobSweeper";
 import { flushTraces, tracingStatus } from "./observability/langsmith";
@@ -74,7 +75,9 @@ app.use(helmet({
       connectSrc: ["'self'", "ws:", "wss:"],
       imgSrc: ["'self'", "data:", "blob:"],
       scriptSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"]
+      // The page loads its fonts from Google Fonts (stylesheet, then font files).
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"]
     }
   },
   crossOriginEmbedderPolicy: false // Allow image loading
@@ -133,9 +136,10 @@ if (csrfEnabled) {
     } 
   });
   
-  // Apply CSRF to all routes except health and metrics
+  // Apply CSRF to all routes except health and metrics. The token endpoint must go through
+  // it: the middleware is what provides req.csrfToken(), and it never rejects a GET.
   app.use((req, res, next) => {
-    if (req.path === '/api/health' || req.path === '/metrics' || req.path.startsWith('/api/csrf-token')) {
+    if (req.path === '/api/health' || req.path === '/metrics') {
       return next();
     }
     csrfProtection(req, res, next);
@@ -158,7 +162,7 @@ if (rateLimitEnabled) {
 }
 
 // Serve generated images statically
-app.use("/generated_images", express.static(path.join(process.cwd(), "generated_images")));
+app.use("/generated_images", express.static(generatedImagesDir()));
 
 // Enhanced health endpoint
 app.get("/api/health", async (_req, res) => {

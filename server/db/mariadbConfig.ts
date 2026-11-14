@@ -99,6 +99,12 @@ export const typeCast: TypeCastFunction = (column, next) => {
   }
 };
 
+/** How long the server keeps an idle connection open. Must exceed POOL_IDLE_TIMEOUT_SECONDS. */
+export const SESSION_WAIT_TIMEOUT_SECONDS = 3600;
+
+/** How long the pool keeps a spare connection before closing it. */
+export const POOL_IDLE_TIMEOUT_SECONDS = 600;
+
 /** Statements run on every new connection, in order. */
 export const SESSION_INIT_SQL: readonly string[] = [
   // All timestamps are stored and compared in UTC, whatever the server's own zone is.
@@ -108,7 +114,12 @@ export const SESSION_INIT_SQL: readonly string[] = [
   // Reject bad data (too long, wrong type) instead of silently truncating it.
   "SET SESSION sql_mode = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'",
   // A turn's row lock can be held while a story is generated; wait for it rather than fail at 50s.
-  "SET SESSION innodb_lock_wait_timeout = 120",
+  // Kept under Hostinger's 120 second statement limit, so a long wait ends as a lock timeout
+  // (which is retried) and not as a killed statement (which is not).
+  "SET SESSION innodb_lock_wait_timeout = 100",
+  // Hostinger closes a connection after 20 idle seconds, and allows a user only 500 new
+  // connections an hour. Pooled connections must outlive the pool's own idle timeout.
+  `SET SESSION wait_timeout = ${SESSION_WAIT_TIMEOUT_SECONDS}`,
 ];
 
 /** Driver options that decide how values travel between JavaScript and MariaDB. */

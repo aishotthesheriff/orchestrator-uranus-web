@@ -6,6 +6,7 @@ import { storage } from "./storage";
 import { getSocketIO } from "./socketManager";
 import { resolvePceSelections } from "./pce/settings.js";
 import { generateTurnContentWithFlag, generateActions } from "./aiService";
+import { emitToRoom } from "./socketRelay";
 
 export type CreativeSelectionInput = {
   theme?: string;
@@ -144,7 +145,7 @@ export async function initializeNewGame(validated: InsertGameState): Promise<Gam
     try {
       const io = getSocketIO();
       if (io) {
-        io.to(gameState.id).emit('introReady', { gameId: gameState.id });
+        emitToRoom(io, gameState.id, 'introReady', { gameId: gameState.id });
       }
     } catch (emitError) {
       console.warn('[GAME_FLOW] Failed to emit introReady event', {

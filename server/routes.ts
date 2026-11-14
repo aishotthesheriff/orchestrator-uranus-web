@@ -1482,6 +1482,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register Socket.IO instance for use in other modules (e.g., LLM logging)
   const { setSocketIO } = await import('./socketManager');
   setSocketIO(io);
+
+  // Pass live updates between app processes (a host may run more than one). Not under tests.
+  if (!process.env.VITEST) {
+    const { startSocketRelay } = await import('./socketRelay');
+    try {
+      await startSocketRelay(io);
+    } catch (error: any) {
+      console.error('[socket-relay] not started; live updates only reach browsers on this process. Run: npm run db:migrate.', error?.message ?? error);
+    }
+  }
   
   // Handle WebSocket connections
   // Who is signed in (same auth_token cookie as the REST routes); room access is checked below

@@ -17,6 +17,7 @@ import type { JobLease } from '../types';
 import { Server as SocketIOServer } from 'socket.io';
 import { annotateSpan, withSpan } from '../../observability/langsmith';
 import { HandledJobFailure, runTracedJob } from './jobTracing';
+import { emitToRoom } from "../../socketRelay";
 
 export class ImageWorker {
   private workerId: string;
@@ -314,7 +315,7 @@ export class ImageWorker {
           templateName: result.templateName,
         };
 
-        this.io.to(job.gameId).emit('imageReady', imageReadyPayload);
+        emitToRoom(this.io, job.gameId, 'imageReady', imageReadyPayload);
 
         // Complete lease
         await lease.complete({
@@ -355,7 +356,7 @@ export class ImageWorker {
         });
 
         // Notify client of failure
-        this.io.to(job.gameId).emit('imageFailed', {
+        emitToRoom(this.io, job.gameId, 'imageFailed', {
           jobId: job.id,
           gameId: job.gameId,
           turnNumber: job.turnNumber,

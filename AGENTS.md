@@ -54,6 +54,7 @@ This document enumerates the major runtime agents that collaborate to deliver Qu
 - Manages cache-friendly helpers (e.g., user preference memoization) and handles unique-index conflicts gracefully by retrieving existing records.
 - Supplies maintenance utilities (e.g., generated-image deletion, reference release activation) consumed by other agents.
 - Talks to MariaDB through the pool in `server/db.ts`; the schema is `server/db/schema/`. A new database is set up from the newest published release with `npm run db:init`. See [`DATABASE.md`](docs_master/current/DATABASE.md).
+- Production runs on Hostinger at https://3rdiaudio.com. How to deploy, and what differs there (two app processes, CSRF and rate limits on), is in [`HOSTINGER_DEPLOYMENT.md`](docs_master/current/HOSTINGER_DEPLOYMENT.md).
 
 ### Turn Processor Agent
 **Mandate:** Drain the turn job queue, run deterministic game logic, and broadcast completed turns.  
@@ -73,6 +74,7 @@ This document enumerates the major runtime agents that collaborate to deliver Qu
 - On cache miss, builds prompts with `generateImage`, relays to the configured provider (OpenAI by default), then persists the asset using `saveImageToFile`.
 - Updates both the job record and corresponding turn inside a transaction, ensuring any consumer sees a consistent image URL and metadata.
 - Emits `imageReady` or `imageFailed` events and records Prometheus counters (`imageCacheHits`, `imageJobsFailed`, etc.) for monitoring.
+- Workers send live updates with `emitToRoom` (`server/socketRelay.ts`), not `io.to().emit` directly, so they also reach browsers connected to another app process.
 
 ### Reference Steward Agent
 **Mandate:** Manage the game’s content catalog independent of code deployments.  

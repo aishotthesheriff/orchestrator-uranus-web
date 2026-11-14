@@ -23,19 +23,14 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (!id.includes("node_modules")) {
-            return;
+          // One chunk for all libraries, so it changes less often than the app code. Do not
+          // split React out of it: the two library chunks then import each other (they share
+          // Rollup's CommonJS helpers), React is still undefined when the other chunk runs,
+          // and the production page stays blank.
+          if (id.includes("node_modules") || id.startsWith("\0")) {
+            return "vendor";
           }
-          if (id.includes("react") || id.includes("scheduler")) {
-            return "vendor-react";
-          }
-          if (id.includes("@tanstack/react-query")) {
-            return "vendor-react-query";
-          }
-          if (id.includes("framer-motion")) {
-            return "vendor-motion";
-          }
-          return "vendor";
+          return;
         },
       },
     },

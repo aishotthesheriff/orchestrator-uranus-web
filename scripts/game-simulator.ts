@@ -110,9 +110,7 @@ class Simulator {
     data?: unknown
   ): Promise<Response> {
     const url = `${this.options.serverUrl}${path}`;
-    const headers: Record<string, string> = {
-      'Cookie': this.cookieJar.getCookieHeader()
-    };
+    const headers: Record<string, string> = {};
 
     // Add CSRF token for state-changing requests
     if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
@@ -121,6 +119,9 @@ class Simulator {
         headers['X-CSRF-Token'] = token;
       }
     }
+
+    // Read the cookies after the token fetch: that fetch sets the cookie the token is checked against.
+    headers['Cookie'] = this.cookieJar.getCookieHeader();
 
     if (data) {
       headers['Content-Type'] = 'application/json';

@@ -62,6 +62,7 @@ Replacing the variables through the API replaces the **whole set**, and values c
 | `ADMIN_API_KEYS` | in `.env.production` | The key Dev Tools asks for. |
 | `OPENAI_API_KEY`, `AI_INTEGRATIONS_OPENAI_API_KEY` | same as local `.env` | Story and image models. |
 | `HF_TOKEN` | same as local `.env` | Hugging Face image models. |
+| `NVIDIA_API_KEY` | same as local `.env` | NVIDIA API Catalog text models (provider `nvidia`). Added 2026-11-14. |
 | `LANGSMITH_TRACING`, `LANGSMITH_API_KEY`, `LANGSMITH_PROJECT` | `true`, key, `uranus-production` | Player turns are traced to LangSmith. Remove the first to turn it off. |
 | `ALLOWED_ORIGINS` | `https://3rdiaudio.com,https://www.3rdiaudio.com` | Origins allowed to open a socket. |
 | `IMAGE_SIMILARITY_CACHE_ENABLED` | `false` | Same as local. |
@@ -75,6 +76,10 @@ The database accepts connections only from the server itself. To run `npm run db
 1. Add a remote-access rule for the Mac's public IP on `u758383565_uranus` (hPanel > Databases > Remote MySQL, or the API).
 2. Run the command from a clean copy of the app (so only the release being deployed is seen), with `DATABASE_URL=mysql://u758383565_uranus:<password>@srv529.hstgr.io:3306/u758383565_uranus`.
 3. Remove the rule again.
+
+If the login is refused for an IPv6 address, Node chose IPv6 and the rule is for IPv4. Run the script with `NODE_OPTIONS="--dns-result-order=ipv4first --network-family-autoselection=false"`.
+
+To load a new release into a database that already has content, `db:init-release` needs `--replace --activate`. First run `--verify-only --version <old version>`: if every row check is OK (the only PROBLEM allowed is that the deployed code loads the newer release), `--replace` loses nothing. Game data is never touched.
 
 `db:init -- --replace` deletes content. It is not part of a normal deploy.
 

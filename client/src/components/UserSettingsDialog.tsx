@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "wouter";
-import { REFERENCE_DATA_QUERY_OPTIONS } from "@/lib/queryClient";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLocation, useRoute } from "wouter";
+import { GAMES_LIST_QUERY_OPTIONS, REFERENCE_DATA_QUERY_OPTIONS, gamesListKey } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -39,6 +39,9 @@ export function UserSettingsDialog({
   idPrefix = "user-settings",
 }: UserSettingsDialogProps) {
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
+  // True when the dialog is opened from inside a game.
+  const [onGamePage] = useRoute('/game/:id');
   
   // Phase 1 & 2: Fetch user settings from the database
   const { data: userSettings } = useUserSettings();
@@ -49,8 +52,9 @@ export function UserSettingsDialog({
   
   // Fetch user's games to get current game ID for navigation
   const { data: userGames } = useQuery<GameState[]>({
-    queryKey: ['api', 'games', 'user', username],
+    queryKey: gamesListKey(username),
     enabled: !!username,
+    ...GAMES_LIST_QUERY_OPTIONS,
   });
 
   const { data: themesData = [], isLoading: loadingThemes } = useQuery<ModStoryTheme[]>({
@@ -206,21 +210,26 @@ export function UserSettingsDialog({
           ? storyModelKeyToSave(storyModelPick, storyChoice.defaultKey)
           : undefined,
     }, {
-      onSuccess: () => {
-        // Phase 4: Navigate after successful save
-        // 4a: If no game id, go to main menu
-        if (!userGames || userGames.length === 0) {
-          setLocation('/menu');
+      onSuccess: async () => {
+        // Saved from inside a game: stay in that game.
+        if (onGamePage) {
+          onOpenChange(false);
           return;
         }
-        
-        // 4: Get the most recent game (first in the list, ordered by updated_at DESC)
-        const currentGameId = userGames[0]?.id;
-        if (currentGameId) {
-          setLocation(`/game/${currentGameId}`);
-        } else {
-          setLocation('/menu');
+
+        // Saved from the menu: open the most recent game (the list is ordered by updated_at
+        // DESC), using a fresh list so a game started after the screen opened is not missed.
+        let games = userGames;
+        try {
+          games = await queryClient.fetchQuery<GameState[]>({
+            queryKey: gamesListKey(username),
+            staleTime: 0,
+          });
+        } catch {
+          // Fall back to the list already on screen.
         }
+        const currentGameId = games?.[0]?.id;
+        setLocation(currentGameId ? `/game/${currentGameId}` : '/menu');
       }
     });
   };

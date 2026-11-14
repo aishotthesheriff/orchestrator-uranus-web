@@ -10,7 +10,8 @@ Props
 Behavior
 - Fetches current user settings (session-based) and applies defaults from system defaults + catalog lookups when fields are empty.
 - Fetches creative catalogs (`story-themes`, `visual-styles`), image models, and system-defaults (for default keys).
-- On Save, updates `/api/user/preferences` and navigates to the most recent game if present, otherwise `/menu`.
+- On Save, updates `/api/user/preferences`. Opened from inside a game, it closes and stays in that game. Opened from the menu, it reads a fresh games list and opens the most recent game, or stays on `/menu` when there is none.
+- The games list (`GAMES_LIST_QUERY_OPTIONS` in `lib/queryClient.ts`) is read again whenever a screen mounts. It must not be cached like reference data: it changes with every game started or deleted.
 
 Data & API
 - Queries:

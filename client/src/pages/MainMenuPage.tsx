@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, Link } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { apiRequest, queryClient, GAMES_LIST_QUERY_OPTIONS, gamesListKey } from '@/lib/queryClient';
 import { Play, Trash2, Loader2, HelpCircle, Settings } from 'lucide-react';
 import CRTBackground from '@/components/CRTBackground';
 import { useToast } from '@/hooks/use-toast';
@@ -146,9 +146,10 @@ export default function MainMenuPage() {
   }, [setLocation]);
 
   const { data: userGames, refetch: refetchGames } = useQuery<GameState[]>({
-    queryKey: ['api', 'games', 'user', username],
+    queryKey: gamesListKey(username),
     enabled: !!username,
-    refetchInterval: false
+    refetchInterval: false,
+    ...GAMES_LIST_QUERY_OPTIONS,
   });
 
   const startGameMutation = useMutation({
@@ -208,6 +209,7 @@ export default function MainMenuPage() {
       
       // Intro turn is ready - navigate immediately
       queryClient.setQueryData(['api', 'game', data.id], data);
+      queryClient.invalidateQueries({ queryKey: ['api', 'games', 'user'] });
       setLocation(`/game/${data.id}`);
     },
     onError: () => {

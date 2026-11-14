@@ -282,6 +282,20 @@ export const queryClient = new QueryClient({
 });
 
 /**
+ * The signed-in player's list of games. Unlike reference data it changes whenever a game is
+ * started, played or deleted, so it is read again each time a screen needs it. (Caching it
+ * forever kept an empty list from before the first game: the menu showed no saved voyages and
+ * Save in User Settings thought there was no game to return to.)
+ */
+export const GAMES_LIST_QUERY_OPTIONS = {
+  staleTime: 0,
+  refetchOnMount: 'always',
+} as const;
+
+/** The query key of the games list for one player. */
+export const gamesListKey = (username: string | null | undefined) => ['api', 'games', 'user', username] as const;
+
+/**
  * Shared query options for reference data endpoints.
  * These options ensure reference data is fetched once at app startup and never refetched
  * unless explicitly invalidated (e.g., when references are published/activated).

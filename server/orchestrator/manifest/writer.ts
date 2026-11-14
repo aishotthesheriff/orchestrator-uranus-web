@@ -1,16 +1,21 @@
 /**
  * Manifest Writer Module
  * Per SPEC_JOB_ORCHESTRATOR_AND_MANIFEST.md §5.4
+ *
+ * Builds and hashes manifest sections. The SQL, including the row lock that keeps
+ * section updates from overwriting each other, lives in ManifestRepository.
  */
 
 import { createHash } from 'crypto';
 import { randomUUID } from 'crypto';
-import { pool, withTransaction } from '../../db';
+import { ManifestRepository } from '../../repositories/manifestRepository';
 import type { TurnExecutionManifest, PrecomputeSection, ApplySection, RequestSection } from './types';
 
 export interface ManifestId {
   id: string;
 }
+
+const manifests = new ManifestRepository();
 
 /**
  * Compute SHA-256 hash of a JSON-serialized object
@@ -33,7 +38,7 @@ export async function createProvisionalManifest(
 ): Promise<string> {
   const manifestId = randomUUID();
   const version = '1.0.0';
-  
+
   const manifest: TurnExecutionManifest = {
     version,
     job: {
@@ -57,29 +62,20 @@ export async function createProvisionalManifest(
     },
   };
 
-  // Compute initial hash (will be updated after precompute)
-  const manifestHash = computeHash(manifest);
-  const precomputeHash = Buffer.from([]); // Empty until precompute completes
-
-  await pool.query(
-    `INSERT INTO turn_execution_manifests (
-      id, game_id, turn_number, queue_entry_id, attempt, version, manifest,
-      manifest_hash, precompute_hash, trace_id, request_id, created_at, updated_at
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(3), NOW(3))`,
-    [
-      manifestId,
-      gameId,
-      turnNumber,
-      queueEntryId,
-      attempt,
-      version,
-      JSON.stringify(manifest),
-      manifestHash,
-      precomputeHash,
-      traceId,
-      requestId || null,
-    ]
-  );
+  await manifests.insertManifest({
+    id: manifestId,
+    gameId,
+    turnNumber,
+    queueEntryId,
+    attempt,
+    version,
+    manifest,
+    // Initial hash; updated after precompute. The precompute hash is empty until then.
+    manifestHash: computeHash(manifest),
+    precomputeHash: Buffer.from([]),
+    traceId,
+    requestId: requestId || null,
+  });
 
   return manifestId;
 }
@@ -91,28 +87,11 @@ export async function updatePrecomputeSection(
   manifestId: string,
   precomputeData: PrecomputeSection
 ): Promise<void> {
-  await withTransaction(async client => {
-    const result = await client.query(
-      'SELECT manifest FROM turn_execution_manifests WHERE id = $1 FOR UPDATE',
-      [manifestId],
-    );
-    if (result.rows.length === 0) {
-      throw new Error(`Manifest ${manifestId} not found`);
-    }
-
-    const manifest: TurnExecutionManifest = result.rows[0].manifest;
+  await manifests.updateManifestLocked<TurnExecutionManifest>(manifestId, (manifest) => {
     manifest.precompute = precomputeData;
-
     const precomputeHash = computeHash(precomputeData);
     precomputeData.precomputeHash = precomputeHash.toString('hex');
-    const manifestHash = computeHash(manifest);
-
-    await client.query(
-      `UPDATE turn_execution_manifests
-       SET manifest = $1, precompute_hash = $2, manifest_hash = $3, updated_at = NOW(3)
-       WHERE id = $4`,
-      [JSON.stringify(manifest), precomputeHash, manifestHash, manifestId],
-    );
+    return { manifest, precomputeHash, manifestHash: computeHash(manifest) };
   });
 }
 
@@ -123,25 +102,9 @@ export async function updateRequestSection(
   manifestId: string,
   requestData: Partial<RequestSection>
 ): Promise<void> {
-  await withTransaction(async client => {
-    const result = await client.query(
-      'SELECT manifest FROM turn_execution_manifests WHERE id = $1 FOR UPDATE',
-      [manifestId],
-    );
-    if (result.rows.length === 0) {
-      throw new Error(`Manifest ${manifestId} not found`);
-    }
-
-    const manifest: TurnExecutionManifest = result.rows[0].manifest;
+  await manifests.updateManifestLocked<TurnExecutionManifest>(manifestId, (manifest) => {
     manifest.request = { ...manifest.request, ...requestData };
-    const manifestHash = computeHash(manifest);
-
-    await client.query(
-      `UPDATE turn_execution_manifests
-       SET manifest = $1, manifest_hash = $2, updated_at = NOW(3)
-       WHERE id = $3`,
-      [JSON.stringify(manifest), manifestHash, manifestId],
-    );
+    return { manifest, manifestHash: computeHash(manifest) };
   });
 }
 
@@ -152,25 +115,9 @@ export async function updateApplySection(
   manifestId: string,
   applyData: ApplySection
 ): Promise<void> {
-  await withTransaction(async client => {
-    const result = await client.query(
-      'SELECT manifest FROM turn_execution_manifests WHERE id = $1 FOR UPDATE',
-      [manifestId],
-    );
-    if (result.rows.length === 0) {
-      throw new Error(`Manifest ${manifestId} not found`);
-    }
-
-    const manifest: TurnExecutionManifest = result.rows[0].manifest;
+  await manifests.updateManifestLocked<TurnExecutionManifest>(manifestId, (manifest) => {
     manifest.apply = applyData;
-    const manifestHash = computeHash(manifest);
-
-    await client.query(
-      `UPDATE turn_execution_manifests
-       SET manifest = $1, manifest_hash = $2, updated_at = NOW(3)
-       WHERE id = $3`,
-      [JSON.stringify(manifest), manifestHash, manifestId],
-    );
+    return { manifest, manifestHash: computeHash(manifest) };
   });
 }
 
@@ -187,4 +134,3 @@ export function computePrecomputeHash(precomputeSection: PrecomputeSection): str
 export function computeManifestHash(manifest: TurnExecutionManifest): string {
   return computeHash(manifest).toString('hex');
 }
-

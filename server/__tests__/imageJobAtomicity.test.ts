@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterAll, vi } from 'vitest';
-import { applyPrecomputedIntroTurn } from '../gameLogic';
+import { applyPrecomputedIntroTurn, processTurnImage } from '../gameLogic';
 import { pool } from '../db';
 import { getTestStorage } from './setup/db';
 import { cleanupTestTables, closeTestPool } from './setup/db';
@@ -174,6 +174,23 @@ describe('Image Job Atomicity', () => {
       expect(jobsForTurn.length).toBe(1);
       expect(jobsForTurn[0].id).toBe(introTurn!.imageJobId);
     }
+  });
+
+  it('rolls back image job creation with the enclosing game transaction', async () => {
+    const gameState = await createTestGameState({ username: 'testuser' });
+    const turn = { imagePrompt: 'transactional image prompt' };
+
+    await expect(storage.processTurnWithTransaction(gameState.id, async (state, client) => {
+      state.day = 2;
+      await processTurnImage(state, turn, {}, 1, null, client);
+      throw new Error('simulated transaction failure');
+    })).rejects.toThrow('simulated transaction failure');
+
+    expect((await storage.getGameState(gameState.id))?.day).toBe(1);
+    expect((await pool.query(
+      'SELECT id FROM image_jobs WHERE game_id = $1 AND turn_number = 1',
+      [gameState.id],
+    )).rows).toHaveLength(0);
   });
 
   it('should handle image processing errors gracefully', async () => {

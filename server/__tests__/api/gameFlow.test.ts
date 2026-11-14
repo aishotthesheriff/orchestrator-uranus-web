@@ -222,9 +222,9 @@ describe('API Game Flow Integration Test', () => {
         const { processTurnLogic, processTurnImage } = await import('../../gameLogic');
         
         // Execute turn and create image job atomically inside transaction
-        const updatedState = await storage.processTurnWithTransaction(job.gameId, async (state) => {
+        const updatedState = await storage.processTurnWithTransaction(job.gameId, async (state, client) => {
           const action = job.actionPayload as ActionInput;
-          const newState = await processTurnLogic(state, action);
+          const newState = await processTurnLogic(state, action, undefined, client);
           
           // Get user preferences for image processing
           const userPreferences = await storage.getUserPreferences(state.username);
@@ -232,7 +232,7 @@ describe('API Game Flow Integration Test', () => {
           // Process image INSIDE transaction for atomicity
           const lastTurn = newState.turns[newState.turns.length - 1];
           if (lastTurn) {
-            await processTurnImage(newState, lastTurn, userPreferences, newState.turnNumber);
+            await processTurnImage(newState, lastTurn, userPreferences, newState.turnNumber, undefined, client);
           }
           
           return newState;

@@ -7,7 +7,7 @@
  * deadlock or a lock wait timeout.
  */
 
-import { pool as defaultPool, withTransaction, type DbPool } from '../db';
+import { pool as defaultPool, withTransaction, type DbPool, type Queryable } from '../db';
 import { randomUUID } from 'crypto';
 import { getQueueConfig } from '../config/queues';
 import {
@@ -66,9 +66,9 @@ export class MariaDbOrchestrator implements JobOrchestrator {
 
   /**
    * Enqueue a job into the orchestrator
-   * Inserts into queue_entries; the payload row (turn_jobs / image_jobs) is written by the caller
+   * Inserts into queue_entries using the caller's transaction when one is supplied.
    */
-  async enqueue(opts: EnqueueOptions): Promise<string> {
+  async enqueue(opts: EnqueueOptions, client?: Queryable): Promise<string> {
     const queueEntryId = randomUUID();
     const payload = opts.payload as { id?: string };
 
@@ -94,7 +94,7 @@ export class MariaDbOrchestrator implements JobOrchestrator {
 
     // Insert into queue_entries. A second entry with the same (queue, idempotency_key) is
     // refused by the unique index and surfaces as an error to the caller.
-    await this.pool.query(
+    await (client ?? this.pool).query(
       `INSERT INTO queue_entries (
         id, queue, payload_table, payload_id, status, attempts, priority,
         run_at, trace_id, request_id, metadata, idempotency_key, created_at, updated_at

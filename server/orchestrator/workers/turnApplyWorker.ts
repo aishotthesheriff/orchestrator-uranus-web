@@ -194,9 +194,9 @@ export class TurnApplyWorker {
         const userPreferences = await storage.getUserPreferences(currentState.username);
         const transactionTimer = turnApplyPhaseDuration.startTimer({ phase: 'transaction' });
         const processTimer = turnApplyPhaseDuration.startTimer({ phase: 'process_logic' });
-        const updatedState: GameState = await storage.processTurnWithTransaction(job.gameId, async (state) => {
+        const updatedState: GameState = await storage.processTurnWithTransaction(job.gameId, async (state, client) => {
           processTimer();
-          return await processTurnLogic(state, action);
+          return await processTurnLogic(state, action, undefined, client);
         });
         transactionTimer();
 
@@ -307,7 +307,7 @@ export class TurnApplyWorker {
       let imageJobQueueEntryId: string | undefined;
 
       const transactionTimer = turnApplyPhaseDuration.startTimer({ phase: 'transaction' });
-      const updatedState: GameState = await storage.processTurnWithTransaction(job.gameId, async (state) => {
+      const updatedState: GameState = await storage.processTurnWithTransaction(job.gameId, async (state, client) => {
         // A label for this apply, recorded in the manifest (not a database transaction id)
         const txResult = await storage.getGameState(state.id); // This will be within the transaction
         transactionId = `xact-${Date.now()}`;
@@ -317,7 +317,7 @@ export class TurnApplyWorker {
 
         // Process turn with precomputed data
         const processTimer = turnApplyPhaseDuration.startTimer({ phase: 'process_logic' });
-        const newState = await processTurnLogic(state, action, precomputed as any);
+        const newState = await processTurnLogic(state, action, precomputed as any, client);
         processTimer();
 
         // Apply precomputed image metadata
@@ -330,7 +330,7 @@ export class TurnApplyWorker {
           } : null;
 
           const imageTimer = turnApplyPhaseDuration.startTimer({ phase: 'process_image' });
-          await processTurnImage(newState, finalTurn, userPreferences, newState.turnNumber, precomputedImageMetadata);
+          await processTurnImage(newState, finalTurn, userPreferences, newState.turnNumber, precomputedImageMetadata, client);
           imageTimer();
 
           // Note: processTurnImage already handles image job creation if needed.

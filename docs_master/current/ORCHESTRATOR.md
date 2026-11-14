@@ -52,7 +52,7 @@ The core abstraction that defines the orchestrator contract:
 
 ```typescript
 interface JobOrchestrator {
-  enqueue(opts: EnqueueOptions): Promise<string>;
+  enqueue(opts: EnqueueOptions, client?: Queryable): Promise<string>;
   claim(queue: QueueName, workerId: string, opts?: { batchSize?: number }): Promise<JobLease<any>[]>;
   heartbeat(leaseId: string, extensionMs: number): Promise<void>;
   markStuck(opts: { queue: QueueName; olderThan: Date }): Promise<string[]>;
@@ -168,7 +168,7 @@ Per-queue settings controlling worker behavior:
 
 **Key Interaction Patterns:**
 
-1. **Enqueue Flow**: HTTP handler → `orchestrator.enqueue()` → `queue_entries` INSERT (picked up on the worker's next poll)
+1. **Enqueue Flow**: Route → `JobService` → payload row and `queue_entries` INSERT in one transaction (picked up on the worker's next poll). When a game transaction creates an image job, the same DB client is passed through so the game update commits or rolls back with it.
 2. **Claim Flow**: Worker polls → `orchestrator.claim()` → `FOR UPDATE SKIP LOCKED` → `queue_leases` INSERT
 3. **Process Flow**: Worker executes business logic → updates manifest → `lease.complete()` or `lease.fail()`
 4. **Event Flow**: Worker completion → Socket.IO emit → Client receives `turnComplete` / `imageReady`
@@ -221,30 +221,19 @@ Each queue has configurable parameters (see `server/config/queues.ts`):
 
 #### Enqueuing a Turn Job
 
-When a player takes an action, the route handler enqueues a turn job:
+When a player takes an action, the route handler creates a turn job through storage. Storage delegates to `JobService`, which inserts the payload row and queue entry in one transaction:
 
 ```typescript
 // In server/routes.ts
 app.post("/api/game/action", requireAuth, async (req, res) => {
   const validated = actionInputSchema.parse(req.body);
   
-  // Create turn job record
+  // Create turn job record and enqueue atomically
   const job = await storage.createTurnJob({
     gameId: validated.gameId,
     actionPayload: validated,
     status: 'pending'
   }, traceId, requestId);
-
-  // Enqueue to orchestrator
-  const orchestrator = getOrchestrator();
-  await orchestrator.enqueue({
-    queue: 'turn-precompute',
-    payload: { id: job.id },
-    priority: 0,
-    idempotencyKey: `turn-${validated.gameId}-${validated.turnNumber}`,
-    traceId,
-    requestId
-  });
 
   // Return immediately
   res.json({ turnJobId: job.id, status: 'processing' });

@@ -1,5 +1,5 @@
 import type { User, InsertUser, GameState, GameSummary, PromptTemplate, InsertPromptTemplate, LlmLog, InsertLlmLog, Event, InsertEvent, ItemRow, InsertItem, NpcTemplate, InsertNpcTemplate, ImagePrompt, InsertImagePrompt, GeneratedImage, InsertGeneratedImage, InterviewQuestion, InsertInterviewQuestion, ReferenceRelease, InsertReferenceRelease, ImageJob, InsertImageJob, TurnJob, InsertTurnJob, AppSetting, ImageModel, LlmModel, ModVisualStyles, ModStoryThemes, GameStats, NPC, Turn, ActionChip, Segment, PceTestScenario, PceTestRun, PceTestMetrics, PceTemplateVersion } from "@shared/schema";
-import { createLimiter, pool, poolLimit, withTransaction } from "./db";
+import { createLimiter, pool, poolLimit, withTransaction, type DbClient } from "./db";
 
 export type UserPreferences = {
   theme?: string;
@@ -26,11 +26,9 @@ function toUserPreferences(user?: Pick<User, 'theme' | 'style' | 'imageModelKey'
 }
 import { isUniqueViolation as isUniqueViolationError } from "./db/errors";
 import { randomUUID } from "crypto";
-import type { ActionInput } from "@shared/schema";
-import { getOrchestrator } from "./orchestrator";
-import { generateIdempotencyKey, generateImageJobIdempotencyKey } from "./orchestrator/idempotency";
 import { dbOperationDuration } from "./metrics";
 import { getContentTableSpec } from "./reference/contentTables";
+import { JobService } from "./orchestrator/jobService";
 const DISABLE_ORCHESTRATOR_ENQUEUE =
   process.env.DISABLE_ORCHESTRATOR_ENQUEUE === 'true' || process.env.NODE_ENV === 'test';
 
@@ -119,17 +117,17 @@ export interface IStorage {
   // Transaction methods
   processTurnWithTransaction(
     gameId: string,
-    processor: (state: GameState) => Promise<GameState>
+    processor: (state: GameState, client: DbClient) => Promise<GameState>
   ): Promise<GameState>;
 
   // Image job methods
-  createImageJob(job: InsertImageJob, traceId?: string, requestId?: string): Promise<ImageJob>;
+  createImageJob(job: InsertImageJob, traceId?: string, requestId?: string, client?: DbClient): Promise<ImageJob>;
   getImageJob(id: string): Promise<ImageJob | undefined>;
   updateImageJob(id: string, updates: Partial<InsertImageJob>): Promise<ImageJob>;
   countPendingJobs(): Promise<{ turnJobs: number; imageJobs: number }>;
 
   // Turn job methods
-  createTurnJob(job: InsertTurnJob): Promise<TurnJob>;
+  createTurnJob(job: InsertTurnJob, traceId?: string, requestId?: string, client?: DbClient): Promise<TurnJob>;
   getTurnJob(id: string): Promise<TurnJob | undefined>;
   updateTurnJob(id: string, updates: Partial<InsertTurnJob>): Promise<TurnJob>;
 
@@ -212,6 +210,8 @@ export interface IStorage {
 const turnTransactionSlots = createLimiter(Math.max(1, Math.floor(poolLimit() / 2)));
 
 export class DatabaseStorage implements IStorage {
+  private readonly jobService = new JobService();
+
   constructor() {}
 
   private mapUser(row: any): User | undefined {
@@ -1445,7 +1445,7 @@ export class DatabaseStorage implements IStorage {
 
   async processTurnWithTransaction(
     gameId: string,
-    processor: (state: GameState) => Promise<GameState>
+    processor: (state: GameState, client: DbClient) => Promise<GameState>
   ): Promise<GameState> {
     // The processor runs while this transaction holds a connection, and it makes further
     // queries on other connections. Without a cap, enough simultaneous turns would take
@@ -1460,7 +1460,7 @@ export class DatabaseStorage implements IStorage {
 
   private async runTurnTransaction(
     gameId: string,
-    processor: (state: GameState) => Promise<GameState>
+    processor: (state: GameState, client: DbClient) => Promise<GameState>
   ): Promise<GameState> {
     const timer = dbOperationDuration.startTimer({ operation: 'transaction', table: 'games' });
     const client = await pool.connect();
@@ -1480,7 +1480,7 @@ export class DatabaseStorage implements IStorage {
       const gameState = this.mapGameRow(state)!;
 
       // Process turn logic with the locked state
-      const updatedState = await processor(gameState);
+      const updatedState = await processor(gameState, client);
 
       // Update the game state within the transaction
       await client.query(
@@ -1524,98 +1524,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Image job methods
-  async createImageJob(job: InsertImageJob, traceId?: string, requestId?: string): Promise<ImageJob> {
-    const id = randomUUID();
-    try {
-      console.log('[Storage] Creating image job in database', {
-        jobId: id,
-        gameId: job.gameId,
-        turnNumber: job.turnNumber,
-        templateName: job.templateName,
-        status: job.status ?? 'pending'
-      });
-      
-      const result = await pool.query(
-        `INSERT INTO image_jobs (id, game_id, turn_number, template_name, status, image_url, image_template, error, completed_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-        [
-          id,
-          job.gameId,
-          job.turnNumber,
-          job.templateName,
-          job.status ?? 'pending',
-          job.imageUrl || null,
-          job.imageTemplate || null,
-          job.error || null,
-          job.completedAt || null,
-        ]
-      );
-      
-      const mappedJob = this.mapImageJob(result.rows[0])!;
-      
-      console.log('[Storage] Image job created successfully', {
-        jobId: mappedJob.id,
-        gameId: mappedJob.gameId,
-        turnNumber: mappedJob.turnNumber,
-        status: mappedJob.status
-      });
-
-      if (!DISABLE_ORCHESTRATOR_ENQUEUE) {
-        try {
-          const orchestrator = getOrchestrator();
-          const idempotencyKey = generateImageJobIdempotencyKey(mappedJob.id);
-          await orchestrator.enqueue({
-            queue: 'image',
-            payload: { id: mappedJob.id },
-            idempotencyKey,
-            traceId,
-            requestId,
-            metadata: {
-              gameId: mappedJob.gameId,
-              turnNumber: mappedJob.turnNumber,
-              templateName: mappedJob.templateName,
-            },
-          });
-        } catch (error) {
-          console.error('[Storage] Failed to enqueue image job to orchestrator:', error);
-        }
-      }
-      
-      return mappedJob;
-    } catch (error) {
-      // Handle unique constraint violation (duplicate active job for same game/turn)
-      const isUniqueViolation = isUniqueViolationError(error);
-      if (isUniqueViolation) {
-        console.warn(`[Storage] Duplicate image job detected for game ${job.gameId}, turn ${job.turnNumber}. Fetching existing job.`);
-        // Return the existing job for this game/turn combination
-        const existingResult = await pool.query(
-          `SELECT * FROM image_jobs 
-           WHERE game_id = $1 AND turn_number = $2 
-           AND status IN ('pending', 'processing')
-           ORDER BY created_at 
-           LIMIT 1`,
-          [job.gameId, job.turnNumber]
-        );
-        if (existingResult.rows.length > 0) {
-          const existingJob = this.mapImageJob(existingResult.rows[0])!;
-          
-          console.warn(`[Storage] Returning existing image job:`, {
-            jobId: existingJob.id,
-            gameId: existingJob.gameId,
-            turnNumber: existingJob.turnNumber,
-            status: existingJob.status
-          });
-          return existingJob;
-        }
-      }
-      // Re-throw if it's not a unique violation or we couldn't find the existing job
-      console.error('[Storage] Failed to create image job:', {
-        gameId: job.gameId,
-        turnNumber: job.turnNumber,
-        error: error instanceof Error ? error.message : String(error)
-      });
-      throw error;
-    }
+  async createImageJob(job: InsertImageJob, traceId?: string, requestId?: string, client?: DbClient): Promise<ImageJob> {
+    const row = await this.jobService.createImageJob(job, {
+      traceId,
+      requestId,
+      enqueue: !DISABLE_ORCHESTRATOR_ENQUEUE,
+      client,
+    });
+    return this.mapImageJob(row)!;
   }
 
   async getImageJob(id: string): Promise<ImageJob | undefined> {
@@ -1688,56 +1604,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Turn job methods
-  async createTurnJob(job: InsertTurnJob, traceId?: string, requestId?: string): Promise<TurnJob> {
-    const id = randomUUID();
-    const result = await pool.query(
-      `INSERT INTO turn_jobs (id, game_id, action_payload, status, error, completed_at)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [
-        id,
-        job.gameId,
-        JSON.stringify(job.actionPayload),
-        job.status ?? 'pending',
-        job.error || null,
-        job.completedAt || null,
-      ]
-    );
-    
-    const turnJob = this.mapTurnJob(result.rows[0])!;
-
-    if (!DISABLE_ORCHESTRATOR_ENQUEUE) {
-      try {
-        const gameState = await this.getGameState(job.gameId);
-        if (!gameState) {
-          console.warn(`[Storage] Unable to enqueue turn job ${turnJob.id}: game ${job.gameId} not found`);
-        } else {
-          const actionPayload = job.actionPayload as ActionInput;
-          const idempotencyKey = generateIdempotencyKey(
-            'turn-precompute',
-            job.gameId,
-            gameState.turnNumber,
-            actionPayload
-          );
-
-          const orchestrator = getOrchestrator();
-          await orchestrator.enqueue({
-            queue: 'turn-precompute',
-            payload: { id: turnJob.id },
-            idempotencyKey,
-            traceId,
-            requestId,
-            metadata: {
-              gameId: job.gameId,
-              turnNumber: gameState.turnNumber,
-            },
-          });
-        }
-      } catch (error) {
-        console.error('[Storage] Failed to enqueue turn job to orchestrator:', error);
-      }
-    }
-
-    return turnJob;
+  async createTurnJob(job: InsertTurnJob, traceId?: string, requestId?: string, client?: DbClient): Promise<TurnJob> {
+    const row = await this.jobService.createTurnJob(job, {
+      traceId,
+      requestId,
+      enqueue: !DISABLE_ORCHESTRATOR_ENQUEUE,
+      client,
+    });
+    return this.mapTurnJob(row)!;
   }
 
   async getTurnJob(id: string): Promise<TurnJob | undefined> {

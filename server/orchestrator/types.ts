@@ -1,3 +1,5 @@
+import type { Queryable } from '../db';
+
 /**
  * Type definitions for Job Orchestrator interface
  * Per SPEC_JOB_ORCHESTRATOR_AND_MANIFEST.md §4.2
@@ -52,7 +54,7 @@ export interface QueueMetrics {
 }
 
 export interface JobOrchestrator {
-  enqueue(opts: EnqueueOptions): Promise<string>; // returns job id
+  enqueue(opts: EnqueueOptions, client?: Queryable): Promise<string>; // returns queue entry id
   claim(queue: QueueName, workerId: string, opts?: { batchSize?: number }): Promise<JobLease<any>[]>;
   heartbeat(leaseId: string, extensionMs: number): Promise<void>;
   markStuck(opts: { queue: QueueName; olderThan: Date }): Promise<string[]>; // for ops tooling

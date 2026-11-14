@@ -42,6 +42,27 @@ describe('MariaDbOrchestrator.enqueue', () => {
     expect(result.rows[0].trace_id).toBe('test-trace-1');
   });
 
+  it('should include the queue entry in a caller-owned transaction', async () => {
+    const client = await pool.connect();
+    const id = randomUUID();
+
+    await client.query('BEGIN');
+    try {
+      await orchestrator.enqueue({
+        queue: 'image',
+        payload: { id },
+      }, client);
+      await client.query('ROLLBACK');
+    } finally {
+      client.release();
+    }
+
+    expect((await pool.query(
+      'SELECT id FROM queue_entries WHERE payload_id = $1',
+      [id],
+    )).rows).toHaveLength(0);
+  });
+
   it('should handle duplicate idempotency keys (database constraint)', async () => {
     const idempotencyKey = 'test-duplicate-key';
     

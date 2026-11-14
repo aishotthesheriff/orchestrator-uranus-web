@@ -21,6 +21,7 @@ import {
 } from "./aiService";
 import { storage } from "./storage";
 import { convertImageUrlToStaticPath } from "./imageUrl";
+import type { DbClient } from "./db";
 
 export const INTRO_TURN_ACTION_ID = "__intro_turn__";
 
@@ -222,8 +223,10 @@ export async function processTurnImage(
   turn: any,
   userPreferences: { theme?: string; style?: string; imageModelKey?: string; llmModelKey?: string; skipImageCache?: boolean },
   turnNumber: number,
-  precomputedMetadata?: { imageUrl: string; templateName: string; promptSource: 'pce' | 'template'; modelKey?: string } | null
+  precomputedMetadata?: { imageUrl: string; templateName: string; promptSource: 'pce' | 'template'; modelKey?: string } | null,
+  client?: DbClient,
 ): Promise<void> {
+  let creatingJob = false;
   try {
     // Require imagePrompt from PCE
     if (!turn.imagePrompt || typeof turn.imagePrompt !== 'string' || turn.imagePrompt.trim().length === 0) {
@@ -275,12 +278,13 @@ export async function processTurnImage(
       
       // Store imagePrompt in templateName field for backward compatibility with database
       // TODO: Migrate database schema to add imagePrompt field to ImageJobs
+      creatingJob = true;
       const imageJob = await storage.createImageJob({
         gameId: state.id,
         turnNumber,
         templateName: imagePrompt, // Store imagePrompt in templateName field temporarily
         status: 'pending'
-      });
+      }, undefined, undefined, client);
 
       console.log('[GAME_FLOW] Image job created successfully', {
         jobId: imageJob.id,
@@ -302,13 +306,15 @@ export async function processTurnImage(
       stack: imageError instanceof Error ? imageError.stack : undefined
     };
     console.error('Failed to process scene image:', errorContext);
+    if (creatingJob) throw imageError;
     // Don't throw - allow turn to complete without image
   }
 }
 
 export async function processIntroTurn(
   state: GameState,
-  userPreferences?: { theme?: string; style?: string; imageModelKey?: string; llmModelKey?: string; skipImageCache?: boolean }
+  userPreferences?: { theme?: string; style?: string; imageModelKey?: string; llmModelKey?: string; skipImageCache?: boolean },
+  client?: DbClient,
 ): Promise<GameState> {
   // Load user preferences if not provided (standardized pattern)
   const prefs = userPreferences ?? await storage.getUserPreferences(state.username);
@@ -389,7 +395,7 @@ export async function processIntroTurn(
 
   // Process image using shared helper (standard for all turns)
   // Pass precomputed metadata to avoid I/O inside processTurnImage
-  await processTurnImage(state, turn, prefs, state.turnNumber, precomputedImageMetadata);
+  await processTurnImage(state, turn, prefs, state.turnNumber, precomputedImageMetadata, client);
 
   state.turns.push(turn);
   
@@ -425,7 +431,7 @@ export async function applyPrecomputedIntroTurn(
   userPreferences: { theme?: string; style?: string; imageModelKey?: string; llmModelKey?: string; skipImageCache?: boolean },
   precomputedImageMetadata?: { imageUrl: string; templateName: string; promptSource: 'pce' | 'template'; modelKey?: string } | null
 ): Promise<GameState> {
-  return await storage.processTurnWithTransaction(gameId, async (state) => {
+  return await storage.processTurnWithTransaction(gameId, async (state, client) => {
     console.log('[GAME_FLOW] applyPrecomputedIntroTurn', {
       gameId,
       turnNumber: state.turnNumber,
@@ -476,7 +482,7 @@ export async function applyPrecomputedIntroTurn(
 
     // Process image using shared helper (inside transaction for atomicity)
     // Pass precomputed metadata to avoid I/O inside transaction
-    await processTurnImage(state, turn, userPreferences, state.turnNumber, precomputedImageMetadata);
+    await processTurnImage(state, turn, userPreferences, state.turnNumber, precomputedImageMetadata, client);
 
     // Apply precomputed turn and actions
     state.turns.push(turn);
@@ -707,7 +713,8 @@ export async function processTurnLogic(
       llmModelKey?: string;
       skipImageCache?: boolean;
     };
-  }
+  },
+  client?: DbClient,
 ): Promise<GameState> {
   // Only load user preferences if not provided in precomputed data
   const userPreferences = precomputed?.userPreferences 
@@ -725,7 +732,7 @@ export async function processTurnLogic(
 
   if (action.action === INTRO_TURN_ACTION_ID) {
     console.log('[GAME_FLOW] Routing to processIntroTurn');
-    return await processIntroTurn(state, userPreferences);
+    return await processIntroTurn(state, userPreferences, client);
   }
 
   // When called from orchestrator, precomputed data is always required
@@ -871,7 +878,7 @@ export async function processTurnWithTransaction(
 ): Promise<GameState> {
   const { storage } = await import("./storage");
   
-  return await storage.processTurnWithTransaction(gameId, async (state) => {
-    return await processTurnLogic(state, action);
+  return await storage.processTurnWithTransaction(gameId, async (state, client) => {
+    return await processTurnLogic(state, action, undefined, client);
   });
 }

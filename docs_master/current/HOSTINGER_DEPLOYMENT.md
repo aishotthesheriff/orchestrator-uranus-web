@@ -22,7 +22,7 @@ This page says how a deploy is done, what is set up on Hostinger, and what is di
    sh scripts/hostinger-stage.sh /tmp/uranus-deploy
    ```
 
-2. If `server/db/schema/` has a new file, apply it to the production database first (see [Running database commands](#running-database-commands-against-production)). A new build must never start against an older schema.
+2. If `server/db/schema/` has a new file, apply it to the production database first (see [Running database commands](#running-database-commands-against-production)). A new build must never start against an older schema. The migration runner serializes concurrent runs; schema changes still need to complete before deploying code that depends on them. Migration `003_reference_current_unique.sql` also normalizes any duplicate current reference releases before enforcing the one-current-release constraint.
 
 3. Deploy the copy with the Hostinger deploy operation, **always with these settings**:
 

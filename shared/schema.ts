@@ -713,6 +713,11 @@ export interface GameState {
   failureReason?: string;
 }
 
+export type GameSummary = Pick<
+  GameState,
+  'id' | 'username' | 'day' | 'turnNumber' | 'segment' | 'isComplete' | 'failureReason'
+>;
+
 // Insert schemas
 export const insertGameStateSchema = z.object({
   username: z.string().min(1, "Captain name required"),

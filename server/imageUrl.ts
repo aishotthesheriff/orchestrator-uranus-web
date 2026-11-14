@@ -54,7 +54,7 @@ export async function convertImageUrlToStaticPath(
     // Try exact match first
     let cachedImage = await storage.getGeneratedImageByHash(promptHash, variablesHash);
 
-    // If not found, try similar scenes (like in imageJobProcessor) - unless similarity caching is disabled
+    // If not found, try similar scenes unless similarity caching is disabled.
     if (!cachedImage) {
       const similarityCacheEnabled = process.env.IMAGE_SIMILARITY_CACHE_ENABLED !== 'false';
       if (similarityCacheEnabled) {

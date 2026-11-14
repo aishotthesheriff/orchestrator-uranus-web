@@ -5,7 +5,7 @@ import { apiRequest, queryClient, GAMES_LIST_QUERY_OPTIONS, gamesListKey } from 
 import { Play, Trash2, Loader2, HelpCircle, Settings } from 'lucide-react';
 import CRTBackground from '@/components/CRTBackground';
 import { useToast } from '@/hooks/use-toast';
-import type { GameState } from '@shared/schema';
+import type { GameState, GameSummary } from '@shared/schema';
 import { UserSettingsDialog } from '@/components/UserSettingsDialog';
 
 function SnowCrashVisual() {
@@ -145,7 +145,7 @@ export default function MainMenuPage() {
     setUsername(storedUsername);
   }, [setLocation]);
 
-  const { data: userGames, refetch: refetchGames } = useQuery<GameState[]>({
+  const { data: userGames, refetch: refetchGames } = useQuery<GameSummary[]>({
     queryKey: gamesListKey(username),
     enabled: !!username,
     refetchInterval: false,

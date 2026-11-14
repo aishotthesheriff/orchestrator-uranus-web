@@ -204,22 +204,6 @@ describe('story model catalog', () => {
   });
 });
 
-describe('claiming pending jobs', () => {
-  it('never hands the same job to two claimers', async () => {
-    const ids = new Set<string>();
-    for (let i = 0; i < 40; i++) ids.add(await insertTurnJob(new Date(Date.now() - (40 - i) * 10)));
-
-    const claims = await Promise.all(Array.from({ length: 8 }, () => storage.claimPendingTurnJobs(10)));
-    const claimed = claims.flat().map((job) => job.id);
-
-    expect(new Set(claimed).size).toBe(claimed.length);
-    expect(claimed.every((id) => ids.has(id))).toBe(true);
-    const left = (await pool.query("SELECT COUNT(*) AS n FROM turn_jobs WHERE status = 'pending'")).rows[0].n;
-    expect(claimed.length + left).toBe(40);
-    expect(claims.flat().every((job) => job.status === 'processing')).toBe(true);
-  });
-});
-
 describe('orchestrator queue', () => {
   it('claims in priority then age order, and completes', async () => {
     const low = await orchestrator.enqueue({ queue: 'turn-precompute', payload: { id: await insertTurnJob() }, traceId: 'a' });

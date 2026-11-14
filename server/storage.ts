@@ -1,4 +1,4 @@
-import type { User, InsertUser, GameState, PromptTemplate, InsertPromptTemplate, LlmLog, InsertLlmLog, Event, InsertEvent, ItemRow, InsertItem, NpcTemplate, InsertNpcTemplate, ImagePrompt, InsertImagePrompt, GeneratedImage, InsertGeneratedImage, InterviewQuestion, InsertInterviewQuestion, ReferenceRelease, InsertReferenceRelease, ImageJob, InsertImageJob, TurnJob, InsertTurnJob, AppSetting, ImageModel, LlmModel, ModVisualStyles, ModStoryThemes, GameStats, NPC, Turn, ActionChip, Segment, PceTestScenario, PceTestRun, PceTestMetrics, PceTemplateVersion } from "@shared/schema";
+import type { User, InsertUser, GameState, GameSummary, PromptTemplate, InsertPromptTemplate, LlmLog, InsertLlmLog, Event, InsertEvent, ItemRow, InsertItem, NpcTemplate, InsertNpcTemplate, ImagePrompt, InsertImagePrompt, GeneratedImage, InsertGeneratedImage, InterviewQuestion, InsertInterviewQuestion, ReferenceRelease, InsertReferenceRelease, ImageJob, InsertImageJob, TurnJob, InsertTurnJob, AppSetting, ImageModel, LlmModel, ModVisualStyles, ModStoryThemes, GameStats, NPC, Turn, ActionChip, Segment, PceTestScenario, PceTestRun, PceTestMetrics, PceTemplateVersion } from "@shared/schema";
 import { createLimiter, pool, poolLimit, withTransaction } from "./db";
 
 export type UserPreferences = {
@@ -46,6 +46,8 @@ export interface IStorage {
   // Game state methods
   getGameState(id: string): Promise<GameState | undefined>;
   getGamesByUsername(username: string): Promise<GameState[]>;
+  getGameSummariesByUsername(username: string): Promise<GameSummary[]>;
+  getGameSummariesByUsernames(usernames: string[]): Promise<GameSummary[]>;
   createGameState(state: GameState): Promise<GameState>;
   deleteGameState(id: string): Promise<void>;
 
@@ -65,7 +67,6 @@ export interface IStorage {
   // Event methods
   getAllEvents(): Promise<Event[]>;
   getActiveEvents(): Promise<Event[]>;
-  getEvent(id: string): Promise<Event | undefined>;
   createEvent(event: InsertEvent): Promise<Event>;
   updateEvent(id: string, event: Partial<InsertEvent>): Promise<Event>;
 
@@ -79,21 +80,18 @@ export interface IStorage {
   // NPC template methods
   getNpcTemplates(): Promise<NpcTemplate[]>;
   getActiveNpcTemplates(): Promise<NpcTemplate[]>;
-  getNpcTemplate(id: string): Promise<NpcTemplate | undefined>;
   createNpcTemplate(npc: InsertNpcTemplate): Promise<NpcTemplate>;
   updateNpcTemplate(id: string, npc: Partial<InsertNpcTemplate>): Promise<NpcTemplate>;
 
   // Image prompt methods
   getImagePrompts(): Promise<ImagePrompt[]>;
   getActiveImagePrompts(): Promise<ImagePrompt[]>;
-  getImagePrompt(id: string): Promise<ImagePrompt | undefined>;
   createImagePrompt(prompt: InsertImagePrompt): Promise<ImagePrompt>;
   updateImagePrompt(id: string, prompt: Partial<InsertImagePrompt>): Promise<ImagePrompt>;
 
   // Interview question methods
   getInterviewQuestions(): Promise<InterviewQuestion[]>;
   getActiveInterviewQuestions(): Promise<InterviewQuestion[]>;
-  getInterviewQuestion(id: string): Promise<InterviewQuestion | undefined>;
   createInterviewQuestion(question: InsertInterviewQuestion): Promise<InterviewQuestion>;
   updateInterviewQuestion(id: string, question: Partial<InsertInterviewQuestion>): Promise<InterviewQuestion>;
 
@@ -128,15 +126,12 @@ export interface IStorage {
   createImageJob(job: InsertImageJob, traceId?: string, requestId?: string): Promise<ImageJob>;
   getImageJob(id: string): Promise<ImageJob | undefined>;
   updateImageJob(id: string, updates: Partial<InsertImageJob>): Promise<ImageJob>;
-  getPendingImageJobs(limit?: number): Promise<ImageJob[]>;
-  claimPendingImageJobs(limit: number): Promise<ImageJob[]>;
+  countPendingJobs(): Promise<{ turnJobs: number; imageJobs: number }>;
 
   // Turn job methods
   createTurnJob(job: InsertTurnJob): Promise<TurnJob>;
   getTurnJob(id: string): Promise<TurnJob | undefined>;
   updateTurnJob(id: string, updates: Partial<InsertTurnJob>): Promise<TurnJob>;
-  getPendingTurnJobs(limit?: number): Promise<TurnJob[]>;
-  claimPendingTurnJobs(limit: number): Promise<TurnJob[]>;
 
   // Settings
   getAllSettings(): Promise<AppSetting[]>;
@@ -163,13 +158,11 @@ export interface IStorage {
   // PCE catalog tables
   listStoryThemes(): Promise<ModStoryThemes[]>;
   getActiveStoryThemes(): Promise<ModStoryThemes[]>;
-  getStoryTheme(id: string): Promise<ModStoryThemes | null>;
   getDefaultStoryTheme(): Promise<ModStoryThemes | null>;
   upsertStoryTheme(input: Partial<ModStoryThemes> & { id?: string }): Promise<ModStoryThemes>;
   deactivateStoryTheme(id: string): Promise<void>;
   listVisualStyles(): Promise<ModVisualStyles[]>;
   getActiveVisualStyles(): Promise<ModVisualStyles[]>;
-  getVisualStyle(id: string): Promise<ModVisualStyles | null>;
   getDefaultVisualStyle(): Promise<ModVisualStyles | null>;
   upsertVisualStyle(input: Partial<ModVisualStyles> & { id?: string }): Promise<ModVisualStyles>;
   deactivateVisualStyle(id: string): Promise<void>;
@@ -210,15 +203,9 @@ export interface IStorage {
 
   // PCE Inspector - Test Metrics
   getPceTestMetrics(testRunId: string): Promise<PceTestMetrics | null>;
-  createPceTestMetrics(
-    metrics: Omit<PceTestMetrics, 'id' | 'computedAt'>
-  ): Promise<PceTestMetrics>;
 
   // PCE Inspector - Template Versions
   getPceTemplateVersions(promptId: string): Promise<PceTemplateVersion[]>;
-  createPceTemplateVersion(
-    version: Omit<PceTemplateVersion, 'id' | 'createdAt'>
-  ): Promise<PceTemplateVersion>;
 }
 
 /** Turn transactions may hold at most half the pool; the other half serves the queries they make. */
@@ -659,6 +646,33 @@ export class DatabaseStorage implements IStorage {
     return result.rows.map((game: any) => this.mapGameRow(game)!).filter(Boolean);
   }
 
+  async getGameSummariesByUsername(username: string): Promise<GameSummary[]> {
+    return this.getGameSummariesByUsernames([username]);
+  }
+
+  async getGameSummariesByUsernames(usernames: string[]): Promise<GameSummary[]> {
+    if (usernames.length === 0) return [];
+
+    const placeholders = usernames.map((_, index) => `$${index + 1}`).join(', ');
+    const result = await pool.query(
+      `SELECT id, username, day, turn_number, segment, is_complete, failure_reason
+       FROM games
+       WHERE username IN (${placeholders})
+       ORDER BY updated_at DESC`,
+      usernames,
+    );
+
+    return result.rows.map(row => ({
+      id: row.id,
+      username: row.username,
+      day: row.day,
+      turnNumber: row.turn_number,
+      segment: row.segment,
+      isComplete: Number(row.is_complete) === 1,
+      failureReason: row.failure_reason || undefined,
+    }));
+  }
+
   async createGameState(state: GameState): Promise<GameState> {
     await pool.query(
       `INSERT INTO games (id, username, seed, day, turn_number, segment, absurdity, stats, npcs, equipped_items, turns, current_actions, running_gags, event_history, interview_responses, is_complete, failure_reason)
@@ -833,11 +847,6 @@ export class DatabaseStorage implements IStorage {
   async getActiveEvents(): Promise<Event[]> {
     const result = await pool.query('SELECT * FROM events WHERE active = 1 ORDER BY updated_at DESC');
     return result.rows.map(row => this.mapEvent(row)!);
-  }
-
-  async getEvent(id: string): Promise<Event | undefined> {
-    const result = await pool.query('SELECT * FROM events WHERE id = $1', [id]);
-    return this.mapEvent(result.rows[0]);
   }
 
   async createEvent(event: InsertEvent): Promise<Event> {
@@ -1016,11 +1025,6 @@ export class DatabaseStorage implements IStorage {
     return result.rows.map(row => this.mapNpcTemplate(row)!);
   }
 
-  async getNpcTemplate(id: string): Promise<NpcTemplate | undefined> {
-    const result = await pool.query('SELECT * FROM npc_templates WHERE id = $1', [id]);
-    return this.mapNpcTemplate(result.rows[0]);
-  }
-
   async createNpcTemplate(npc: InsertNpcTemplate): Promise<NpcTemplate> {
     const id = randomUUID();
     const result = await pool.query(
@@ -1087,11 +1091,6 @@ export class DatabaseStorage implements IStorage {
   async getActiveImagePrompts(): Promise<ImagePrompt[]> {
     const result = await pool.query('SELECT * FROM image_prompts WHERE active = 1 ORDER BY updated_at DESC');
     return result.rows.map(row => this.mapImagePrompt(row)!);
-  }
-
-  async getImagePrompt(id: string): Promise<ImagePrompt | undefined> {
-    const result = await pool.query('SELECT * FROM image_prompts WHERE id = $1', [id]);
-    return this.mapImagePrompt(result.rows[0]);
   }
 
   async createImagePrompt(prompt: InsertImagePrompt): Promise<ImagePrompt> {
@@ -1176,11 +1175,6 @@ export class DatabaseStorage implements IStorage {
   async getActiveInterviewQuestions(): Promise<InterviewQuestion[]> {
     const result = await pool.query('SELECT * FROM interview_questions WHERE active = 1 ORDER BY display_order');
     return result.rows.map(row => this.mapInterviewQuestion(row)!);
-  }
-
-  async getInterviewQuestion(id: string): Promise<InterviewQuestion | undefined> {
-    const result = await pool.query('SELECT * FROM interview_questions WHERE id = $1', [id]);
-    return this.mapInterviewQuestion(result.rows[0]);
   }
 
   async createInterviewQuestion(question: InsertInterviewQuestion): Promise<InterviewQuestion> {
@@ -1338,34 +1332,31 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getImageCacheStats(): Promise<{ totalImages: number; totalSize: number; hitRate: number; averageGenerationTime: number }> {
-    const imagesResult = await pool.query('SELECT * FROM generated_images');
-    const logsResult = await pool.query("SELECT * FROM llm_logs WHERE function_name = 'generateImage'");
+    const [imageStats, generationStats] = await Promise.all([
+      pool.query(
+        'SELECT COUNT(*) AS totalImages, COALESCE(SUM(file_size), 0) AS totalSize FROM generated_images',
+      ),
+      pool.query(
+        `SELECT COUNT(*) AS totalRequests,
+                COALESCE(SUM(CASE
+                  WHEN JSON_TYPE(JSON_EXTRACT(metadata, '$.cacheHit')) = 'BOOLEAN'
+                   AND JSON_VALUE(metadata, '$.cacheHit') = 1 THEN 1
+                  ELSE 0
+                END), 0) AS cacheHits,
+                AVG(execution_time_ms) AS averageGenerationTime
+         FROM llm_logs
+         WHERE function_name = 'generateImage'`,
+      ),
+    ]);
 
-    const images = imagesResult.rows;
-    const logs = logsResult.rows;
-
-    const totalImages = images.length;
-    const totalSize = images.reduce((sum: number, img: any) => sum + (img.file_size || 0), 0);
-
-    const cacheHits = logs.filter((log: any) => {
-      const metadata = log.metadata as Record<string, any> | null | undefined;
-      return metadata?.cacheHit === true;
-    }).length;
-    const totalRequests = logs.length;
-    const hitRate = totalRequests > 0 ? cacheHits / totalRequests : 0;
-
-    const generationTimes = logs
-      .filter((log: any) => log.execution_time_ms !== null)
-      .map((log: any) => log.execution_time_ms!);
-    const averageGenerationTime = generationTimes.length > 0 
-      ? generationTimes.reduce((sum: number, time: number) => sum + time, 0) / generationTimes.length 
-      : 0;
+    const { totalImages, totalSize } = imageStats.rows[0];
+    const { totalRequests, cacheHits, averageGenerationTime } = generationStats.rows[0];
 
     return {
-      totalImages,
-      totalSize,
-      hitRate,
-      averageGenerationTime
+      totalImages: Number(totalImages),
+      totalSize: Number(totalSize),
+      hitRate: Number(totalRequests) > 0 ? Number(cacheHits) / Number(totalRequests) : 0,
+      averageGenerationTime: Number(averageGenerationTime ?? 0),
     };
   }
 
@@ -1438,7 +1429,8 @@ export class DatabaseStorage implements IStorage {
         throw new Error(`Reference release ${version} not found`);
       }
 
-      await client.query('UPDATE reference_releases SET is_current = (version = $1)', [version]);
+      await client.query('UPDATE reference_releases SET is_current = 0 WHERE is_current = 1');
+      await client.query('UPDATE reference_releases SET is_current = 1 WHERE version = $1', [version]);
     });
   }
 
@@ -1631,6 +1623,18 @@ export class DatabaseStorage implements IStorage {
     return this.mapImageJob(result.rows[0]);
   }
 
+  async countPendingJobs(): Promise<{ turnJobs: number; imageJobs: number }> {
+    const [turnJobs, imageJobs] = await Promise.all([
+      pool.query("SELECT COUNT(*) AS count FROM turn_jobs WHERE status = 'pending'"),
+      pool.query("SELECT COUNT(*) AS count FROM image_jobs WHERE status = 'pending'"),
+    ]);
+
+    return {
+      turnJobs: Number(turnJobs.rows[0]?.count ?? 0),
+      imageJobs: Number(imageJobs.rows[0]?.count ?? 0),
+    };
+  }
+
   async updateImageJob(id: string, updates: Partial<InsertImageJob>): Promise<ImageJob> {
     const updateFields: string[] = [];
     const values: any[] = [];
@@ -1681,34 +1685,6 @@ export class DatabaseStorage implements IStorage {
       values
     );
     return this.mapImageJob(result.rows[0])!;
-  }
-
-  /**
-   * @deprecated Use claimPendingImageJobs for atomic job claiming. This method is kept for test tooling only.
-   */
-  async getPendingImageJobs(limit = 10): Promise<ImageJob[]> {
-    const result = await pool.query(
-      "SELECT * FROM image_jobs WHERE status = 'pending' ORDER BY created_at LIMIT $1",
-      [limit]
-    );
-    return result.rows.map(row => this.mapImageJob(row)!);
-  }
-
-  async claimPendingImageJobs(limit: number): Promise<ImageJob[]> {
-    const rows = await this.claimPendingRows('image_jobs', limit);
-
-    const jobs = rows.map(row => this.mapImageJob(row)!);
-    
-    if (jobs.length > 0) {
-      console.log('[Storage] claimPendingImageJobs found jobs', {
-        count: jobs.length,
-        jobIds: jobs.map(j => j.id),
-        gameIds: jobs.map(j => j.gameId),
-        turnNumbers: jobs.map(j => j.turnNumber)
-      });
-    }
-    
-    return jobs;
   }
 
   // Turn job methods
@@ -1808,46 +1784,6 @@ export class DatabaseStorage implements IStorage {
     );
     
     return this.mapTurnJob(result.rows[0])!;
-  }
-
-  /**
-   * @deprecated Use claimPendingTurnJobs for atomic job claiming. This method is kept for test tooling only.
-   */
-  async getPendingTurnJobs(limit = 10): Promise<TurnJob[]> {
-    const result = await pool.query(
-      "SELECT * FROM turn_jobs WHERE status = 'pending' ORDER BY created_at LIMIT $1",
-      [limit]
-    );
-    
-    return result.rows.map(row => this.mapTurnJob(row)!);
-  }
-
-  async claimPendingTurnJobs(limit: number): Promise<TurnJob[]> {
-    const rows = await this.claimPendingRows('turn_jobs', limit);
-    return rows.map(row => this.mapTurnJob(row)!);
-  }
-
-  /**
-   * Moves up to `limit` pending jobs to 'processing' and returns them, oldest first.
-   * Rows locked by another claimer are skipped, so two callers never get the same job.
-   */
-  private async claimPendingRows(table: 'turn_jobs' | 'image_jobs', limit: number): Promise<any[]> {
-    return withTransaction(async (client) => {
-      const picked = await client.query(
-        `SELECT id FROM ${table}
-         WHERE status = 'pending'
-         ORDER BY created_at
-         LIMIT $1
-         FOR UPDATE SKIP LOCKED`,
-        [limit]
-      );
-      const ids: string[] = picked.rows.map((row: any) => row.id);
-      if (ids.length === 0) return [];
-      const placeholders = ids.map((_, i) => `$${i + 1}`).join(', ');
-      await client.query(`UPDATE ${table} SET status = 'processing' WHERE id IN (${placeholders})`, ids);
-      const claimed = await client.query(`SELECT * FROM ${table} WHERE id IN (${placeholders}) ORDER BY created_at`, ids);
-      return claimed.rows;
-    });
   }
 
   async getAllSettings(): Promise<AppSetting[]> {
@@ -2268,39 +2204,6 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-  async getStoryTheme(id: string): Promise<ModStoryThemes | null> {
-    const result = await pool.query(`
-      SELECT 
-        id,
-        story_theme_key,
-        label,
-        narrator_template,
-        tags,
-        active,
-        llm_model_key,
-        created_at,
-        updated_at
-      FROM mod_story_themes 
-      WHERE id = $1 
-      LIMIT 1
-    `, [id]);
-    if (!result.rows[0]) return null;
-    const row = result.rows[0];
-    return {
-      id: row.id,
-      storyThemeKey: row.story_theme_key,
-      label: row.label,
-      narratorTemplate: row.narrator_template,
-      tags: row.tags,
-      active: row.active,
-      llmModelKey: row.llm_model_key ?? null,
-      rank: null,
-      default: false,
-      createdAt: row.created_at ?? null,
-      updatedAt: row.updated_at ?? null,
-    };
-  }
-
   async upsertStoryTheme(input: Partial<ModStoryThemes> & { id?: string }): Promise<ModStoryThemes> {
     const updateFields: string[] = [];
     const values: any[] = [];
@@ -2484,41 +2387,6 @@ export class DatabaseStorage implements IStorage {
       createdAt: row.created_at ?? null,
       updatedAt: row.updated_at ?? null,
     }));
-  }
-
-  async getVisualStyle(id: string): Promise<ModVisualStyles | null> {
-    const result = await pool.query(`
-      SELECT 
-        id,
-        category,
-        visual_style_key,
-        label,
-        exemplified_by,
-        modifiers_diffusion,
-        modifiers_transformer,
-        active,
-        created_at,
-        updated_at
-      FROM mod_visual_styles 
-      WHERE id = $1 
-      LIMIT 1
-    `, [id]);
-    if (!result.rows[0]) return null;
-    const row = result.rows[0];
-    return {
-      id: row.id,
-      category: row.category,
-      visualStyleKey: row.visual_style_key,
-      label: row.label,
-      exemplifiedBy: row.exemplified_by,
-      modifiersDiffusion: row.modifiers_diffusion,
-      modifiersTransformer: row.modifiers_transformer,
-      active: row.active,
-      rank: null,
-      default: false,
-      createdAt: row.created_at ?? null,
-      updatedAt: row.updated_at ?? null,
-    };
   }
 
   async upsertVisualStyle(input: Partial<ModVisualStyles> & { id?: string }): Promise<ModVisualStyles> {
@@ -2887,43 +2755,6 @@ export class DatabaseStorage implements IStorage {
     return row ? this.mapPceTestMetrics(row)! : null;
   }
 
-  async createPceTestMetrics(metrics: Omit<PceTestMetrics, 'id' | 'computedAt'>): Promise<PceTestMetrics> {
-    const id = randomUUID();
-    const result = await pool.query(
-      `INSERT INTO pce_test_metrics (
-        id, test_run_id, overall_score, coherence_score, thematic_score,
-        variety_score, technical_score, player_impact_score,
-        coherence_analysis_json, thematic_analysis_json, variety_analysis_json,
-        technical_analysis_json, player_impact_analysis_json,
-        computed_at, computation_duration_ms
-      ) VALUES (
-        $1, $2, $3, $4, $5,
-        $6, $7, $8,
-        $9, $10, $11,
-        $12, $13,
-        NOW(3), $14
-      )
-      RETURNING *`,
-      [
-        id,
-        metrics.testRunId,
-        metrics.overallScore,
-        metrics.coherenceScore ?? null,
-        metrics.thematicScore ?? null,
-        metrics.varietyScore ?? null,
-        metrics.technicalScore ?? null,
-        metrics.playerImpactScore ?? null,
-        metrics.coherenceAnalysisJson ?? null,
-        metrics.thematicAnalysisJson ?? null,
-        metrics.varietyAnalysisJson ?? null,
-        metrics.technicalAnalysisJson ?? null,
-        metrics.playerImpactAnalysisJson ?? null,
-        metrics.computationDurationMs ?? null,
-      ]
-    );
-    return this.mapPceTestMetrics(result.rows[0])!;
-  }
-
   async getPceTemplateVersions(promptId: string): Promise<PceTemplateVersion[]> {
     const result = await pool.query(
       'SELECT * FROM pce_template_versions WHERE prompt_id = $1 ORDER BY version_number DESC',
@@ -2932,84 +2763,7 @@ export class DatabaseStorage implements IStorage {
     return result.rows.map(row => this.mapPceTemplateVersion(row)!);
   }
 
-  async createPceTemplateVersion(version: Omit<PceTemplateVersion, 'id' | 'createdAt'>): Promise<PceTemplateVersion> {
-    const id = randomUUID();
-    const result = await pool.query(
-      `INSERT INTO pce_template_versions (
-        id, prompt_id, version_number, release_version,
-        system_content, content, created_by, created_at, notes
-      ) VALUES (
-        $1, $2, $3, $4,
-        $5, $6, $7, NOW(3), $8
-      )
-      RETURNING *`,
-      [
-        id,
-        version.promptId,
-        version.versionNumber,
-        version.releaseVersion ?? null,
-        version.systemContent ?? null,
-        version.content ?? null,
-        version.createdBy ?? null,
-        version.notes ?? null,
-      ]
-    );
-    return this.mapPceTemplateVersion(result.rows[0])!;
-  }
-
   // Manifest storage methods
-  async createTurnExecutionManifest(manifest: {
-    gameId: string;
-    turnNumber: number;
-    queueEntryId: string;
-    attempt: number;
-    version: string;
-    manifest: Record<string, unknown>;
-    manifestHash: Buffer;
-    precomputeHash: Buffer;
-    traceId?: string;
-    requestId?: string;
-  }): Promise<import('@shared/schema').TurnExecutionManifests> {
-    const id = randomUUID();
-    const result = await pool.query(
-      `INSERT INTO turn_execution_manifests (
-        id, game_id, turn_number, queue_entry_id, attempt, version, manifest,
-        manifest_hash, precompute_hash, trace_id, request_id, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(3), NOW(3))
-      RETURNING *`,
-      [
-        id,
-        manifest.gameId,
-        manifest.turnNumber,
-        manifest.queueEntryId,
-        manifest.attempt,
-        manifest.version,
-        JSON.stringify(manifest.manifest),
-        manifest.manifestHash,
-        manifest.precomputeHash,
-        manifest.traceId || null,
-        manifest.requestId || null,
-      ]
-    );
-
-    const row = result.rows[0];
-    return {
-      id: row.id,
-      gameId: row.game_id,
-      turnNumber: row.turn_number,
-      queueEntryId: row.queue_entry_id,
-      attempt: row.attempt,
-      version: row.version,
-      manifest: row.manifest,
-      manifestHash: row.manifest_hash,
-      precomputeHash: row.precompute_hash,
-      traceId: row.trace_id,
-      requestId: row.request_id,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
-  }
-
   async getTurnExecutionManifest(
     gameId: string,
     turnNumber: number,
@@ -3090,67 +2844,6 @@ export class DatabaseStorage implements IStorage {
     return manifests.sort((a, b) => a.turnNumber - b.turnNumber);
   }
 
-  async updateTurnExecutionManifest(
-    id: string,
-    updates: {
-      manifest?: Record<string, unknown>;
-      manifestHash?: Buffer;
-      precomputeHash?: Buffer;
-    }
-  ): Promise<import('@shared/schema').TurnExecutionManifests> {
-    const updateFields: string[] = [];
-    const values: any[] = [];
-    let paramIndex = 1;
-
-    if (updates.manifest !== undefined) {
-      updateFields.push(`manifest = $${paramIndex++}`);
-      values.push(JSON.stringify(updates.manifest));
-    }
-    if (updates.manifestHash !== undefined) {
-      updateFields.push(`manifest_hash = $${paramIndex++}`);
-      values.push(updates.manifestHash);
-    }
-    if (updates.precomputeHash !== undefined) {
-      updateFields.push(`precompute_hash = $${paramIndex++}`);
-      values.push(updates.precomputeHash);
-    }
-
-    if (updateFields.length === 0) {
-      throw new Error('No update fields provided');
-    }
-
-    updateFields.push(`updated_at = NOW(3)`);
-    values.push(id);
-
-    const result = await pool.query(
-      `UPDATE turn_execution_manifests
-       SET ${updateFields.join(', ')}
-       WHERE id = $${paramIndex}
-       RETURNING *`,
-      values
-    );
-
-    if (result.rows.length === 0) {
-      throw new Error(`Manifest ${id} not found`);
-    }
-
-    const row = result.rows[0];
-    return {
-      id: row.id,
-      gameId: row.game_id,
-      turnNumber: row.turn_number,
-      queueEntryId: row.queue_entry_id,
-      attempt: row.attempt,
-      version: row.version,
-      manifest: row.manifest,
-      manifestHash: row.manifest_hash,
-      precomputeHash: row.precompute_hash,
-      traceId: row.trace_id,
-      requestId: row.request_id,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
-  }
 }
 
 export const storage = new DatabaseStorage();

@@ -173,8 +173,7 @@ app.get("/api/health", async (_req, res) => {
     const dbLatency = Date.now() - dbStart;
     
     // Queue depth checks
-    const pendingTurnJobs = await storage.getPendingTurnJobs(1000);
-    const pendingImageJobs = await storage.getPendingImageJobs(1000);
+    const pendingJobs = await storage.countPendingJobs();
     
     // Reference check
     // "ok" means the release files load. inSync means the database names the same release.
@@ -203,8 +202,8 @@ app.get("/api/health", async (_req, res) => {
         database: { status: 'ok', latencyMs: dbLatency },
         reference: { status: referenceStatus, ...referenceSync },
         queues: {
-          turnJobs: pendingTurnJobs.length,
-          imageJobs: pendingImageJobs.length
+          turnJobs: pendingJobs.turnJobs,
+          imageJobs: pendingJobs.imageJobs
         },
         memory: {
           rss: memory.rss,

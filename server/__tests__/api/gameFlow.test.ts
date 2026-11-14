@@ -3,6 +3,7 @@ import express, { type Express } from 'express';
 import cookieParser from 'cookie-parser';
 import type { Server } from 'http';
 import { registerRoutes } from '../../routes';
+import { pool } from '../../db';
 import { getTestStorage, cleanupTestTables, closeTestPool } from '../setup/db';
 import { createTestUser, createTestPrecomputedIntroTurn } from '../setup/helpers';
 import { storage } from '../../storage';
@@ -204,10 +205,18 @@ describe('API Game Flow Integration Test', () => {
    * Helper to process pending turn jobs (simulate background processor)
    */
   async function processPendingJobs(): Promise<void> {
-    // This simulates what the TurnJobProcessor does
-    const jobs = await storage.claimPendingTurnJobs(10);
-    
-    for (const job of jobs) {
+    // Simulate background processing for the queued turn jobs.
+    const pending = await pool.query(
+      "SELECT id FROM turn_jobs WHERE status = 'pending' ORDER BY created_at LIMIT $1",
+      [10],
+    );
+
+    for (const row of pending.rows) {
+      const job = await storage.getTurnJob(row.id);
+      if (!job) {
+        throw new Error(`Turn job ${row.id} disappeared before test processing`);
+      }
+
       try {
         // Import here to avoid circular dependency issues
         const { processTurnLogic, processTurnImage } = await import('../../gameLogic');

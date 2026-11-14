@@ -10,7 +10,7 @@ import { createHash } from "crypto";
 import { readdirSync, readFileSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import type { Queryable } from "../db";
+import type { DbPool } from "../db";
 
 const SCHEMA_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "schema");
 
@@ -31,49 +31,75 @@ export function splitStatements(sql: string): string[] {
     .filter((statement) => statement.length > 0);
 }
 
-export async function runMigrations(db: Queryable, log: (message: string) => void = () => {}): Promise<MigrationResult> {
-  await db.query(
-    `CREATE TABLE IF NOT EXISTS schema_migrations (
-       version VARCHAR(255) COLLATE utf8mb4_bin NOT NULL,
-       checksum CHAR(64) NOT NULL,
-       applied_at DATETIME(3) NOT NULL DEFAULT NOW(3),
-       PRIMARY KEY (version)
-     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`
-  );
-  const done = new Map<string, string>(
-    (await db.query("SELECT version, checksum FROM schema_migrations")).rows.map((r: any) => [r.version, r.checksum])
-  );
+export async function runMigrations(db: DbPool, log: (message: string) => void = () => {}): Promise<MigrationResult> {
+  const client = await db.connect();
+  let lockAcquired = false;
+  let migrationError: unknown;
 
-  const result: MigrationResult = { applied: [], alreadyApplied: [] };
-  const files = readdirSync(SCHEMA_DIR).filter((f) => f.endsWith(".sql")).sort();
+  try {
+    const lock = await client.query("SELECT GET_LOCK('schema_migrations', 60) AS acquired");
+    if (Number(lock.rows[0]?.acquired) !== 1) {
+      throw new Error("Unable to acquire the schema migration lock within 60 seconds");
+    }
+    lockAcquired = true;
 
-  for (const file of files) {
-    const sql = readFileSync(path.join(SCHEMA_DIR, file), "utf8");
-    const checksum = createHash("sha256").update(sql, "utf8").digest("hex");
-    const recorded = done.get(file);
-    if (recorded) {
-      if (recorded !== checksum) {
-        throw new Error(
-          `Schema file ${file} was changed after it was applied to this database. ` +
-            `Applied files must not be edited; add a new file for the change.`
-        );
+    await client.query(
+      `CREATE TABLE IF NOT EXISTS schema_migrations (
+         version VARCHAR(255) COLLATE utf8mb4_bin NOT NULL,
+         checksum CHAR(64) NOT NULL,
+         applied_at DATETIME(3) NOT NULL DEFAULT NOW(3),
+         PRIMARY KEY (version)
+       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`
+    );
+    const done = new Map<string, string>(
+      (await client.query("SELECT version, checksum FROM schema_migrations")).rows.map((r: any) => [r.version, r.checksum])
+    );
+
+    const result: MigrationResult = { applied: [], alreadyApplied: [] };
+    const files = readdirSync(SCHEMA_DIR).filter((f) => f.endsWith(".sql")).sort();
+
+    for (const file of files) {
+      const sql = readFileSync(path.join(SCHEMA_DIR, file), "utf8");
+      const checksum = createHash("sha256").update(sql, "utf8").digest("hex");
+      const recorded = done.get(file);
+      if (recorded) {
+        if (recorded !== checksum) {
+          throw new Error(
+            `Schema file ${file} was changed after it was applied to this database. ` +
+              `Applied files must not be edited; add a new file for the change.`
+          );
+        }
+        result.alreadyApplied.push(file);
+        continue;
       }
-      result.alreadyApplied.push(file);
-      continue;
+
+      const statements = splitStatements(sql);
+      for (let i = 0; i < statements.length; i++) {
+        try {
+          await client.query(statements[i]);
+        } catch (error: any) {
+          const firstLine = statements[i].split("\n")[0];
+          throw new Error(`${file}, statement ${i + 1} (${firstLine}) failed: ${error?.sqlMessage ?? error?.message ?? error}`);
+        }
+      }
+      await client.query("INSERT INTO schema_migrations (version, checksum) VALUES ($1, $2)", [file, checksum]);
+      log(`applied ${file} (${statements.length} statements)`);
+      result.applied.push(file);
     }
 
-    const statements = splitStatements(sql);
-    for (let i = 0; i < statements.length; i++) {
-      try {
-        await db.query(statements[i]);
-      } catch (error: any) {
-        const firstLine = statements[i].split("\n")[0];
-        throw new Error(`${file}, statement ${i + 1} (${firstLine}) failed: ${error?.sqlMessage ?? error?.message ?? error}`);
+    return result;
+  } catch (error) {
+    migrationError = error;
+    throw error;
+  } finally {
+    try {
+      if (lockAcquired) {
+        await client.query("SELECT RELEASE_LOCK('schema_migrations')");
       }
+    } catch (releaseError) {
+      if (migrationError === undefined) throw releaseError;
+    } finally {
+      client.release();
     }
-    await db.query("INSERT INTO schema_migrations (version, checksum) VALUES ($1, $2)", [file, checksum]);
-    log(`applied ${file} (${statements.length} statements)`);
-    result.applied.push(file);
   }
-  return result;
 }

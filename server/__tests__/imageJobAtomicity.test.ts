@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterAll, vi } from 'vitest';
 import { applyPrecomputedIntroTurn } from '../gameLogic';
+import { pool } from '../db';
 import { getTestStorage } from './setup/db';
 import { cleanupTestTables, closeTestPool } from './setup/db';
 import { createTestGameState, createTestPrecomputedIntroTurn, createTestUser } from './setup/helpers';
@@ -154,8 +155,10 @@ describe('Image Job Atomicity', () => {
     await applyPrecomputedIntroTurn(gameId, precomputed, userPreferences);
     
     // Get all image jobs for this game
-    const allImageJobs = await storage.getPendingImageJobs(100);
-    const gameImageJobs = allImageJobs.filter(job => job.gameId === gameId);
+    const gameImageJobs = (await pool.query(
+      'SELECT id, turn_number FROM image_jobs WHERE game_id = $1 AND status = $2',
+      [gameId, 'pending'],
+    )).rows;
     
     // Get the turn
     const finalState = await storage.getGameState(gameId);
@@ -167,7 +170,7 @@ describe('Image Job Atomicity', () => {
       expect(imageJobIds).toContain(introTurn!.imageJobId);
       
       // Verify only one image job for this turn
-      const jobsForTurn = gameImageJobs.filter(job => job.turnNumber === 0);
+      const jobsForTurn = gameImageJobs.filter(job => job.turn_number === 0);
       expect(jobsForTurn.length).toBe(1);
       expect(jobsForTurn[0].id).toBe(introTurn!.imageJobId);
     }

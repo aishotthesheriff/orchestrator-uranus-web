@@ -247,7 +247,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Access denied" });
       }
 
-      const games = await storage.getGamesByUsername(username);
+      const games = await storage.getGameSummariesByUsername(username);
       res.json(games);
     } catch (error) {
       console.error("Error fetching user games:", error);
@@ -1425,21 +1425,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Search by username
       const users = await storage.searchUsersByUsername(searchQuery, resultLimit);
-      const gamesByUsername: any[] = [];
-
-      for (const user of users) {
-        const userGames = await storage.getGamesByUsername(user.username);
-        for (const game of userGames) {
-          gamesByUsername.push({
-            id: game.id,
-            username: game.username,
-            turnNumber: game.turnNumber,
-            day: game.day,
-            segment: game.segment,
-            isComplete: game.isComplete,
-          });
-        }
-      }
+      const gamesByUsername = await storage.getGameSummariesByUsernames(
+        users.map(user => user.username),
+      );
 
       // Also search by game ID if it looks like a UUID
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

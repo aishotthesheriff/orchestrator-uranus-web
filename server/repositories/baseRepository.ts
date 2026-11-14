@@ -1,11 +1,20 @@
 import type { User, GameState, GameStats, NPC, Turn, ActionChip, Segment, PromptTemplate, Event, ItemRow, NpcTemplate, ImagePrompt, InterviewQuestion, GeneratedImage, ReferenceRelease, LlmLog, ImageJob, TurnJob, PceTestScenario, PceTestRun, PceTestMetrics, PceTemplateVersion } from '@shared/schema';
-import { pool } from '../db';
+import { pool, type Queryable } from '../db';
 
 export abstract class BaseRepository {
+  /** For methods that open their own connection or transaction. */
   protected readonly pool = pool;
 
+  /** Plain queries run here: the pool, or a transaction's client after withDb(). */
+  constructor(protected readonly db: Queryable = pool) {}
+
+  /** A copy of this repository whose plain queries run on `client` (for withTransaction). */
+  withDb(client: Queryable): this {
+    return Object.assign(Object.create(Object.getPrototypeOf(this)), this, { db: client });
+  }
+
   protected query<Row = any>(sql: string, params?: readonly unknown[]) {
-    return this.pool.query<Row>(sql, params);
+    return this.db.query<Row>(sql, params);
   }
 
   protected mapUser(row: any): User | undefined {
@@ -46,106 +55,11 @@ export abstract class BaseRepository {
     };
   }
 
-  protected mapPromptTemplate(row: any): PromptTemplate | undefined {
-    if (!row) return undefined;
-    return {
-      id: row.id,
-      name: row.name,
-      content: row.content,
-      systemContent: row.system_content,
-      inheritGlobalPrompt: row.inherit_global_prompt,
-      description: row.description,
-      version: row.version,
-      active: row.active,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
-  }
 
-  protected mapEvent(row: any): Event | undefined {
-    if (!row) return undefined;
-    return {
-      id: row.id,
-      name: row.name,
-      segment: row.segment,
-      skill: row.skill,
-      dc: row.dc,
-      triggerCondition: typeof row.trigger_condition === 'string' ? JSON.parse(row.trigger_condition) : row.trigger_condition,
-      passEffect: row.pass_effect,
-      failEffect: row.fail_effect,
-      tags: typeof row.tags === 'string' ? JSON.parse(row.tags) : row.tags,
-      active: row.active,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
-  }
 
-  protected mapItem(row: any): ItemRow | undefined {
-    if (!row) return undefined;
-    return {
-      id: row.id,
-      name: row.name,
-      description: row.description,
-      icon: row.icon,
-      skillBonusSkill: row.skill_bonus_skill,
-      skillBonusValue: row.skill_bonus_value,
-      sceneEffectTags: typeof row.scene_effect_tags === 'string' ? JSON.parse(row.scene_effect_tags) : row.scene_effect_tags,
-      sceneEffectEffect: row.scene_effect_effect,
-      efficiency: typeof row.efficiency === 'string' ? JSON.parse(row.efficiency) : row.efficiency,
-      tags: typeof row.tags === 'string' ? JSON.parse(row.tags) : row.tags,
-      active: row.active,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
-  }
 
-  protected mapNpcTemplate(row: any): NpcTemplate | undefined {
-    if (!row) return undefined;
-    return {
-      id: row.id,
-      name: row.name,
-      role: row.role,
-      bio: row.bio,
-      startingAffinity: row.starting_affinity,
-      tags: typeof row.tags === 'string' ? JSON.parse(row.tags) : row.tags,
-      active: row.active,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
-  }
 
-  protected mapImagePrompt(row: any): ImagePrompt | undefined {
-    if (!row) return undefined;
-    return {
-      id: row.id,
-      name: row.name,
-      promptTemplate: row.prompt_template,
-      inheritVisualStyle: row.inherit_visual_style,
-      size: row.size,
-      quality: row.quality,
-      description: row.description,
-      sceneTypes: typeof row.scene_types === 'string' ? JSON.parse(row.scene_types) : row.scene_types,
-      tags: typeof row.tags === 'string' ? JSON.parse(row.tags) : row.tags,
-      active: row.active,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
-  }
 
-  protected mapInterviewQuestion(row: any): InterviewQuestion | undefined {
-    if (!row) return undefined;
-    return {
-      id: row.id,
-      question: row.question,
-      variableName: row.variable_name,
-      description: row.description,
-      displayOrder: row.display_order,
-      tags: typeof row.tags === 'string' ? JSON.parse(row.tags) : row.tags,
-      active: row.active,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
-  }
 
   protected mapGeneratedImage(row: any): GeneratedImage | undefined {
     if (!row) return undefined;

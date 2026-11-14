@@ -2,16 +2,7 @@ import type { User, InsertUser, GameState, GameSummary, PromptTemplate, InsertPr
 import type { DbClient } from './db';
 import type { UserPreferences } from './repositories/userRepository';
 export type { UserPreferences } from './repositories/userRepository';
-import { UserRepository } from './repositories/userRepository';
-import { GameRepository } from './repositories/gameRepository';
-import { ContentRepository } from './repositories/contentRepository';
-import { ImageCacheRepository } from './repositories/imageCacheRepository';
-import { ReferenceRepository } from './repositories/referenceRepository';
-import { JobRepository } from './repositories/jobRepository';
-import { SettingsRepository } from './repositories/settingsRepository';
-import { CatalogRepository } from './repositories/catalogRepository';
-import { PceRepository } from './repositories/pceRepository';
-import { ManifestRepository } from './repositories/manifestRepository';
+import { createRepositories, type Repositories } from './repositories';
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -188,446 +179,437 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  private readonly userRepository = new UserRepository();
-  private readonly gameRepository = new GameRepository();
-  private readonly contentRepository = new ContentRepository();
-  private readonly imageCacheRepository = new ImageCacheRepository();
-  private readonly referenceRepository = new ReferenceRepository();
-  private readonly jobRepository = new JobRepository();
-  private readonly settingsRepository = new SettingsRepository();
-  private readonly catalogRepository = new CatalogRepository();
-  private readonly pceRepository = new PceRepository();
-  private readonly manifestRepository = new ManifestRepository();
+  readonly repos: Repositories = createRepositories();
 
   async getUser(id: string): Promise<User | undefined> {
-    return this.userRepository.getUser(id);
+    return this.repos.users.getUser(id);
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return this.userRepository.getUserByUsername(username);
+    return this.repos.users.getUserByUsername(username);
   }
 
   async searchUsersByUsername(pattern: string, limit: number = 20): Promise<User[]> {
-    return this.userRepository.searchUsersByUsername(pattern, limit);
+    return this.repos.users.searchUsersByUsername(pattern, limit);
   }
 
   async ensureUser(username: string): Promise<User> {
-    return this.userRepository.ensureUser(username);
+    return this.repos.users.ensureUser(username);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    return this.userRepository.createUser(insertUser);
+    return this.repos.users.createUser(insertUser);
   }
 
   async getUserPreferences(username: string): Promise<UserPreferences> {
-    return this.userRepository.getUserPreferences(username);
+    return this.repos.users.getUserPreferences(username);
   }
 
   async updateUserPreferences(username: string, preferences: UserPreferences): Promise<User> {
-    return this.userRepository.updateUserPreferences(username, preferences);
+    return this.repos.users.updateUserPreferences(username, preferences);
   }
 
   async getGameState(id: string): Promise<GameState | undefined> {
-    return this.gameRepository.getGameState(id);
+    return this.repos.games.getGameState(id);
   }
 
   async getGamesByUsername(username: string): Promise<GameState[]> {
-    return this.gameRepository.getGamesByUsername(username);
+    return this.repos.games.getGamesByUsername(username);
   }
 
   async getGameSummariesByUsername(username: string): Promise<GameSummary[]> {
-    return this.gameRepository.getGameSummariesByUsername(username);
+    return this.repos.games.getGameSummariesByUsername(username);
   }
 
   async getGameSummariesByUsernames(usernames: string[]): Promise<GameSummary[]> {
-    return this.gameRepository.getGameSummariesByUsernames(usernames);
+    return this.repos.games.getGameSummariesByUsernames(usernames);
   }
 
   async createGameState(state: GameState): Promise<GameState> {
-    return this.gameRepository.createGameState(state);
+    return this.repos.games.createGameState(state);
   }
 
   async deleteGameState(id: string): Promise<void> {
-    return this.gameRepository.deleteGameState(id);
+    return this.repos.games.deleteGameState(id);
   }
 
   async processTurnWithTransaction(
       gameId: string,
       processor: (state: GameState, client: DbClient) => Promise<GameState>
     ): Promise<GameState> {
-    return this.gameRepository.processTurnWithTransaction(gameId, processor);
+    return this.repos.games.processTurnWithTransaction(gameId, processor);
   }
 
   async getPromptTemplate(name: string): Promise<PromptTemplate | undefined> {
-    return this.contentRepository.getPromptTemplate(name);
+    return this.repos.promptTemplates.getByName(name);
   }
 
   async getAllPromptTemplates(): Promise<PromptTemplate[]> {
-    return this.contentRepository.getAllPromptTemplates();
+    return this.repos.promptTemplates.list();
   }
 
   async getActivePromptTemplates(): Promise<PromptTemplate[]> {
-    return this.contentRepository.getActivePromptTemplates();
+    return this.repos.promptTemplates.listActive();
   }
 
   async getActivePromptTemplate(name: string): Promise<PromptTemplate | undefined> {
-    return this.contentRepository.getActivePromptTemplate(name);
+    return this.repos.promptTemplates.getActiveByName(name);
   }
 
   async createPromptTemplate(template: InsertPromptTemplate): Promise<PromptTemplate> {
-    return this.contentRepository.createPromptTemplate(template);
+    return this.repos.promptTemplates.create(template);
   }
 
   async updatePromptTemplate(id: string, updates: Partial<InsertPromptTemplate>): Promise<PromptTemplate> {
-    return this.contentRepository.updatePromptTemplate(id, updates);
+    return this.repos.promptTemplates.update(id, updates);
   }
 
   async createLlmLog(log: InsertLlmLog): Promise<LlmLog> {
-    return this.contentRepository.createLlmLog(log);
+    return this.repos.llmLogs.createLlmLog(log);
   }
 
   async getLlmLogs(filters?: { gameId?: string; limit?: number }): Promise<LlmLog[]> {
-    return this.contentRepository.getLlmLogs(filters);
+    return this.repos.llmLogs.getLlmLogs(filters);
   }
 
   async clearAllLlmLogs(): Promise<void> {
-    return this.contentRepository.clearAllLlmLogs();
+    return this.repos.llmLogs.clearAllLlmLogs();
   }
 
   async getAllEvents(): Promise<Event[]> {
-    return this.contentRepository.getAllEvents();
+    return this.repos.events.list();
   }
 
   async getActiveEvents(): Promise<Event[]> {
-    return this.contentRepository.getActiveEvents();
+    return this.repos.events.listActive();
   }
 
   async createEvent(event: InsertEvent): Promise<Event> {
-    return this.contentRepository.createEvent(event);
+    return this.repos.events.create(event);
   }
 
   async updateEvent(id: string, updates: Partial<InsertEvent>): Promise<Event> {
-    return this.contentRepository.updateEvent(id, updates);
+    return this.repos.events.update(id, updates);
   }
 
   async getItems(): Promise<ItemRow[]> {
-    return this.contentRepository.getItems();
+    return this.repos.items.list();
   }
 
   async getActiveItems(): Promise<ItemRow[]> {
-    return this.contentRepository.getActiveItems();
+    return this.repos.items.listActive();
   }
 
   async getItem(id: string): Promise<ItemRow | undefined> {
-    return this.contentRepository.getItem(id);
+    return this.repos.items.getById(id);
   }
 
   async createItem(item: InsertItem): Promise<ItemRow> {
-    return this.contentRepository.createItem(item);
+    return this.repos.items.create(item);
   }
 
   async updateItem(id: string, updates: Partial<InsertItem>): Promise<ItemRow> {
-    return this.contentRepository.updateItem(id, updates);
+    return this.repos.items.update(id, updates);
   }
 
   async getNpcTemplates(): Promise<NpcTemplate[]> {
-    return this.contentRepository.getNpcTemplates();
+    return this.repos.npcTemplates.list();
   }
 
   async getActiveNpcTemplates(): Promise<NpcTemplate[]> {
-    return this.contentRepository.getActiveNpcTemplates();
+    return this.repos.npcTemplates.listActive();
   }
 
   async createNpcTemplate(npc: InsertNpcTemplate): Promise<NpcTemplate> {
-    return this.contentRepository.createNpcTemplate(npc);
+    return this.repos.npcTemplates.create(npc);
   }
 
   async updateNpcTemplate(id: string, updates: Partial<InsertNpcTemplate>): Promise<NpcTemplate> {
-    return this.contentRepository.updateNpcTemplate(id, updates);
+    return this.repos.npcTemplates.update(id, updates);
   }
 
   async getImagePrompts(): Promise<ImagePrompt[]> {
-    return this.contentRepository.getImagePrompts();
+    return this.repos.imagePrompts.list();
   }
 
   async getActiveImagePrompts(): Promise<ImagePrompt[]> {
-    return this.contentRepository.getActiveImagePrompts();
+    return this.repos.imagePrompts.listActive();
   }
 
   async createImagePrompt(prompt: InsertImagePrompt): Promise<ImagePrompt> {
-    return this.contentRepository.createImagePrompt(prompt);
+    return this.repos.imagePrompts.create(prompt);
   }
 
   async updateImagePrompt(id: string, updates: Partial<InsertImagePrompt>): Promise<ImagePrompt> {
-    return this.contentRepository.updateImagePrompt(id, updates);
+    return this.repos.imagePrompts.update(id, updates);
   }
 
   async getInterviewQuestions(): Promise<InterviewQuestion[]> {
-    return this.contentRepository.getInterviewQuestions();
+    return this.repos.interviewQuestions.list();
   }
 
   async getActiveInterviewQuestions(): Promise<InterviewQuestion[]> {
-    return this.contentRepository.getActiveInterviewQuestions();
+    return this.repos.interviewQuestions.listActive();
   }
 
   async createInterviewQuestion(question: InsertInterviewQuestion): Promise<InterviewQuestion> {
-    return this.contentRepository.createInterviewQuestion(question);
+    return this.repos.interviewQuestions.create(question);
   }
 
   async updateInterviewQuestion(id: string, updates: Partial<InsertInterviewQuestion>): Promise<InterviewQuestion> {
-    return this.contentRepository.updateInterviewQuestion(id, updates);
+    return this.repos.interviewQuestions.update(id, updates);
   }
 
   async createGeneratedImage(image: InsertGeneratedImage): Promise<GeneratedImage> {
-    return this.imageCacheRepository.createGeneratedImage(image);
+    return this.repos.imageCache.createGeneratedImage(image);
   }
 
   async getGeneratedImage(id: string): Promise<GeneratedImage | undefined> {
-    return this.imageCacheRepository.getGeneratedImage(id);
+    return this.repos.imageCache.getGeneratedImage(id);
   }
 
   async getGeneratedImageByHash(promptHash: string, variablesHash: string): Promise<GeneratedImage | undefined> {
-    return this.imageCacheRepository.getGeneratedImageByHash(promptHash, variablesHash);
+    return this.repos.imageCache.getGeneratedImageByHash(promptHash, variablesHash);
   }
 
   async getGeneratedImagesByTemplate(templateName: string): Promise<GeneratedImage[]> {
-    return this.imageCacheRepository.getGeneratedImagesByTemplate(templateName);
+    return this.repos.imageCache.getGeneratedImagesByTemplate(templateName);
   }
 
   async getAllGeneratedImages(): Promise<GeneratedImage[]> {
-    return this.imageCacheRepository.getAllGeneratedImages();
+    return this.repos.imageCache.getAllGeneratedImages();
   }
 
   async updateImageAccess(id: string): Promise<void> {
-    return this.imageCacheRepository.updateImageAccess(id);
+    return this.repos.imageCache.updateImageAccess(id);
   }
 
   async deleteGeneratedImage(id: string): Promise<void> {
-    return this.imageCacheRepository.deleteGeneratedImage(id);
+    return this.repos.imageCache.deleteGeneratedImage(id);
   }
 
   async deleteGeneratedImages(filters?: { templateName?: string; gameId?: string; before?: Date; maxAccessCount?: number }): Promise<number> {
-    return this.imageCacheRepository.deleteGeneratedImages(filters);
+    return this.repos.imageCache.deleteGeneratedImages(filters);
   }
 
   async getImageCacheStats(): Promise<{ totalImages: number; totalSize: number; hitRate: number; averageGenerationTime: number }> {
-    return this.imageCacheRepository.getImageCacheStats();
+    return this.repos.imageCache.getImageCacheStats();
   }
 
   async createReferenceRelease(release: InsertReferenceRelease): Promise<ReferenceRelease> {
-    return this.referenceRepository.createReferenceRelease(release);
+    return this.repos.reference.createReferenceRelease(release);
   }
 
   async getReferenceRelease(version: string): Promise<ReferenceRelease | undefined> {
-    return this.referenceRepository.getReferenceRelease(version);
+    return this.repos.reference.getReferenceRelease(version);
   }
 
   async getCurrentReferenceRelease(): Promise<ReferenceRelease | undefined> {
-    return this.referenceRepository.getCurrentReferenceRelease();
+    return this.repos.reference.getCurrentReferenceRelease();
   }
 
   async getAllReferenceReleases(): Promise<ReferenceRelease[]> {
-    return this.referenceRepository.getAllReferenceReleases();
+    return this.repos.reference.getAllReferenceReleases();
   }
 
   async updateReferenceRelease(version: string, updates: Partial<InsertReferenceRelease>): Promise<ReferenceRelease> {
-    return this.referenceRepository.updateReferenceRelease(version, updates);
+    return this.repos.reference.updateReferenceRelease(version, updates);
   }
 
   async setCurrentReferenceRelease(version: string): Promise<void> {
-    return this.referenceRepository.setCurrentReferenceRelease(version);
+    return this.repos.reference.setCurrentReferenceRelease(version);
   }
 
   async dumpContentTable(table: string): Promise<Record<string, unknown>[]> {
-    return this.referenceRepository.dumpContentTable(table);
+    return this.repos.reference.dumpContentTable(table);
   }
 
   async createImageJob(job: InsertImageJob, traceId?: string, requestId?: string, client?: DbClient): Promise<ImageJob> {
-    return this.jobRepository.createImageJob(job, traceId, requestId, client);
+    return this.repos.jobs.createImageJob(job, traceId, requestId, client);
   }
 
   async getImageJob(id: string): Promise<ImageJob | undefined> {
-    return this.jobRepository.getImageJob(id);
+    return this.repos.jobs.getImageJob(id);
   }
 
   async countPendingJobs(): Promise<{ turnJobs: number; imageJobs: number }> {
-    return this.jobRepository.countPendingJobs();
+    return this.repos.jobs.countPendingJobs();
   }
 
   async updateImageJob(id: string, updates: Partial<InsertImageJob>): Promise<ImageJob> {
-    return this.jobRepository.updateImageJob(id, updates);
+    return this.repos.jobs.updateImageJob(id, updates);
   }
 
   async createTurnJob(job: InsertTurnJob, traceId?: string, requestId?: string, client?: DbClient): Promise<TurnJob> {
-    return this.jobRepository.createTurnJob(job, traceId, requestId, client);
+    return this.repos.jobs.createTurnJob(job, traceId, requestId, client);
   }
 
   async getTurnJob(id: string): Promise<TurnJob | undefined> {
-    return this.jobRepository.getTurnJob(id);
+    return this.repos.jobs.getTurnJob(id);
   }
 
   async updateTurnJob(id: string, updates: Partial<InsertTurnJob>): Promise<TurnJob> {
-    return this.jobRepository.updateTurnJob(id, updates);
+    return this.repos.jobs.updateTurnJob(id, updates);
   }
 
   async getAllSettings(): Promise<AppSetting[]> {
-    return this.settingsRepository.getAllSettings();
+    return this.repos.settings.getAllSettings();
   }
 
   async getActiveSettings(): Promise<AppSetting[]> {
-    return this.settingsRepository.getActiveSettings();
+    return this.repos.settings.getActiveSettings();
   }
 
   async getSetting(key: string): Promise<AppSetting | undefined> {
-    return this.settingsRepository.getSetting(key);
+    return this.repos.settings.getSetting(key);
   }
 
   async upsertSetting(key: string, value: string, description?: string, active: number = 1): Promise<AppSetting> {
-    return this.settingsRepository.upsertSetting(key, value, description, active);
+    return this.repos.settings.upsertSetting(key, value, description, active);
   }
 
   async getActiveImageModels(): Promise<ImageModel[]> {
-    return this.catalogRepository.getActiveImageModels();
+    return this.repos.catalog.getActiveImageModels();
   }
 
   async getImageModelByKey(modelKey: string): Promise<ImageModel | null> {
-    return this.catalogRepository.getImageModelByKey(modelKey);
+    return this.repos.catalog.getImageModelByKey(modelKey);
   }
 
   async getDefaultImageModel(): Promise<ImageModel | null> {
-    return this.catalogRepository.getDefaultImageModel();
+    return this.repos.catalog.getDefaultImageModel();
   }
 
   async listImageModels(): Promise<ImageModel[]> {
-    return this.catalogRepository.listImageModels();
+    return this.repos.catalog.listImageModels();
   }
 
   async upsertImageModel(input: Partial<ImageModel> & { modelKey: string }): Promise<ImageModel> {
-    return this.catalogRepository.upsertImageModel(input);
+    return this.repos.catalog.upsertImageModel(input);
   }
 
   async deactivateImageModel(modelKey: string): Promise<void> {
-    return this.catalogRepository.deactivateImageModel(modelKey);
+    return this.repos.catalog.deactivateImageModel(modelKey);
   }
 
   async reorderImageModels(order: { modelKey: string; sortOrder: number }[]): Promise<void> {
-    return this.catalogRepository.reorderImageModels(order);
+    return this.repos.catalog.reorderImageModels(order);
   }
 
   async listLlmModels(): Promise<LlmModel[]> {
-    return this.catalogRepository.listLlmModels();
+    return this.repos.catalog.listLlmModels();
   }
 
   async getActiveLlmModels(): Promise<LlmModel[]> {
-    return this.catalogRepository.getActiveLlmModels();
+    return this.repos.catalog.getActiveLlmModels();
   }
 
   async getLlmModelByKey(modelKey: string): Promise<LlmModel | null> {
-    return this.catalogRepository.getLlmModelByKey(modelKey);
+    return this.repos.catalog.getLlmModelByKey(modelKey);
   }
 
   async getDefaultLlmModel(): Promise<LlmModel | null> {
-    return this.catalogRepository.getDefaultLlmModel();
+    return this.repos.catalog.getDefaultLlmModel();
   }
 
   async upsertLlmModel(input: Partial<LlmModel> & { modelKey: string }): Promise<LlmModel> {
-    return this.catalogRepository.upsertLlmModel(input);
+    return this.repos.catalog.upsertLlmModel(input);
   }
 
   async deactivateLlmModel(modelKey: string): Promise<void> {
-    return this.catalogRepository.deactivateLlmModel(modelKey);
+    return this.repos.catalog.deactivateLlmModel(modelKey);
   }
 
   async recordLlmModelCheck(modelKey: string, ok: boolean | null, summary: Record<string, unknown>): Promise<void> {
-    return this.catalogRepository.recordLlmModelCheck(modelKey, ok, summary);
+    return this.repos.catalog.recordLlmModelCheck(modelKey, ok, summary);
   }
 
   async listStoryThemes(): Promise<ModStoryThemes[]> {
-    return this.catalogRepository.listStoryThemes();
+    return this.repos.catalog.listStoryThemes();
   }
 
   async getActiveStoryThemes(): Promise<ModStoryThemes[]> {
-    return this.catalogRepository.getActiveStoryThemes();
+    return this.repos.catalog.getActiveStoryThemes();
   }
 
   async upsertStoryTheme(input: Partial<ModStoryThemes> & { id?: string }): Promise<ModStoryThemes> {
-    return this.catalogRepository.upsertStoryTheme(input);
+    return this.repos.catalog.upsertStoryTheme(input);
   }
 
   async getDefaultStoryTheme(): Promise<ModStoryThemes | null> {
-    return this.catalogRepository.getDefaultStoryTheme();
+    return this.repos.catalog.getDefaultStoryTheme();
   }
 
   async deactivateStoryTheme(id: string): Promise<void> {
-    return this.catalogRepository.deactivateStoryTheme(id);
+    return this.repos.catalog.deactivateStoryTheme(id);
   }
 
   async listVisualStyles(): Promise<ModVisualStyles[]> {
-    return this.catalogRepository.listVisualStyles();
+    return this.repos.catalog.listVisualStyles();
   }
 
   async getActiveVisualStyles(): Promise<ModVisualStyles[]> {
-    return this.catalogRepository.getActiveVisualStyles();
+    return this.repos.catalog.getActiveVisualStyles();
   }
 
   async upsertVisualStyle(input: Partial<ModVisualStyles> & { id?: string }): Promise<ModVisualStyles> {
-    return this.catalogRepository.upsertVisualStyle(input);
+    return this.repos.catalog.upsertVisualStyle(input);
   }
 
   async getDefaultVisualStyle(): Promise<ModVisualStyles | null> {
-    return this.catalogRepository.getDefaultVisualStyle();
+    return this.repos.catalog.getDefaultVisualStyle();
   }
 
   async deactivateVisualStyle(id: string): Promise<void> {
-    return this.catalogRepository.deactivateVisualStyle(id);
+    return this.repos.catalog.deactivateVisualStyle(id);
   }
 
   async getPceTestScenarios(filters?: { tags?: string; preset?: boolean; limit?: number }): Promise<PceTestScenario[]> {
-    return this.pceRepository.getPceTestScenarios(filters);
+    return this.repos.pce.getPceTestScenarios(filters);
   }
 
   async getPceTestScenario(id: string): Promise<PceTestScenario | null> {
-    return this.pceRepository.getPceTestScenario(id);
+    return this.repos.pce.getPceTestScenario(id);
   }
 
   async createPceTestScenario(scenario: Omit<PceTestScenario, 'id' | 'createdAt' | 'updatedAt'>): Promise<PceTestScenario> {
-    return this.pceRepository.createPceTestScenario(scenario);
+    return this.repos.pce.createPceTestScenario(scenario);
   }
 
   async updatePceTestScenario(id: string, updates: Partial<PceTestScenario>): Promise<PceTestScenario> {
-    return this.pceRepository.updatePceTestScenario(id, updates);
+    return this.repos.pce.updatePceTestScenario(id, updates);
   }
 
   async deletePceTestScenario(id: string): Promise<void> {
-    return this.pceRepository.deletePceTestScenario(id);
+    return this.repos.pce.deletePceTestScenario(id);
   }
 
   async getPceTestRuns(filters?: { limit?: number; scenarioId?: string; tags?: string; status?: string; starred?: boolean }): Promise<PceTestRun[]> {
-    return this.pceRepository.getPceTestRuns(filters);
+    return this.repos.pce.getPceTestRuns(filters);
   }
 
   async getPceTestRun(id: string): Promise<PceTestRun | null> {
-    return this.pceRepository.getPceTestRun(id);
+    return this.repos.pce.getPceTestRun(id);
   }
 
   async createPceTestRun(run: Omit<PceTestRun, 'id' | 'executedAt'>): Promise<PceTestRun> {
-    return this.pceRepository.createPceTestRun(run);
+    return this.repos.pce.createPceTestRun(run);
   }
 
   async updatePceTestRun(id: string, updates: Partial<PceTestRun>): Promise<PceTestRun> {
-    return this.pceRepository.updatePceTestRun(id, updates);
+    return this.repos.pce.updatePceTestRun(id, updates);
   }
 
   async deletePceTestRun(id: string): Promise<void> {
-    return this.pceRepository.deletePceTestRun(id);
+    return this.repos.pce.deletePceTestRun(id);
   }
 
   async getPceTestMetrics(testRunId: string): Promise<PceTestMetrics | null> {
-    return this.pceRepository.getPceTestMetrics(testRunId);
+    return this.repos.pce.getPceTestMetrics(testRunId);
   }
 
   async getPceTemplateVersions(promptId: string): Promise<PceTemplateVersion[]> {
-    return this.pceRepository.getPceTemplateVersions(promptId);
+    return this.repos.pce.getPceTemplateVersions(promptId);
   }
 
   async getTurnExecutionManifest(
@@ -635,14 +617,14 @@ export class DatabaseStorage implements IStorage {
       turnNumber: number,
       attempt?: number
     ): Promise<import('@shared/schema').TurnExecutionManifests | undefined> {
-    return this.manifestRepository.getTurnExecutionManifest(gameId, turnNumber, attempt);
+    return this.repos.manifests.getTurnExecutionManifest(gameId, turnNumber, attempt);
   }
 
   async getGameManifests(
       gameId: string,
       limit?: number
     ): Promise<import('@shared/schema').TurnExecutionManifests[]> {
-    return this.manifestRepository.getGameManifests(gameId, limit);
+    return this.repos.manifests.getGameManifests(gameId, limit);
   }
 }
 

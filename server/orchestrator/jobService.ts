@@ -1,7 +1,8 @@
 import { randomUUID } from 'crypto';
-import type { InsertImageJob, InsertTurnJob } from '@shared/schema';
-import { withTransaction, type DbClient, type QueryResult } from '../db';
+import type { ImageJob, InsertImageJob, TurnJob, InsertTurnJob } from '@shared/schema';
+import { withTransaction, type DbClient } from '../db';
 import { isUniqueViolation } from '../db/errors';
+import { JobRepository } from '../repositories/jobRepository';
 import { generateIdempotencyKey, generateImageJobIdempotencyKey } from './idempotency';
 import { getOrchestrator } from './index';
 import type { JobOrchestrator } from './types';
@@ -9,53 +10,51 @@ import type { JobOrchestrator } from './types';
 export type JobOptions = {
   traceId?: string;
   requestId?: string;
+  /** Defaults to the service's setting (the shared service: off under DISABLE_ORCHESTRATOR_ENQUEUE=true or NODE_ENV=test). */
   enqueue?: boolean;
+  /** Run inside the caller's transaction instead of opening one. */
   client?: DbClient;
 };
 
-type DatabaseRow = Record<string, unknown>;
+/** For the shared service. Read when a job is created, not when the module loads. */
+function enqueueUnlessDisabled(): boolean {
+  return !(process.env.DISABLE_ORCHESTRATOR_ENQUEUE === 'true' || process.env.NODE_ENV === 'test');
+}
 
+/**
+ * Creates a job row and its queue entry in one transaction: either both exist or neither.
+ * This is the only place outside the orchestrator that talks to the queue.
+ */
 export class JobService {
-  constructor(private readonly orchestrator: JobOrchestrator = getOrchestrator()) {}
+  private readonly jobs = new JobRepository();
 
-  async createImageJob(job: InsertImageJob, options: JobOptions = {}): Promise<DatabaseRow> {
+  constructor(
+    private readonly orchestratorOverride?: JobOrchestrator,
+    private readonly enqueueByDefault: () => boolean = () => true,
+  ) {}
+
+  private get orchestrator(): JobOrchestrator {
+    return this.orchestratorOverride ?? getOrchestrator();
+  }
+
+  async createImageJob(job: InsertImageJob, options: JobOptions = {}): Promise<ImageJob> {
     const id = randomUUID();
+    const enqueue = options.enqueue ?? this.enqueueByDefault();
 
-    return this.withTransaction(options.client, async client => {
-      let result: QueryResult<DatabaseRow>;
+    return this.inTransaction(options.client, async client => {
+      const jobs = this.jobs.withDb(client);
+      let created: ImageJob;
       try {
-        result = await client.query<DatabaseRow>(
-          `INSERT INTO image_jobs (id, game_id, turn_number, template_name, status, image_url, image_template, error, completed_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-          [
-            id,
-            job.gameId,
-            job.turnNumber,
-            job.templateName,
-            job.status ?? 'pending',
-            job.imageUrl || null,
-            job.imageTemplate || null,
-            job.error || null,
-            job.completedAt || null,
-          ],
-        );
+        created = await jobs.insertImageJob(id, job);
       } catch (error) {
         if (!isUniqueViolation(error)) throw error;
-
-        const existing = await client.query<DatabaseRow>(
-          `SELECT * FROM image_jobs
-           WHERE game_id = $1 AND turn_number = $2
-             AND status IN ('pending', 'processing')
-           ORDER BY created_at
-           LIMIT 1`,
-          [job.gameId, job.turnNumber],
-        );
-        if (!existing.rows[0]) throw error;
-        return existing.rows[0];
+        // One active image job per turn: hand back the one already there.
+        const existing = await jobs.getActiveImageJob(job.gameId, job.turnNumber);
+        if (!existing) throw error;
+        return existing;
       }
 
-      const created = result.rows[0];
-      if (options.enqueue !== false) {
+      if (enqueue) {
         await this.orchestrator.enqueue({
           queue: 'image',
           payload: { id },
@@ -74,24 +73,14 @@ export class JobService {
     });
   }
 
-  async createTurnJob(job: InsertTurnJob, options: JobOptions = {}): Promise<DatabaseRow> {
+  async createTurnJob(job: InsertTurnJob, options: JobOptions = {}): Promise<TurnJob> {
     const id = randomUUID();
+    const enqueue = options.enqueue ?? this.enqueueByDefault();
 
-    return this.withTransaction(options.client, async client => {
-      const result = await client.query<DatabaseRow>(
-        `INSERT INTO turn_jobs (id, game_id, action_payload, status, error, completed_at)
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-        [
-          id,
-          job.gameId,
-          JSON.stringify(job.actionPayload),
-          job.status ?? 'pending',
-          job.error || null,
-          job.completedAt || null,
-        ],
-      );
+    return this.inTransaction(options.client, async client => {
+      const created = await this.jobs.withDb(client).insertTurnJob(id, job);
 
-      if (options.enqueue !== false) {
+      if (enqueue) {
         const game = await client.query<{ turn_number: number }>(
           'SELECT turn_number FROM games WHERE id = $1',
           [job.gameId],
@@ -119,14 +108,22 @@ export class JobService {
         }, client);
       }
 
-      return result.rows[0];
+      return created;
     });
   }
 
-  private withTransaction<T>(
+  private inTransaction<T>(
     client: DbClient | undefined,
     operation: (transaction: DbClient) => Promise<T>,
   ): Promise<T> {
     return client ? operation(client) : withTransaction(operation);
   }
+}
+
+let instance: JobService | null = null;
+
+/** The shared JobService, using the app's orchestrator. */
+export function getJobService(): JobService {
+  if (!instance) instance = new JobService(undefined, enqueueUnlessDisabled);
+  return instance;
 }

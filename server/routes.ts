@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { Server as SocketIOServer } from "socket.io";
 import { z } from "zod";
 import { storage } from "./storage";
+import { getJobService } from "./orchestrator/jobService";
 import type { GameState, ActionInput, InsertGameState, Intent } from "@shared/schema";
 import { insertGameStateSchema, actionInputSchema, NPC_SKILL_MAPPINGS } from "@shared/schema";
 import { generateImage, testGenerateImage, generateInterviewAnswer } from "./aiService";
@@ -123,11 +124,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Enqueue turn job and return immediately
-      const job = await storage.createTurnJob({
+      const job = await getJobService().createTurnJob({
         gameId: validated.gameId,
         actionPayload: validated,
         status: 'pending'
-      }, (req as any).traceId, (req as any).requestId);
+      }, { traceId: (req as any).traceId, requestId: (req as any).requestId });
 
       res.json({ turnJobId: job.id, status: 'processing' });
     } catch (error) {

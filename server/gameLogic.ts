@@ -20,6 +20,7 @@ import {
   type TurnContentResult
 } from "./aiService";
 import { storage } from "./storage";
+import { getJobService } from "./orchestrator/jobService";
 import { convertImageUrlToStaticPath } from "./imageUrl";
 import type { DbClient } from "./db";
 
@@ -279,12 +280,12 @@ export async function processTurnImage(
       // Store imagePrompt in templateName field for backward compatibility with database
       // TODO: Migrate database schema to add imagePrompt field to ImageJobs
       creatingJob = true;
-      const imageJob = await storage.createImageJob({
+      const imageJob = await getJobService().createImageJob({
         gameId: state.id,
         turnNumber,
         templateName: imagePrompt, // Store imagePrompt in templateName field temporarily
         status: 'pending'
-      }, undefined, undefined, client);
+      }, { client });
 
       console.log('[GAME_FLOW] Image job created successfully', {
         jobId: imageJob.id,

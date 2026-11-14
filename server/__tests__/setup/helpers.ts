@@ -1,6 +1,7 @@
 import type { GameState, InsertGameState, InsertTurnJob, ActionInput } from '@shared/schema';
 import { randomUUID } from 'crypto';
 import { getTestStorage } from './db';
+import { getJobService } from '../../orchestrator/jobService';
 import { INTRO_TURN_ACTION_ID } from '../../gameLogic';
 
 /**
@@ -70,7 +71,7 @@ export async function createPendingTurnJobs(
       customText: `${(actionPayload || defaultAction).customText || 'auto-turn'}-${i}-${Date.now()}`,
     };
 
-    const job = await storage.createTurnJob({
+    const job = await getJobService().createTurnJob({
       gameId,
       actionPayload: payload,
       status: 'pending',

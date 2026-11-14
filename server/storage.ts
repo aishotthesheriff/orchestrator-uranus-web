@@ -93,13 +93,11 @@ export interface IStorage {
   ): Promise<GameState>;
 
   // Image job methods
-  createImageJob(job: InsertImageJob, traceId?: string, requestId?: string, client?: DbClient): Promise<ImageJob>;
   getImageJob(id: string): Promise<ImageJob | undefined>;
   updateImageJob(id: string, updates: Partial<InsertImageJob>): Promise<ImageJob>;
   countPendingJobs(): Promise<{ turnJobs: number; imageJobs: number }>;
 
   // Turn job methods
-  createTurnJob(job: InsertTurnJob, traceId?: string, requestId?: string, client?: DbClient): Promise<TurnJob>;
   getTurnJob(id: string): Promise<TurnJob | undefined>;
   updateTurnJob(id: string, updates: Partial<InsertTurnJob>): Promise<TurnJob>;
 
@@ -424,9 +422,6 @@ export class DatabaseStorage implements IStorage {
     return this.repos.reference.dumpContentTable(table);
   }
 
-  async createImageJob(job: InsertImageJob, traceId?: string, requestId?: string, client?: DbClient): Promise<ImageJob> {
-    return this.repos.jobs.createImageJob(job, traceId, requestId, client);
-  }
 
   async getImageJob(id: string): Promise<ImageJob | undefined> {
     return this.repos.jobs.getImageJob(id);
@@ -440,9 +435,6 @@ export class DatabaseStorage implements IStorage {
     return this.repos.jobs.updateImageJob(id, updates);
   }
 
-  async createTurnJob(job: InsertTurnJob, traceId?: string, requestId?: string, client?: DbClient): Promise<TurnJob> {
-    return this.repos.jobs.createTurnJob(job, traceId, requestId, client);
-  }
 
   async getTurnJob(id: string): Promise<TurnJob | undefined> {
     return this.repos.jobs.getTurnJob(id);

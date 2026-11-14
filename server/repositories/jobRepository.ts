@@ -1,20 +1,58 @@
-import type { User, InsertUser, GameState, GameSummary, PromptTemplate, InsertPromptTemplate, LlmLog, InsertLlmLog, Event, InsertEvent, ItemRow, InsertItem, NpcTemplate, InsertNpcTemplate, ImagePrompt, InsertImagePrompt, GeneratedImage, InsertGeneratedImage, InterviewQuestion, InsertInterviewQuestion, ReferenceRelease, InsertReferenceRelease, ImageJob, InsertImageJob, TurnJob, InsertTurnJob, AppSetting, ImageModel, LlmModel, ModVisualStyles, ModStoryThemes, GameStats, NPC, Turn, ActionChip, Segment, PceTestScenario, PceTestRun, PceTestMetrics, PceTemplateVersion } from "@shared/schema";
-import { pool, type DbClient } from '../db';
+import type { ImageJob, InsertImageJob, TurnJob, InsertTurnJob } from "@shared/schema";
 import { BaseRepository } from './baseRepository';
-import { JobService } from '../orchestrator/jobService';
-const DISABLE_ORCHESTRATOR_ENQUEUE = process.env.DISABLE_ORCHESTRATOR_ENQUEUE === 'true' || process.env.NODE_ENV === 'test';
 
+/**
+ * Plain SQL for image_jobs and turn_jobs. Creating a job together with its queue entry
+ * is done by server/orchestrator/jobService.ts, which runs these inserts via withDb(client).
+ */
 export class JobRepository extends BaseRepository {
-  private readonly jobService = new JobService();
+  /** Inserts an image job. A duplicate active job for the same turn raises a unique violation. */
+  async insertImageJob(id: string, job: InsertImageJob): Promise<ImageJob> {
+    const result = await this.query(
+      `INSERT INTO image_jobs (id, game_id, turn_number, template_name, status, image_url, image_template, error, completed_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [
+        id,
+        job.gameId,
+        job.turnNumber,
+        job.templateName,
+        job.status ?? 'pending',
+        job.imageUrl || null,
+        job.imageTemplate || null,
+        job.error || null,
+        job.completedAt || null,
+      ],
+    );
+    return this.mapImageJob(result.rows[0])!;
+  }
 
-  async createImageJob(job: InsertImageJob, traceId?: string, requestId?: string, client?: DbClient): Promise<ImageJob> {
-    const row = await this.jobService.createImageJob(job, {
-      traceId,
-      requestId,
-      enqueue: !DISABLE_ORCHESTRATOR_ENQUEUE,
-      client,
-    });
-    return this.mapImageJob(row)!;
+  /** The oldest pending or processing image job for a turn, if any. */
+  async getActiveImageJob(gameId: string, turnNumber: number): Promise<ImageJob | undefined> {
+    const result = await this.query(
+      `SELECT * FROM image_jobs
+       WHERE game_id = $1 AND turn_number = $2
+         AND status IN ('pending', 'processing')
+       ORDER BY created_at
+       LIMIT 1`,
+      [gameId, turnNumber],
+    );
+    return this.mapImageJob(result.rows[0]);
+  }
+
+  async insertTurnJob(id: string, job: InsertTurnJob): Promise<TurnJob> {
+    const result = await this.query(
+      `INSERT INTO turn_jobs (id, game_id, action_payload, status, error, completed_at)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [
+        id,
+        job.gameId,
+        JSON.stringify(job.actionPayload),
+        job.status ?? 'pending',
+        job.error || null,
+        job.completedAt || null,
+      ],
+    );
+    return this.mapTurnJob(result.rows[0])!;
   }
 
   async getImageJob(id: string): Promise<ImageJob | undefined> {
@@ -84,16 +122,6 @@ export class JobRepository extends BaseRepository {
       values
     );
     return this.mapImageJob(result.rows[0])!;
-  }
-
-  async createTurnJob(job: InsertTurnJob, traceId?: string, requestId?: string, client?: DbClient): Promise<TurnJob> {
-    const row = await this.jobService.createTurnJob(job, {
-      traceId,
-      requestId,
-      enqueue: !DISABLE_ORCHESTRATOR_ENQUEUE,
-      client,
-    });
-    return this.mapTurnJob(row)!;
   }
 
   async getTurnJob(id: string): Promise<TurnJob | undefined> {

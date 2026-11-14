@@ -1,5 +1,29 @@
 import type { User, InsertUser, GameState, PromptTemplate, InsertPromptTemplate, LlmLog, InsertLlmLog, Event, InsertEvent, ItemRow, InsertItem, NpcTemplate, InsertNpcTemplate, ImagePrompt, InsertImagePrompt, GeneratedImage, InsertGeneratedImage, InterviewQuestion, InsertInterviewQuestion, ReferenceRelease, InsertReferenceRelease, ImageJob, InsertImageJob, TurnJob, InsertTurnJob, AppSetting, ImageModel, LlmModel, ModVisualStyles, ModStoryThemes, GameStats, NPC, Turn, ActionChip, Segment, PceTestScenario, PceTestRun, PceTestMetrics, PceTemplateVersion } from "@shared/schema";
 import { createLimiter, pool, poolLimit, withTransaction } from "./db";
+
+export type UserPreferences = {
+  theme?: string;
+  style?: string;
+  imageModelKey?: string;
+  llmModelKey?: string;
+  skipImageCache?: boolean;
+  typewriterEnabled?: boolean;
+};
+
+function toUserPreferences(user?: Pick<User, 'theme' | 'style' | 'imageModelKey' | 'llmModelKey' | 'skipImageCache' | 'typewriterEnabled'> | null): UserPreferences {
+  if (!user) {
+    return { skipImageCache: true, typewriterEnabled: true };
+  }
+
+  return {
+    theme: user.theme ?? undefined,
+    style: user.style ?? undefined,
+    imageModelKey: user.imageModelKey ?? undefined,
+    llmModelKey: user.llmModelKey ?? undefined,
+    skipImageCache: user.skipImageCache ?? true,
+    typewriterEnabled: user.typewriterEnabled ?? true,
+  };
+}
 import { isUniqueViolation as isUniqueViolationError } from "./db/errors";
 import { randomUUID } from "crypto";
 import type { ActionInput } from "@shared/schema";
@@ -16,14 +40,13 @@ export interface IStorage {
   searchUsersByUsername(pattern: string, limit?: number): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   ensureUser(username: string): Promise<User>;
-  getUserPreferences(username: string): Promise<{ theme?: string; style?: string; imageModelKey?: string; llmModelKey?: string; skipImageCache?: boolean; typewriterEnabled?: boolean }>;
-  updateUserPreferences(username: string, preferences: { theme?: string; style?: string; imageModelKey?: string; llmModelKey?: string; skipImageCache?: boolean; typewriterEnabled?: boolean }): Promise<User>;
+  getUserPreferences(username: string): Promise<UserPreferences>;
+  updateUserPreferences(username: string, preferences: UserPreferences): Promise<User>;
 
   // Game state methods
   getGameState(id: string): Promise<GameState | undefined>;
   getGamesByUsername(username: string): Promise<GameState[]>;
   createGameState(state: GameState): Promise<GameState>;
-  updateGameState(id: string, state: GameState): Promise<GameState>;
   deleteGameState(id: string): Promise<void>;
 
   // Prompt template methods
@@ -202,10 +225,45 @@ export interface IStorage {
 const turnTransactionSlots = createLimiter(Math.max(1, Math.floor(poolLimit() / 2)));
 
 export class DatabaseStorage implements IStorage {
-  // In-memory cache for user preferences (username -> preferences)
-  private userPreferencesCache = new Map<string, { theme?: string; style?: string; imageModelKey?: string; llmModelKey?: string; skipImageCache?: boolean; typewriterEnabled?: boolean }>();
-
   constructor() {}
+
+  private mapUser(row: any): User | undefined {
+    if (!row) return undefined;
+    return {
+      id: row.id,
+      username: row.username,
+      password: row.password,
+      theme: row.theme,
+      style: row.style,
+      imageModelKey: row.image_model_key ?? row.imageModelKey ?? null,
+      llmModelKey: row.llm_model_key ?? row.llmModelKey ?? null,
+      skipImageCache: row.skip_image_cache ?? null,
+      typewriterEnabled: row.typewriter_enabled ?? null,
+    };
+  }
+
+  private mapGameRow(row: any): GameState | undefined {
+    if (!row) return undefined;
+    return {
+      id: row.id,
+      username: row.username,
+      seed: row.seed,
+      day: row.day,
+      turnNumber: row.turn_number,
+      segment: row.segment as Segment,
+      absurdity: row.absurdity,
+      stats: row.stats as GameStats,
+      npcs: row.npcs as NPC[],
+      equippedItems: row.equipped_items as string[],
+      turns: row.turns as Turn[],
+      currentActions: row.current_actions as ActionChip[],
+      runningGags: row.running_gags as string[],
+      eventHistory: row.event_history as string[],
+      interviewResponses: (row.interview_responses as Record<string, string>) || {},
+      isComplete: Number(row.is_complete) === 1,
+      failureReason: row.failure_reason || undefined,
+    };
+  }
 
   // Helper methods to map snake_case DB rows to camelCase TypeScript interfaces
   private mapPromptTemplate(row: any): PromptTemplate | undefined {
@@ -470,61 +528,23 @@ export class DatabaseStorage implements IStorage {
 
   async getUser(id: string): Promise<User | undefined> {
     const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
-    const row = result.rows[0];
-    if (!row) return undefined;
-    // Map snake_case database columns to camelCase TypeScript interface
-    return {
-      id: row.id,
-      username: row.username,
-      password: row.password,
-      theme: row.theme,
-      style: row.style,
-      imageModelKey: row.image_model_key ?? row.imageModelKey ?? null,
-      llmModelKey: row.llm_model_key ?? row.llmModelKey ?? null,
-      skipImageCache: row.skip_image_cache ?? null,
-      typewriterEnabled: row.typewriter_enabled ?? null,
-    };
+    return this.mapUser(result.rows[0]);
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
-    const row = result.rows[0];
-    if (!row) return undefined;
-    // Map snake_case database columns to camelCase TypeScript interface
-    return {
-      id: row.id,
-      username: row.username,
-      password: row.password,
-      theme: row.theme,
-      style: row.style,
-      imageModelKey: row.image_model_key ?? row.imageModelKey ?? null,
-      llmModelKey: row.llm_model_key ?? row.llmModelKey ?? null,
-      skipImageCache: row.skip_image_cache ?? null,
-      typewriterEnabled: row.typewriter_enabled ?? null,
-    };
+    return this.mapUser(result.rows[0]);
   }
 
   async searchUsersByUsername(pattern: string, limit: number = 20): Promise<User[]> {
-    // Search users by username pattern (case-insensitive, starts with)
-    // Limit results for security
-    const searchPattern = `${pattern}%`;
-    const cappedLimit = Math.min(limit, 50); // Cap at 50 for safety
+    const escapedPattern = pattern.replace(/[\\%_]/g, '\\$&');
+    const searchPattern = `${escapedPattern}%`;
+    const cappedLimit = Math.min(limit, 50);
     const result = await pool.query(
       'SELECT * FROM users WHERE LOWER(username) LIKE LOWER($1) LIMIT $2',
       [searchPattern, cappedLimit]
     );
-    // Map snake_case database columns to camelCase TypeScript interface
-    return result.rows.map(row => ({
-      id: row.id,
-      username: row.username,
-      password: row.password,
-      theme: row.theme,
-      style: row.style,
-      imageModelKey: row.image_model_key ?? row.imageModelKey ?? null,
-      llmModelKey: row.llm_model_key ?? row.llmModelKey ?? null,
-      skipImageCache: row.skip_image_cache ?? null,
-      typewriterEnabled: row.typewriter_enabled ?? null,
-    }));
+    return result.rows.map(row => this.mapUser(row)!).filter(Boolean);
   }
 
   async ensureUser(username: string): Promise<User> {
@@ -559,52 +579,15 @@ export class DatabaseStorage implements IStorage {
       'INSERT INTO users (id, username, password) VALUES ($1, $2, $3) RETURNING *',
       [id, insertUser.username, insertUser.password]
     );
-    return result.rows[0];
+    return this.mapUser(result.rows[0])!;
   }
 
-  async getUserPreferences(username: string): Promise<{ theme?: string; style?: string; imageModelKey?: string; llmModelKey?: string; skipImageCache?: boolean; typewriterEnabled?: boolean }> {
-    // Check cache first
-    if (this.userPreferencesCache.has(username)) {
-      const cached = this.userPreferencesCache.get(username)!;
-      console.log('[Storage] getUserPreferences cache hit', { username, cached });
-      return cached;
-    }
-    
-    // Not in cache - load from database
+  async getUserPreferences(username: string): Promise<UserPreferences> {
     const user = await this.getUserByUsername(username);
-    if (!user) {
-      // System default: skip cache, typewriter enabled
-      return { skipImageCache: true, typewriterEnabled: true };
-    }
-    
-    const preferences = {
-      theme: user.theme ?? undefined,
-      style: user.style ?? undefined,
-      imageModelKey: user.imageModelKey ?? undefined,
-      llmModelKey: user.llmModelKey ?? undefined,
-      // System default: skip cache (true) if not set
-      skipImageCache: user.skipImageCache ?? true,
-      // System default: typewriter enabled (true) if not set
-      typewriterEnabled: user.typewriterEnabled ?? true,
-    };
-    
-    console.log('[Storage] getUserPreferences loaded from DB', { username, preferences });
-    
-    // Store in cache
-    this.userPreferencesCache.set(username, preferences);
-    
-    return preferences;
+    return toUserPreferences(user);
   }
 
-  /**
-   * Clears the user preferences cache for a specific user (useful after preference updates)
-   */
-  clearUserPreferencesCache(username: string): void {
-    this.userPreferencesCache.delete(username);
-    console.log('[Storage] Cleared user preferences cache', { username });
-  }
-
-  async updateUserPreferences(username: string, preferences: { theme?: string; style?: string; imageModelKey?: string; llmModelKey?: string; skipImageCache?: boolean; typewriterEnabled?: boolean }): Promise<User> {
+  async updateUserPreferences(username: string, preferences: UserPreferences): Promise<User> {
     const user = await this.ensureUser(username);
 
     const updates: string[] = [];
@@ -652,35 +635,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     const updatedRow = result.rows[0];
-    
-    // Map snake_case database columns to camelCase TypeScript interface
-    const updatedUser: User = {
-      id: updatedRow.id,
-      username: updatedRow.username,
-      password: updatedRow.password,
-      theme: updatedRow.theme,
-      style: updatedRow.style,
-      imageModelKey: updatedRow.image_model_key ?? updatedRow.imageModelKey ?? null,
-      llmModelKey: updatedRow.llm_model_key ?? updatedRow.llmModelKey ?? null,
-      skipImageCache: updatedRow.skip_image_cache ?? null,
-      typewriterEnabled: updatedRow.typewriter_enabled ?? null,
-    };
-    
-    // Update cache with new preferences
-    const oldPreferences = this.userPreferencesCache.get(username);
-    const newPreferences = {
-      theme: updatedUser.theme ?? undefined,
-      style: updatedUser.style ?? undefined,
-      imageModelKey: updatedUser.imageModelKey ?? undefined,
-      llmModelKey: updatedUser.llmModelKey ?? undefined,
-      skipImageCache: updatedUser.skipImageCache ?? undefined,
-      typewriterEnabled: updatedUser.typewriterEnabled ?? undefined,
-    };
-    this.userPreferencesCache.set(username, newPreferences);
-    
-    console.log('[Storage] updateUserPreferences cache updated', { username, oldValue: oldPreferences, newValue: newPreferences });
-
-    return updatedUser;
+    return this.mapUser(updatedRow)!;
   }
 
   async getGameState(id: string): Promise<GameState | undefined> {
@@ -688,28 +643,7 @@ export class DatabaseStorage implements IStorage {
     try {
       const result = await pool.query('SELECT * FROM games WHERE id = $1', [id]);
       timer();
-      const game = result.rows[0];
-      if (!game) return undefined;
-
-      return {
-        id: game.id,
-        username: game.username,
-        seed: game.seed,
-        day: game.day,
-        turnNumber: game.turn_number,
-        segment: game.segment as Segment,
-        absurdity: game.absurdity,
-        stats: game.stats as GameStats,
-        npcs: game.npcs as NPC[],
-        equippedItems: game.equipped_items as string[],
-        turns: game.turns as Turn[],
-        currentActions: game.current_actions as ActionChip[],
-        runningGags: game.running_gags as string[],
-        eventHistory: game.event_history as string[],
-        interviewResponses: (game.interview_responses as Record<string, string>) || {},
-        isComplete: game.is_complete === 1,
-        failureReason: game.failure_reason || undefined,
-      };
+      return this.mapGameRow(result.rows[0]);
     } catch (error) {
       timer();
       throw error;
@@ -722,25 +656,7 @@ export class DatabaseStorage implements IStorage {
       [username]
     );
 
-    return result.rows.map((game: any) => ({
-      id: game.id,
-      username: game.username,
-      seed: game.seed,
-      day: game.day,
-      turnNumber: game.turn_number,
-      segment: game.segment as Segment,
-      absurdity: game.absurdity,
-      stats: game.stats as GameStats,
-      npcs: game.npcs as NPC[],
-      equippedItems: game.equipped_items as string[],
-      turns: game.turns as Turn[],
-      currentActions: game.current_actions as ActionChip[],
-      runningGags: game.running_gags as string[],
-      eventHistory: game.event_history as string[],
-      interviewResponses: (game.interview_responses as Record<string, string>) || {},
-      isComplete: game.is_complete === 1,
-      failureReason: game.failure_reason || undefined,
-    }));
+    return result.rows.map((game: any) => this.mapGameRow(game)!).filter(Boolean);
   }
 
   async createGameState(state: GameState): Promise<GameState> {
@@ -765,37 +681,6 @@ export class DatabaseStorage implements IStorage {
         JSON.stringify(state.interviewResponses),
         state.isComplete ? 1 : 0,
         state.failureReason || null,
-      ]
-    );
-    return state;
-  }
-
-  async updateGameState(id: string, state: GameState): Promise<GameState> {
-    await pool.query(
-      `UPDATE games SET 
-        username = $1, seed = $2, day = $3, turn_number = $4, segment = $5, absurdity = $6,
-        stats = $7, npcs = $8, equipped_items = $9, turns = $10, current_actions = $11,
-        running_gags = $12, event_history = $13, interview_responses = $14, is_complete = $15,
-        failure_reason = $16, updated_at = NOW(3)
-       WHERE id = $17`,
-      [
-        state.username,
-        state.seed,
-        state.day,
-        state.turnNumber,
-        state.segment,
-        state.absurdity,
-        JSON.stringify(state.stats),
-        JSON.stringify(state.npcs),
-        JSON.stringify(state.equippedItems),
-        JSON.stringify(state.turns),
-        JSON.stringify(state.currentActions),
-        JSON.stringify(state.runningGags),
-        JSON.stringify(state.eventHistory),
-        JSON.stringify(state.interviewResponses),
-        state.isComplete ? 1 : 0,
-        state.failureReason || null,
-        id,
       ]
     );
     return state;
@@ -1547,10 +1432,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async setCurrentReferenceRelease(version: string): Promise<void> {
-    // First, set all releases to not current
-    await pool.query('UPDATE reference_releases SET is_current = 0');
-    // Then set the specified version as current
-    await pool.query('UPDATE reference_releases SET is_current = 1 WHERE version = $1', [version]);
+    await withTransaction(async client => {
+      const existing = await client.query('SELECT version FROM reference_releases WHERE version = $1 FOR UPDATE', [version]);
+      if (!existing.rows[0]) {
+        throw new Error(`Reference release ${version} not found`);
+      }
+
+      await client.query('UPDATE reference_releases SET is_current = (version = $1)', [version]);
+    });
   }
 
   async dumpContentTable(table: string): Promise<Record<string, unknown>[]> {
@@ -1593,30 +1482,10 @@ export class DatabaseStorage implements IStorage {
       
       const state = result.rows[0];
       if (!state) {
-        await client.query('ROLLBACK');
         throw new Error('Game not found');
       }
 
-      // Convert database row to GameState
-      const gameState: GameState = {
-        id: state.id,
-        username: state.username,
-        seed: state.seed,
-        day: state.day,
-        turnNumber: state.turn_number,
-        segment: state.segment as Segment,
-        absurdity: state.absurdity,
-        stats: state.stats as GameStats,
-        npcs: state.npcs as NPC[],
-        equippedItems: state.equipped_items as string[],
-        turns: state.turns as Turn[],
-        currentActions: state.current_actions as ActionChip[],
-        runningGags: state.running_gags as string[],
-        eventHistory: state.event_history as string[],
-        interviewResponses: state.interview_responses as Record<string, string>,
-        isComplete: Boolean(state.is_complete),
-        failureReason: state.failure_reason || undefined
-      };
+      const gameState = this.mapGameRow(state)!;
 
       // Process turn logic with the locked state
       const updatedState = await processor(gameState);
@@ -1654,7 +1523,7 @@ export class DatabaseStorage implements IStorage {
       timer();
       return updatedState;
     } catch (error) {
-      await client.query('ROLLBACK');
+      await client.query('ROLLBACK').catch(() => {});
       timer();
       throw error;
     } finally {
@@ -2068,120 +1937,90 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertImageModel(input: Partial<ImageModel> & { modelKey: string }): Promise<ImageModel> {
-    const existing = await this.getImageModelByKey(input.modelKey);
-    if (existing) {
-      const updateFields: string[] = [];
-      const values: any[] = [];
-      let paramIndex = 1;
+    const columns: Array<[keyof ImageModel, string, (value: any) => any]> = [
+      ['provider', 'provider', value => value],
+      ['modelName', 'model_name', value => value],
+      ['hfProvider', 'hf_provider', value => value ?? null],
+      ['active', 'active', value => value],
+      ['isDefault', 'is_default', value => Boolean(value)],
+      ['displayName', 'display_name', value => value],
+      ['description', 'description', value => value ?? null],
+      ['sortOrder', 'sort_order', value => value],
+      ['defaultSize', 'default_size', value => value ?? null],
+      ['defaultQuality', 'default_quality', value => value ?? null],
+      ['defaultBackground', 'default_background', value => value ?? null],
+      ['defaultModeration', 'default_moderation', value => value ?? null],
+      ['allowedSizes', 'allowed_sizes', value => value ? JSON.stringify(value) : null],
+      ['capabilities', 'capabilities', value => value ? JSON.stringify(value) : null],
+      ['providerParams', 'provider_params', value => value ? JSON.stringify(value) : null],
+      ['triggerWords', 'trigger_words', value => value ?? null],
+      ['class', 'class', value => value ?? null],
+    ];
 
-      if (input.provider !== undefined) {
-        updateFields.push(`provider = $${paramIndex++}`);
-        values.push(input.provider);
-      }
-      if (input.modelName !== undefined) {
-        updateFields.push(`model_name = $${paramIndex++}`);
-        values.push(input.modelName);
-      }
-      if (input.hfProvider !== undefined) {
-        updateFields.push(`hf_provider = $${paramIndex++}`);
-        values.push(input.hfProvider);
-      }
-      if (input.active !== undefined) {
-        updateFields.push(`active = $${paramIndex++}`);
-        values.push(input.active);
-      }
-      if (input.displayName !== undefined) {
-        updateFields.push(`display_name = $${paramIndex++}`);
-        values.push(input.displayName);
-      }
-      if (input.description !== undefined) {
-        updateFields.push(`description = $${paramIndex++}`);
-        values.push(input.description);
-      }
-      if (input.sortOrder !== undefined) {
-        updateFields.push(`sort_order = $${paramIndex++}`);
-        values.push(input.sortOrder);
-      }
-      if (input.defaultSize !== undefined) {
-        updateFields.push(`default_size = $${paramIndex++}`);
-        values.push(input.defaultSize);
-      }
-      if (input.defaultQuality !== undefined) {
-        updateFields.push(`default_quality = $${paramIndex++}`);
-        values.push(input.defaultQuality);
-      }
-      if (input.defaultBackground !== undefined) {
-        updateFields.push(`default_background = $${paramIndex++}`);
-        values.push(input.defaultBackground);
-      }
-      if (input.defaultModeration !== undefined) {
-        updateFields.push(`default_moderation = $${paramIndex++}`);
-        values.push(input.defaultModeration);
-      }
-      if (input.allowedSizes !== undefined) {
-        updateFields.push(`allowed_sizes = $${paramIndex++}`);
-        values.push(input.allowedSizes ? JSON.stringify(input.allowedSizes) : null);
-      }
-      if (input.capabilities !== undefined) {
-        updateFields.push(`capabilities = $${paramIndex++}`);
-        values.push(input.capabilities ? JSON.stringify(input.capabilities) : null);
-      }
-      if (input.providerParams !== undefined) {
-        updateFields.push(`provider_params = $${paramIndex++}`);
-        values.push(input.providerParams ? JSON.stringify(input.providerParams) : null);
-      }
-      if (input.triggerWords !== undefined) {
-        updateFields.push(`trigger_words = $${paramIndex++}`);
-        values.push(input.triggerWords);
-      }
-      if (input.class !== undefined) {
-        updateFields.push(`class = $${paramIndex++}`);
-        values.push(input.class);
-      }
-      if (input.hasOwnProperty('isDefault')) {
-        updateFields.push(`is_default = $${paramIndex++}`);
-        values.push(input.isDefault);
-      }
-
-      updateFields.push(`updated_at = NOW(3)`);
-      values.push(input.modelKey);
-
-      const result = await pool.query(
-        `UPDATE image_models SET ${updateFields.join(', ')} WHERE model_key = $${paramIndex} RETURNING *`,
-        values
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const existing = await client.query(
+        'SELECT id, active FROM image_models WHERE model_key = $1 FOR UPDATE',
+        [input.modelKey],
       );
-      return result.rows[0];
-    } else {
-      if (!input.modelName) {
-        throw new Error("modelName is required when creating an image model");
+      const willBeActive = (input.active ?? existing.rows[0]?.active ?? 1) === 1;
+      if (input.isDefault === true && !willBeActive) {
+        throw new Error('An inactive image model cannot be the default');
       }
-      const id = randomUUID();
-      const result = await pool.query(
-        `INSERT INTO image_models (id, model_key, provider, model_name, hf_provider, active, display_name, description, sort_order, default_size, default_quality, default_background, default_moderation, allowed_sizes, capabilities, provider_params, is_default, trigger_words, class)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING *`,
-        [
-          id,
-          input.modelKey,
-          input.provider ?? 'openai',
-          input.modelName,
-          input.hfProvider ?? null,
-          input.active ?? 1,
-          input.displayName ?? input.modelKey,
-          input.description ?? null,
-          input.sortOrder ?? 0,
-          (input as any).defaultSize ?? null,
-          (input as any).defaultQuality ?? null,
-          (input as any).defaultBackground ?? null,
-          (input as any).defaultModeration ?? null,
-          (input as any).allowedSizes ? JSON.stringify((input as any).allowedSizes) : null,
-          (input as any).capabilities ? JSON.stringify((input as any).capabilities) : null,
-          (input as any).providerParams ? JSON.stringify((input as any).providerParams) : null,
-          (input as any).isDefault ?? false,
-          (input as any).triggerWords ?? null,
-          (input as any).class ?? null,
-        ]
-      );
-      return this.mapImageModelRow(result.rows[0]);
+
+      const effectiveInput = input.active === 0 ? { ...input, isDefault: false } : input;
+      if (effectiveInput.isDefault === true) {
+        await client.query(
+          'UPDATE image_models SET is_default = FALSE, updated_at = NOW(3) WHERE is_default = TRUE AND model_key <> $1',
+          [input.modelKey],
+        );
+      }
+
+      let row: any;
+      if (existing.rows[0]) {
+        const provided = columns.filter(([field]) => effectiveInput[field] !== undefined);
+        const sets = provided.map(([, column], index) => `${column} = $${index + 1}`);
+        const values = provided.map(([field, , convert]) => convert(effectiveInput[field]));
+        sets.push('updated_at = NOW(3)');
+        values.push(input.modelKey);
+
+        const result = await client.query(
+          `UPDATE image_models SET ${sets.join(', ')} WHERE model_key = $${values.length} RETURNING *`,
+          values,
+        );
+        row = result.rows[0];
+      } else {
+        if (!effectiveInput.modelName) {
+          throw new Error('modelName is required when creating an image model');
+        }
+
+        const withDefaults: Partial<ImageModel> = {
+          provider: 'openai',
+          displayName: effectiveInput.modelKey,
+          ...effectiveInput,
+        };
+        const provided = columns.filter(([field]) => withDefaults[field] !== undefined);
+        const names = ['id', 'model_key', ...provided.map(([, column]) => column)];
+        const values = [
+          randomUUID(),
+          effectiveInput.modelKey,
+          ...provided.map(([field, , convert]) => convert(withDefaults[field])),
+        ];
+        const result = await client.query(
+          `INSERT INTO image_models (${names.join(', ')}) VALUES (${values.map((_, index) => `$${index + 1}`).join(', ')}) RETURNING *`,
+          values,
+        );
+        row = result.rows[0];
+      }
+
+      await client.query('COMMIT');
+      return this.mapImageModelRow(row);
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => {});
+      throw error;
+    } finally {
+      client.release();
     }
   }
 

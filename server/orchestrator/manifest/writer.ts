@@ -5,7 +5,7 @@
 
 import { createHash } from 'crypto';
 import { randomUUID } from 'crypto';
-import { pool } from '../../db';
+import { pool, withTransaction } from '../../db';
 import type { TurnExecutionManifest, PrecomputeSection, ApplySection, RequestSection } from './types';
 
 export interface ManifestId {
@@ -91,28 +91,29 @@ export async function updatePrecomputeSection(
   manifestId: string,
   precomputeData: PrecomputeSection
 ): Promise<void> {
-  // Load existing manifest
-  const result = await pool.query('SELECT manifest FROM turn_execution_manifests WHERE id = $1', [manifestId]);
-  if (result.rows.length === 0) {
-    throw new Error(`Manifest ${manifestId} not found`);
-  }
+  await withTransaction(async client => {
+    const result = await client.query(
+      'SELECT manifest FROM turn_execution_manifests WHERE id = $1 FOR UPDATE',
+      [manifestId],
+    );
+    if (result.rows.length === 0) {
+      throw new Error(`Manifest ${manifestId} not found`);
+    }
 
-  const manifest: TurnExecutionManifest = result.rows[0].manifest;
-  manifest.precompute = precomputeData;
-  
-  // Compute precompute hash
-  const precomputeHash = computeHash(precomputeData);
-  precomputeData.precomputeHash = precomputeHash.toString('hex');
-  
-  // Update manifest hash
-  const manifestHash = computeHash(manifest);
+    const manifest: TurnExecutionManifest = result.rows[0].manifest;
+    manifest.precompute = precomputeData;
 
-  await pool.query(
-    `UPDATE turn_execution_manifests
-     SET manifest = $1, precompute_hash = $2, manifest_hash = $3, updated_at = NOW(3)
-     WHERE id = $4`,
-    [JSON.stringify(manifest), precomputeHash, manifestHash, manifestId]
-  );
+    const precomputeHash = computeHash(precomputeData);
+    precomputeData.precomputeHash = precomputeHash.toString('hex');
+    const manifestHash = computeHash(manifest);
+
+    await client.query(
+      `UPDATE turn_execution_manifests
+       SET manifest = $1, precompute_hash = $2, manifest_hash = $3, updated_at = NOW(3)
+       WHERE id = $4`,
+      [JSON.stringify(manifest), precomputeHash, manifestHash, manifestId],
+    );
+  });
 }
 
 /**
@@ -122,24 +123,26 @@ export async function updateRequestSection(
   manifestId: string,
   requestData: Partial<RequestSection>
 ): Promise<void> {
-  // Load existing manifest
-  const result = await pool.query('SELECT manifest FROM turn_execution_manifests WHERE id = $1', [manifestId]);
-  if (result.rows.length === 0) {
-    throw new Error(`Manifest ${manifestId} not found`);
-  }
+  await withTransaction(async client => {
+    const result = await client.query(
+      'SELECT manifest FROM turn_execution_manifests WHERE id = $1 FOR UPDATE',
+      [manifestId],
+    );
+    if (result.rows.length === 0) {
+      throw new Error(`Manifest ${manifestId} not found`);
+    }
 
-  const manifest: TurnExecutionManifest = result.rows[0].manifest;
-  manifest.request = { ...manifest.request, ...requestData };
-  
-  // Update manifest hash
-  const manifestHash = computeHash(manifest);
+    const manifest: TurnExecutionManifest = result.rows[0].manifest;
+    manifest.request = { ...manifest.request, ...requestData };
+    const manifestHash = computeHash(manifest);
 
-  await pool.query(
-    `UPDATE turn_execution_manifests
-     SET manifest = $1, manifest_hash = $2, updated_at = NOW(3)
-     WHERE id = $3`,
-    [JSON.stringify(manifest), manifestHash, manifestId]
-  );
+    await client.query(
+      `UPDATE turn_execution_manifests
+       SET manifest = $1, manifest_hash = $2, updated_at = NOW(3)
+       WHERE id = $3`,
+      [JSON.stringify(manifest), manifestHash, manifestId],
+    );
+  });
 }
 
 /**
@@ -149,24 +152,26 @@ export async function updateApplySection(
   manifestId: string,
   applyData: ApplySection
 ): Promise<void> {
-  // Load existing manifest
-  const result = await pool.query('SELECT manifest FROM turn_execution_manifests WHERE id = $1', [manifestId]);
-  if (result.rows.length === 0) {
-    throw new Error(`Manifest ${manifestId} not found`);
-  }
+  await withTransaction(async client => {
+    const result = await client.query(
+      'SELECT manifest FROM turn_execution_manifests WHERE id = $1 FOR UPDATE',
+      [manifestId],
+    );
+    if (result.rows.length === 0) {
+      throw new Error(`Manifest ${manifestId} not found`);
+    }
 
-  const manifest: TurnExecutionManifest = result.rows[0].manifest;
-  manifest.apply = applyData;
-  
-  // Update manifest hash
-  const manifestHash = computeHash(manifest);
+    const manifest: TurnExecutionManifest = result.rows[0].manifest;
+    manifest.apply = applyData;
+    const manifestHash = computeHash(manifest);
 
-  await pool.query(
-    `UPDATE turn_execution_manifests
-     SET manifest = $1, manifest_hash = $2, updated_at = NOW(3)
-     WHERE id = $3`,
-    [JSON.stringify(manifest), manifestHash, manifestId]
-  );
+    await client.query(
+      `UPDATE turn_execution_manifests
+       SET manifest = $1, manifest_hash = $2, updated_at = NOW(3)
+       WHERE id = $3`,
+      [JSON.stringify(manifest), manifestHash, manifestId],
+    );
+  });
 }
 
 /**

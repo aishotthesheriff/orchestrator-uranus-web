@@ -114,7 +114,7 @@ function getRawPool(): mariadb.Pool {
       // connections a user may open per hour (500), so reconnecting after every burst is costly.
       minimumIdle: Math.min(2, limit),
       idleTimeout: POOL_IDLE_TIMEOUT_SECONDS,
-      // A turn can hold a connection while a story is generated, so waiting briefly is normal.
+      // Turn transactions may issue follow-up queries while holding a connection, so waiting briefly is normal.
       acquireTimeout: 15000,
       keepAliveDelay: 30000,
     });
@@ -131,7 +131,13 @@ export const pool: DbPool = {
     if (/^\s*UPDATE\b/i.test(sql) && /\bRETURNING\b/i.test(sql)) {
       const conn = await getRawPool().getConnection();
       try {
-        return await run<Row>(conn, sql, params);
+        await conn.query("BEGIN");
+        const result = await run<Row>(conn, sql, params);
+        await conn.query("COMMIT");
+        return result;
+      } catch (error) {
+        await conn.query("ROLLBACK").catch(() => {});
+        throw error;
       } finally {
         await conn.release();
       }

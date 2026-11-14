@@ -16,7 +16,7 @@ Caching serves several critical functions:
 
 1. **Performance Optimization**: Reduce latency for frequently accessed data
 2. **Resource Efficiency**: Minimize database queries and filesystem reads
-3. **User Experience**: Enable instant access to reference data and user preferences
+3. **User Experience**: Enable fast access to reference data and consistent user preferences
 4. **Cost Reduction**: Decrease external API calls and database load
 
 ### Cache Types Overview
@@ -25,8 +25,8 @@ The system employs both **server-side** and **client-side** caches:
 
 - **Server-Side Caches** (in-memory):
   - Reference Data Cache
-  - User Preferences Cache
   - PCE Template Cache
+- User preferences are read directly from the database so updates are visible across app processes.
 
 - **Client-Side Caches**:
   - React Query Cache (API responses)
@@ -262,156 +262,23 @@ async function getPromptFromCache(name: string) {
 
 ---
 
-### 2. User Preferences Cache
+### 2. User Preferences
 
 **Location:** `server/storage.ts`
 
-#### Architecture
+User preferences are read from the `users` table on each request. They are intentionally
+not cached in process memory: multiple app processes must observe preference updates
+without relying on cross-process invalidation.
 
-The User Preferences Cache stores user-specific settings (theme, style, image model, cache preferences) in server memory to avoid database lookups on every request.
+`getUserPreferences()` applies the same defaults for existing and missing users:
 
-```144:456:server/storage.ts
-export class DatabaseStorage implements IStorage {
-  // In-memory cache for user preferences (username -> preferences)
-  private userPreferencesCache = new Map<string, { theme?: string; style?: string; imageModelKey?: string; skipImageCache?: boolean; typewriterEnabled?: boolean }>();
+- `skipImageCache`: `true` when unset
+- `typewriterEnabled`: `true` when unset
+- Theme, style, and model preferences remain unset when the user has not selected them
 
-  constructor() {}
-
-  // Helper methods to map snake_case DB rows to camelCase TypeScript interfaces
-  private mapPromptTemplate(row: any): PromptTemplate | undefined {
-    if (!row) return undefined;
-    return {
-      id: row.id,
-      name: row.name,
-      content: row.content,
-      systemContent: row.system_content,
-      inheritGlobalPrompt: row.inherit_global_prompt,
-      description: row.description,
-      version: row.version,
-      active: row.active,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
-  }
-
-  // ... more mapping methods ...
-
-  async getUserPreferences(username: string): Promise<{ theme?: string; style?: string; imageModelKey?: string; skipImageCache?: boolean; typewriterEnabled?: boolean }> {
-    // Check cache first
-    if (this.userPreferencesCache.has(username)) {
-      const cached = this.userPreferencesCache.get(username)!;
-      console.log('[Storage] getUserPreferences cache hit', { username, cached });
-      return cached;
-    }
-    
-    // Not in cache - load from database
-    const user = await this.getUserByUsername(username);
-    if (!user) {
-      // System default: skip cache, typewriter enabled
-      return { skipImageCache: true, typewriterEnabled: true };
-    }
-    
-    const preferences = {
-      theme: user.theme ?? undefined,
-      style: user.style ?? undefined,
-      imageModelKey: user.imageModelKey ?? undefined,
-      // System default: skip cache (true) if not set
-      skipImageCache: user.skipImageCache ?? true,
-      // System default: typewriter enabled (true) if not set
-      typewriterEnabled: user.typewriterEnabled ?? true,
-    };
-    
-    console.log('[Storage] getUserPreferences loaded from DB', { username, preferences });
-    
-    // Store in cache
-    this.userPreferencesCache.set(username, preferences);
-    
-    return preferences;
-  }
-
-  /**
-   * Clears the user preferences cache for a specific user (useful after preference updates)
-   */
-  clearUserPreferencesCache(username: string): void {
-    this.userPreferencesCache.delete(username);
-    console.log('[Storage] Cleared user preferences cache', { username });
-  }
-
-  async updateUserPreferences(username: string, preferences: { theme?: string; style?: string; imageModelKey?: string; skipImageCache?: boolean; typewriterEnabled?: boolean }): Promise<User> {
-    const user = await this.ensureUser(username);
-
-    const updates: string[] = [];
-    const values: any[] = [];
-    let paramIndex = 1;
-
-    if (preferences.theme !== undefined) {
-      updates.push(`theme = $${paramIndex++}`);
-      values.push(preferences.theme);
-    }
-    if (preferences.style !== undefined) {
-      updates.push(`style = $${paramIndex++}`);
-      values.push(preferences.style);
-    }
-    if (preferences.imageModelKey !== undefined) {
-      updates.push(`image_model_key = $${paramIndex++}`);
-      values.push(preferences.imageModelKey);
-    }
-    if (preferences.skipImageCache !== undefined) {
-      updates.push(`skip_image_cache = $${paramIndex++}`);
-      values.push(preferences.skipImageCache);
-    }
-    if (preferences.typewriterEnabled !== undefined) {
-      updates.push(`typewriter_enabled = $${paramIndex++}`);
-      values.push(preferences.typewriterEnabled);
-    }
-
-    if (updates.length === 0) {
-      return user;
-    }
-```
-
-#### Cache Structure
-
-The cache uses a `Map<string, Preferences>` structure:
-
-- **Key**: Username (string)
-- **Value**: User preferences object containing:
-  - `theme`: Story theme preference
-  - `style`: Visual style preference
-  - `imageModelKey`: Preferred image generation model
-  - `skipImageCache`: Whether to skip image cache (default: `true`)
-  - `typewriterEnabled`: Whether typewriter effect is enabled (default: `true`)
-
-#### Cache Lifetime
-
-- **Persistence**: Cache persists until user preferences are updated or cache is manually cleared
-- **Invalidation**: Cleared when `updateUserPreferences()` is called (via `clearUserPreferencesCache()`)
-- **No TTL**: No time-based expiration
-
-#### Cache Invalidation Strategy
-
-The cache is invalidated when:
-
-1. **User Updates Preferences**: Automatically cleared after database update
-2. **Manual Clear**: Via `clearUserPreferencesCache(username)` function call
-3. **Server Restart**: Cache is lost on process restart
-
-#### Performance Characteristics
-
-- **Cache Hit**: Instant (memory access, <1ms)
-- **Cache Miss**: Database query (~5-20ms)
-- **Memory Footprint**: ~100 bytes per user (negligible)
-- **Thread Safety**: Single-threaded Node.js, no locking required
-
-#### Usage Patterns
-
-User preferences are accessed frequently during game execution:
-
-- Every turn processing request
-- Every image generation request
-- Every game state lookup
-
-The cache significantly reduces database load for active users.
+Use `storage.getUserPreferences(username)` for the normalized preference shape and
+`storage.updateUserPreferences(username, preferences)` to persist changes. There is no
+user-preferences cache to clear after an update.
 
 ---
 
@@ -1001,11 +868,7 @@ import { clearReferenceCache } from './server/reference/referenceLoader';
 clearReferenceCache();
 ```
 
-**User Preferences Cache:**
-```typescript
-import { storage } from './server/storage';
-storage.clearUserPreferencesCache(username);
-```
+User preferences are read directly from the database and require no cache invalidation.
 
 **PCE Template Cache:**
 ```typescript
@@ -1046,11 +909,6 @@ clearAdminAuthToken();
 2. **After Activating Reference**: Automatically handled by `activateReferenceRelease()`
 3. **During Development**: Manual clear when testing content changes
 
-#### When to Invalidate User Preferences Cache
-
-1. **After User Updates Preferences**: Automatically handled by `updateUserPreferences()`
-2. **During Testing**: Manual clear to test preference changes
-
 #### When to Invalidate PCE Template Cache
 
 1. **After Modifying Template Files**: Manual clear required (no auto-invalidation)
@@ -1068,7 +926,7 @@ clearAdminAuthToken();
 2. **User Preferences**: Always use `getUserPreferences()` instead of direct database queries
 3. **PCE Templates**: Prefer reference system over file-based templates
 4. **React Query**: Use consistent query keys following the segmented pattern
-5. **Cache Invalidation**: Invalidate caches immediately after data mutations
+5. **Cache Invalidation**: Invalidate cached data immediately after mutations
 
 ### Common Patterns
 
@@ -1086,7 +944,7 @@ const items = JSON.parse(await fs.readFile('releases/current/items.json'));
 #### Loading User Preferences
 
 ```typescript
-// ✅ Good: Uses cache
+// ✅ Good: Uses the normalized preference reader
 const preferences = await storage.getUserPreferences(username);
 
 // ❌ Bad: Direct database query
@@ -1094,16 +952,12 @@ const user = await storage.getUserByUsername(username);
 const preferences = { theme: user.theme, ... };
 ```
 
-#### Invalidating After Updates
+#### Reading Preferences After Updates
 
 ```typescript
-// ✅ Good: Clear cache after update
+// Preferences are read from the database on each call.
 await storage.updateUserPreferences(username, newPreferences);
-storage.clearUserPreferencesCache(username);
-
-// ❌ Bad: Forgetting to clear cache
-await storage.updateUserPreferences(username, newPreferences);
-// Cache still has old data!
+const preferences = await storage.getUserPreferences(username);
 ```
 
 ---
@@ -1139,18 +993,15 @@ await publishReference({ version: '1.0.0', author: 'admin', makeCurrent: true })
 - Old preferences still returned
 
 **Cause:**
-- User preferences cache not cleared after update
+- Check whether the database update succeeded and the request used the expected username.
 
 **Solution:**
 ```typescript
-// Ensure clearUserPreferencesCache() is called after update
 await storage.updateUserPreferences(username, newPreferences);
-storage.clearUserPreferencesCache(username);
 ```
 
 **Prevention:**
-- Always call `clearUserPreferencesCache()` after `updateUserPreferences()`
-- Consider adding automatic cache clearing to `updateUserPreferences()` method
+- User preferences are read directly from the database; no in-memory invalidation is required.
 
 #### Issue: PCE Template Changes Not Reflected
 
@@ -1222,12 +1073,10 @@ console.log('Reference version:', reference.version);
 console.log('Items count:', reference.data.items.length);
 ```
 
-**User Preferences Cache:**
+**User Preferences:**
 ```typescript
-// Check cache contents (requires access to storage instance)
-// Cache is private, but you can check via getUserPreferences()
 const preferences = await storage.getUserPreferences(username);
-console.log('Cached preferences:', preferences);
+console.log('Current preferences:', preferences);
 ```
 
 **PCE Template Cache:**
@@ -1336,11 +1185,10 @@ console.log('Admin token exists:', !!token);
 - **Mitigation**: Server validates token on every request
 - **Best Practice**: Token should have server-side expiration
 
-#### User Preferences Cache
+#### User Preferences
 
-- **Scope**: Per-user isolation (username as key)
-- **Sensitivity**: Contains user preferences (not sensitive)
-- **Access**: Only accessible to server-side code
+- **Storage**: Database-backed; no process-local cache
+- **Consistency**: Updates are visible across app processes on the next read
 
 ### Performance Implications
 
@@ -1348,7 +1196,6 @@ console.log('Admin token exists:', !!token);
 
 **Server-Side Caches:**
 - Reference Data: ~1-5MB
-- User Preferences: ~100 bytes per user
 - PCE Templates: ~10-50KB total
 
 **Client-Side Caches:**
@@ -1372,7 +1219,6 @@ console.log('Admin token exists:', !!token);
 
 #### Database Load Reduction
 
-- **User Preferences**: ~90% reduction in database queries
 - **Reference Data**: ~99% reduction in filesystem reads
 - **PCE Templates**: ~95% reduction in filesystem reads
 
@@ -1393,11 +1239,10 @@ const result3 = await getCurrentReference();
 expect(result3).not.toBe(result1); // New object
 ```
 
-**Cache Invalidation Testing:**
+**Preference Freshness Testing:**
 ```typescript
-// Test invalidation after update
+// Verify a later read observes a persisted update
 await storage.updateUserPreferences(username, newPrefs);
-storage.clearUserPreferencesCache(username);
 const prefs = await storage.getUserPreferences(username);
 expect(prefs).toEqual(newPrefs);
 ```
@@ -1508,7 +1353,7 @@ expect(hitRate).toBeGreaterThan(0.9);
 │     │                                                         │
 │  2. User Preferences Update                                   │
 │     │                                                         │
-│     ├─► clearUserPreferencesCache(username)                 │
+│     ├─► Database write; subsequent reads use current values   │
 │     │                                                         │
 │  3. PCE Template File Change                                 │
 │     │                                                         │

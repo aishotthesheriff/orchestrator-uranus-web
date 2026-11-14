@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { Server as SocketIOServer } from "socket.io";
+import { z } from "zod";
 import { storage } from "./storage";
 import type { GameState, ActionInput, InsertGameState, Intent } from "@shared/schema";
 import { insertGameStateSchema, actionInputSchema, NPC_SKILL_MAPPINGS } from "@shared/schema";
@@ -37,6 +38,9 @@ import {
   getIngredients
 } from "./aiService";
 const ORCHESTRATOR_DISABLED = process.env.DISABLE_ORCHESTRATOR_ENQUEUE === 'true' || process.env.NODE_ENV === 'test';
+const interviewResponsesSchema = z.record(z.string());
+
+class GameOwnershipError extends Error {}
 
 export async function registerRoutes(app: Express): Promise<Server> {
 
@@ -302,20 +306,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const gameId = req.params.id;
-      const responses = req.body;
-
-      const game = await storage.getGameState(gameId);
-      if (!game) {
-        return res.status(404).json({ error: "Game not found" });
-      }
-      if (game.username !== username) {
-        return res.status(403).json({ error: "Access denied" });
+      const parsed = interviewResponsesSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: "interview responses must be an object keyed by string values" });
       }
 
-      game.interviewResponses = responses;
-      const updated = await storage.updateGameState(gameId, game);
+      const updated = await storage.processTurnWithTransaction(gameId, async (state) => {
+        if (state.username !== username) {
+          throw new GameOwnershipError("Access denied");
+        }
+        state.interviewResponses = parsed.data;
+        return state;
+      });
+
       res.json(updated);
     } catch (error) {
+      if (error instanceof Error && error.message === "Game not found") {
+        return res.status(404).json({ error: "Game not found" });
+      }
+      if (error instanceof GameOwnershipError) {
+        return res.status(403).json({ error: "Access denied" });
+      }
       console.error("Error updating interview responses:", error);
       res.status(500).json({ error: "Failed to update interview responses" });
     }
@@ -364,7 +375,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Access denied" });
       }
 
-      // Load user preferences once for reuse (uses cache)
+      // Load user preferences once for reuse.
       const userPreferences = await storage.getUserPreferences(game.username);
 
       // Require imagePrompt from request body or from turn
@@ -823,25 +834,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         absurdity?: number | string;
       };
 
-      const game = await storage.getGameState(gameId);
-      if (!game) {
-        return res.status(404).json({ error: "Game not found" });
-      }
-      if (game.username !== username) {
-        return res.status(403).json({ error: "Access denied" });
-      }
-
-      if (absurdity !== undefined) {
-        const parsed = Number(absurdity);
-        if (!Number.isNaN(parsed)) {
-          const clamped = Math.min(3, Math.max(0, Math.round(parsed)));
-          game.absurdity = clamped;
+      const updated = await storage.processTurnWithTransaction(gameId, async (state) => {
+        if (state.username !== username) {
+          throw new GameOwnershipError("Access denied");
         }
-      }
 
-      const updated = await storage.updateGameState(gameId, game);
+        if (absurdity !== undefined) {
+          const parsed = Number(absurdity);
+          if (!Number.isNaN(parsed)) {
+            const clamped = Math.min(3, Math.max(0, Math.round(parsed)));
+            state.absurdity = clamped;
+          }
+        }
+
+        return state;
+      });
+
       res.json(updated);
     } catch (error) {
+      if (error instanceof Error && error.message === "Game not found") {
+        return res.status(404).json({ error: "Game not found" });
+      }
+      if (error instanceof GameOwnershipError) {
+        return res.status(403).json({ error: "Access denied" });
+      }
       console.error("Error updating game settings:", error);
       res.status(500).json({ error: "Failed to update game settings" });
     }

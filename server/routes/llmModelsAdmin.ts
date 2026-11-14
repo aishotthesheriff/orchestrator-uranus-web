@@ -254,15 +254,28 @@ async function discoverOpenAi(): Promise<DiscoveredModel[]> {
     .map((id) => ({ id, providers: [] }));
 }
 
+async function discoverNvidia(): Promise<DiscoveredModel[]> {
+  const ids: string[] = [];
+  for await (const m of getLlmClient("nvidia").models.list()) {
+    ids.push(m.id);
+    if (ids.length >= 2000) break;
+  }
+  // The catalog also lists embedding, reranking, safety and vision-only models.
+  return ids
+    .filter((id) => !/(embed|rerank|retriever|guard|safety|reward|clip|parse|nemoretriever|-ocr|deplot|paligemma|kosmos)/i.test(id))
+    .sort((a, b) => a.localeCompare(b))
+    .map((id) => ({ id, providers: [] }));
+}
+
 /**
- * GET /discover?source=hf-router | hf-hub | openai [&q=search] [&refresh=1]
+ * GET /discover?source=hf-router | hf-hub | openai | nvidia [&q=search] [&refresh=1]
  * Each model is flagged with the catalog keys that already use it.
  */
 llmModelsAdmin.get("/discover", async (req, res) => {
   const source = String(req.query.source ?? "hf-router");
   const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
   try {
-    if (!["hf-router", "hf-hub", "openai"].includes(source)) {
+    if (!["hf-router", "hf-hub", "openai", "nvidia"].includes(source)) {
       return res.status(400).json({ error: `Unknown source "${source}"` });
     }
     if (source === "hf-hub" && q.length < 2) {
@@ -275,12 +288,13 @@ llmModelsAdmin.get("/discover", async (req, res) => {
       const models =
         source === "hf-router" ? await discoverHuggingFaceRouter()
         : source === "hf-hub" ? await searchHuggingFaceHub(q)
+        : source === "nvidia" ? await discoverNvidia()
         : await discoverOpenAi();
       entry = { at: Date.now(), models };
       discoverCache.set(cacheKey, entry);
     }
 
-    const provider = source === "openai" ? "openai" : "huggingface";
+    const provider = source === "openai" || source === "nvidia" ? source : "huggingface";
     const catalog = await storage.listLlmModels();
     const inCatalog = new Map<string, string[]>();
     for (const row of catalog) {
@@ -308,7 +322,7 @@ llmModelsAdmin.get("/discover", async (req, res) => {
 const ModelRefSchema = z.union([
   z.object({ modelKey: z.string().trim().min(1) }),
   z.object({
-    provider: z.enum(["openai", "huggingface"]),
+    provider: z.enum(["openai", "huggingface", "nvidia"]),
     modelName: z.string().trim().min(1),
     hfProvider: z.string().trim().nullable().optional(),
     supportsJsonMode: z.boolean().optional(),

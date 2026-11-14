@@ -1,10 +1,11 @@
 // Shared types and helpers for the Dev Tools "LLM Models" tab.
 
-export type Provider = "openai" | "huggingface";
+export type Provider = "openai" | "huggingface" | "nvidia";
 
 export const PROVIDER_LABELS: Record<Provider, string> = {
   openai: "OpenAI",
   huggingface: "Hugging Face",
+  nvidia: "NVIDIA",
 };
 
 export type PublishState = "live" | "changed" | "unpublished" | "inactive";

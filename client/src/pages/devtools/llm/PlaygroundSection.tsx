@@ -41,6 +41,7 @@ interface HistoryEntry extends RunResult {
 const MODEL_PLACEHOLDER: Record<Provider, string> = {
   openai: "e.g. gpt-4o-mini",
   huggingface: "e.g. meta-llama/Llama-3.1-8B-Instruct (optionally :provider)",
+  nvidia: "e.g. google/gemma-4-31b-it",
 };
 
 const RECENT_KEY = "uranus-llm-test-recent-models";
@@ -224,6 +225,7 @@ export function PlaygroundSection({ target }: Props) {
                   <SelectContent>
                     <SelectItem value="openai">OpenAI</SelectItem>
                     <SelectItem value="huggingface">Hugging Face</SelectItem>
+                    <SelectItem value="nvidia">NVIDIA</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -262,6 +264,8 @@ export function PlaygroundSection({ target }: Props) {
                     ? `${modelsQuery.data.models.length} models available — start typing to filter.`
                     : provider === "huggingface"
                     ? "Any chat model served by an HF Inference Provider. Refresh to list them."
+                    : provider === "nvidia"
+                    ? "Any chat model in the NVIDIA API Catalog. Refresh to list them."
                     : "Any OpenAI chat model id. Refresh to list them."}
                 </p>
               </div>
@@ -300,7 +304,7 @@ export function PlaygroundSection({ target }: Props) {
                     className="cursor-pointer font-mono"
                     onClick={() => { setProvider(r.provider); setModel(r.model); }}
                   >
-                    {r.provider === "huggingface" ? "HF · " : ""}{r.model}
+                    {r.provider === "huggingface" ? "HF · " : r.provider === "nvidia" ? "NVIDIA · " : ""}{r.model}
                   </Badge>
                 ))}
               </div>
@@ -459,7 +463,7 @@ export function PlaygroundSection({ target }: Props) {
                       >
                         <div className="flex items-center justify-between gap-2">
                           <span className="font-mono truncate">
-                            {h.provider === "huggingface" ? "HF · " : ""}{h.model}
+                            {h.provider === "huggingface" ? "HF · " : h.provider === "nvidia" ? "NVIDIA · " : ""}{h.model}
                           </span>
                           <span className="text-muted-foreground shrink-0">
                             {h.ok ? `${(h.durationMs / 1000).toFixed(1)}s` : "error"} · {h.at}

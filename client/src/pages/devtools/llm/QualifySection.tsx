@@ -252,6 +252,7 @@ export function QualifySection({ target }: Props) {
                   <SelectContent>
                     <SelectItem value="openai">OpenAI</SelectItem>
                     <SelectItem value="huggingface">Hugging Face</SelectItem>
+                    <SelectItem value="nvidia">NVIDIA</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

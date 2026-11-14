@@ -386,6 +386,7 @@ export function CatalogSection({ prefill, onTest, onQualify }: Props) {
                     <SelectContent>
                       <SelectItem value="openai">OpenAI</SelectItem>
                       <SelectItem value="huggingface">Hugging Face</SelectItem>
+                      <SelectItem value="nvidia">NVIDIA</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -8,13 +8,16 @@ import { wrapOpenAI } from "langsmith/wrappers";
  * - openai:      OpenAI API (AI_INTEGRATIONS_OPENAI_* env, falling back to OPENAI_API_KEY)
  * - huggingface: Hugging Face Inference Providers router (OpenAI-compatible), HF_TOKEN.
  *                A model id may carry a provider suffix, e.g. "meta-llama/Llama-3.1-8B-Instruct:groq".
+ * - nvidia:      NVIDIA API Catalog (OpenAI-compatible), NVIDIA_API_KEY. Ids look like "google/gemma-4-31b-it".
  */
 
-export type LlmProvider = "openai" | "huggingface";
+export type LlmProvider = "openai" | "huggingface" | "nvidia";
 
-export const LLM_PROVIDERS: readonly LlmProvider[] = ["openai", "huggingface"];
+export const LLM_PROVIDERS: readonly LlmProvider[] = ["openai", "huggingface", "nvidia"];
 
 export const HF_ROUTER_BASE_URL = "https://router.huggingface.co/v1";
+
+export const NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1";
 
 /** Per-request ceiling. The SDK default is 10 minutes, far longer than a turn should wait. */
 export const LLM_REQUEST_TIMEOUT_MS = Number(process.env.LLM_REQUEST_TIMEOUT_MS ?? 90_000);
@@ -35,6 +38,10 @@ export function getLlmClient(provider: LlmProvider): OpenAI {
     const token = process.env.HF_TOKEN;
     if (!token) throw new LlmConfigError("HF_TOKEN is not set in the server environment");
     client = new OpenAI({ baseURL: HF_ROUTER_BASE_URL, apiKey: token, timeout: LLM_REQUEST_TIMEOUT_MS });
+  } else if (provider === "nvidia") {
+    const apiKey = process.env.NVIDIA_API_KEY;
+    if (!apiKey) throw new LlmConfigError("NVIDIA_API_KEY is not set in the server environment");
+    client = new OpenAI({ baseURL: NVIDIA_BASE_URL, apiKey, timeout: LLM_REQUEST_TIMEOUT_MS });
   } else {
     const apiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
     if (!apiKey) throw new LlmConfigError("No OpenAI API key is set in the server environment");
@@ -52,7 +59,7 @@ export function getLlmClient(provider: LlmProvider): OpenAI {
   return client;
 }
 
-/** OpenAI's newer models only accept max_completion_tokens; the HF router expects max_tokens. */
+/** OpenAI's newer models only accept max_completion_tokens; HF router and NVIDIA expect max_tokens. */
 export function maxTokensParam(provider: LlmProvider): "max_completion_tokens" | "max_tokens" {
   return provider === "openai" ? "max_completion_tokens" : "max_tokens";
 }
@@ -88,7 +95,7 @@ export function describeLlmError(error: unknown): { status: number | null; messa
   const status: number | null = typeof anyErr?.status === "number" ? anyErr.status : null;
   let message: string = anyErr?.error?.message || anyErr?.message || String(error);
   if (status === 404 || /not supported|does not exist|not found/i.test(message)) {
-    message += " — the model may not exist, or (Hugging Face) no Inference Provider you have enabled serves it.";
+    message += " — the model may not exist, or (Hugging Face) no Inference Provider you have enabled serves it, or (NVIDIA) the model is not in the API Catalog.";
   }
   return { status, message };
 }

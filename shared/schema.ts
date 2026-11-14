@@ -200,7 +200,7 @@ export type InsertImageModels = z.infer<typeof insertImageModelsSchema>;
 export interface LlmModels {
   id: string;
   modelKey: string;
-  provider: string; // 'openai' | 'huggingface'
+  provider: string; // 'openai' | 'huggingface' | 'nvidia'
   modelName: string;
   hfProvider: string | null;
   active: number;
@@ -226,7 +226,7 @@ export interface LlmModels {
 
 export const llmModelInputSchema = z.object({
   modelKey: z.string().trim().min(1).max(80).regex(/^[A-Za-z0-9._-]+$/, "Use letters, numbers, dot, dash or underscore"),
-  provider: z.enum(["openai", "huggingface"]),
+  provider: z.enum(["openai", "huggingface", "nvidia"]),
   modelName: z.string().trim().min(1).max(200),
   hfProvider: z.string().trim().max(80).nullable().optional(),
   active: z.number().int().min(0).max(1).optional(),

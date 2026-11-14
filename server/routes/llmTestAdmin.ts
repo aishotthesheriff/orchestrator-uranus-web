@@ -13,7 +13,7 @@ import { LlmConfigError, describeLlmError, getLlmClient, maxTokensParam, type Ll
 type Provider = LlmProvider;
 
 const RunSchema = z.object({
-  provider: z.enum(["openai", "huggingface"]),
+  provider: z.enum(["openai", "huggingface", "nvidia"]),
   model: z.string().trim().min(1, "model is required"),
   systemPrompt: z.string().optional().default(""),
   userPrompt: z.string().optional().default(""),
@@ -30,7 +30,7 @@ llmTestAdmin.use(requireAdmin);
 /** List model ids the provider reports (best effort; used for suggestions only). */
 llmTestAdmin.get("/models", async (req, res) => {
   try {
-    const provider = (req.query.provider === "huggingface" ? "huggingface" : "openai") as Provider;
+    const provider = (req.query.provider === "huggingface" || req.query.provider === "nvidia" ? req.query.provider : "openai") as Provider;
     const client = getLlmClient(provider);
     const ids: string[] = [];
     for await (const m of client.models.list()) {

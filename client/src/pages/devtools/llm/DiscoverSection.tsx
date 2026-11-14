@@ -25,7 +25,7 @@ import {
   type TestTarget,
 } from "./shared";
 
-type Source = "hf-router" | "hf-hub" | "openai";
+type Source = "hf-router" | "hf-hub" | "openai" | "nvidia";
 
 const SOURCES: Record<Source, { label: string; hint: string }> = {
   "hf-router": {
@@ -37,6 +37,7 @@ const SOURCES: Record<Source, { label: string; hint: string }> = {
     hint: "Find community models (roleplay and abliterated fine-tunes) that the served list leaves out. A model only works if a provider enabled on your Hugging Face account serves it.",
   },
   openai: { label: "OpenAI", hint: "Chat models available to your OpenAI key." },
+  nvidia: { label: "NVIDIA", hint: "Chat models in the NVIDIA API Catalog (integrate.api.nvidia.com)." },
 };
 
 const MAX_ROWS = 150;
@@ -87,7 +88,7 @@ export function DiscoverSection({ onTest, onQualify, onAdd }: Props) {
     staleTime: 10 * 60 * 1000,
   });
 
-  const provider: Provider = source === "openai" ? "openai" : "huggingface";
+  const provider: Provider = source === "openai" || source === "nvidia" ? source : "huggingface";
 
   const rows = useMemo(() => {
     const all = discover.data?.models ?? [];
@@ -233,7 +234,7 @@ export function DiscoverSection({ onTest, onQualify, onAdd }: Props) {
                         <TableHead>JSON mode</TableHead>
                       </>
                     )}
-                    {source !== "openai" && <TableHead>Providers</TableHead>}
+                    {source !== "openai" && source !== "nvidia" && <TableHead>Providers</TableHead>}
                     {source === "hf-hub" && <TableHead>Likes</TableHead>}
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -281,7 +282,7 @@ export function DiscoverSection({ onTest, onQualify, onAdd }: Props) {
                                 </TableCell>
                               </>
                             )}
-                            {source !== "openai" && (
+                            {source !== "openai" && source !== "nvidia" && (
                               <TableCell className="text-sm">
                                 {source === "hf-hub" ? live.map((p) => p.provider).join(", ") || "none live" : `${live.length} live`}
                               </TableCell>

@@ -1,5 +1,219 @@
 [
   {
+    "id": "670790d3-f164-4999-ad58-f95e63f24558",
+    "model_key": "muse-glimmer-30b",
+    "provider": "nvidia",
+    "model_name": "meta/muse-glimmer-30b",
+    "hf_provider": null,
+    "active": 0,
+    "is_default": false,
+    "display_name": "Muse Glimmer 30B",
+    "description": "Meta's Muse Glimmer (30B), served by NVIDIA.",
+    "notes": "Not qualified 2026-11-14: 14 s for a tiny prompt, a turn did not finish in time. Retry later.",
+    "sort_order": 100,
+    "adult": false,
+    "supports_json_mode": false,
+    "context_length": null,
+    "price_input": "0.000000",
+    "price_output": "0.000000",
+    "params": {
+      "maxTokens": 4000
+    },
+    "fallback_model_key": null,
+    "last_check_at": "2026-11-14T11:33:22.525Z",
+    "last_check_ok": true,
+    "last_check_summary": {
+      "check": {
+        "ok": true,
+        "latencyMs": 14200,
+        "model": "meta/muse-glimmer-30b",
+        "jsonQuality": "raw",
+        "at": "2026-11-14T11:33:22.494Z"
+      }
+    },
+    "created_at": "2026-11-14T11:33:08.264Z",
+    "updated_at": "2026-11-14T11:45:02.755Z"
+  },
+  {
+    "id": "872012cb-24a1-455f-ac93-58f516b51f6c",
+    "model_key": "mistral-large-4",
+    "provider": "nvidia",
+    "model_name": "mistralai/mistral-large-4-1t-a52b",
+    "hf_provider": null,
+    "active": 0,
+    "is_default": false,
+    "display_name": "Mistral Large 4",
+    "description": "Mistral Large 4 (1T), served by NVIDIA.",
+    "notes": "Qualify 2026-11-14: stages timed out (90s) and one refused; not usable.",
+    "sort_order": 100,
+    "adult": false,
+    "supports_json_mode": false,
+    "context_length": null,
+    "price_input": "0.000000",
+    "price_output": "0.000000",
+    "params": {
+      "maxTokens": 4000
+    },
+    "fallback_model_key": null,
+    "last_check_at": "2026-11-14T11:12:50.817Z",
+    "last_check_ok": true,
+    "last_check_summary": {
+      "check": {
+        "ok": true,
+        "latencyMs": 4264,
+        "model": "mistralai/mistral-large-4-1t-a52b",
+        "jsonQuality": "raw",
+        "at": "2026-11-14T11:12:50.809Z"
+      },
+      "qualify": {
+        "at": "2026-11-14T11:34:06.170Z",
+        "scenarioId": "preset-combat",
+        "runId": "60fd4bdf-d3d3-44d8-b8ba-5fe0e064d8d6",
+        "ok": true,
+        "strictOk": false,
+        "verdict": "fallback",
+        "turnMs": 674957,
+        "costUsd": 0
+      }
+    },
+    "created_at": "2026-11-14T11:10:51.490Z",
+    "updated_at": "2026-11-14T11:27:24.891Z"
+  },
+  {
+    "id": "b2c29b7d-a637-4451-ba28-bee8c666838e",
+    "model_key": "nemotron-3-ultra",
+    "provider": "nvidia",
+    "model_name": "nvidia/nemotron-3-ultra-550b-a55b",
+    "hf_provider": null,
+    "active": 1,
+    "is_default": false,
+    "display_name": "Nemotron 3 Ultra",
+    "description": "NVIDIA's Nemotron 3 Ultra (550B), served by NVIDIA.",
+    "notes": "Added 2026-11-14. NVIDIA API Catalog free tier, so price is 0. Reasoning model: needs a high max tokens.",
+    "sort_order": 100,
+    "adult": false,
+    "supports_json_mode": false,
+    "context_length": null,
+    "price_input": "0.000000",
+    "price_output": "0.000000",
+    "params": {
+      "maxTokens": 4000
+    },
+    "fallback_model_key": null,
+    "last_check_at": "2026-11-14T11:10:54.893Z",
+    "last_check_ok": true,
+    "last_check_summary": {
+      "check": {
+        "ok": true,
+        "latencyMs": 3270,
+        "model": "nvidia/nemotron-3-ultra-550b-a55b",
+        "jsonQuality": "raw",
+        "at": "2026-11-14T11:10:54.879Z"
+      },
+      "qualify": {
+        "at": "2026-11-14T11:12:46.346Z",
+        "scenarioId": "preset-combat",
+        "runId": "eb015c24-2a10-4ce7-a99e-a0d8387a30c6",
+        "ok": true,
+        "strictOk": true,
+        "verdict": "clean",
+        "turnMs": 30416,
+        "costUsd": 0
+      }
+    },
+    "created_at": "2026-11-14T11:10:51.342Z",
+    "updated_at": "2026-11-14T11:10:51.342Z"
+  },
+  {
+    "id": "d504f428-0eb6-4ac1-872d-ec4804174eea",
+    "model_key": "minimax-m3.1-flash",
+    "provider": "nvidia",
+    "model_name": "minimaxai/minimax-m3.1-flash",
+    "hf_provider": null,
+    "active": 0,
+    "is_default": false,
+    "display_name": "MiniMax M3.1 Flash",
+    "description": "MiniMax M3.1 Flash, served by NVIDIA.",
+    "notes": "Qualify 2026-11-14: one turn took 11 min and needed the backup model (NVIDIA safety screening 503). Retry later.",
+    "sort_order": 100,
+    "adult": false,
+    "supports_json_mode": false,
+    "context_length": null,
+    "price_input": "0.000000",
+    "price_output": "0.000000",
+    "params": {
+      "maxTokens": 4000
+    },
+    "fallback_model_key": null,
+    "last_check_at": "2026-11-14T11:33:09.421Z",
+    "last_check_ok": true,
+    "last_check_summary": {
+      "check": {
+        "ok": true,
+        "latencyMs": 1071,
+        "model": "minimaxai/minimax-m3.1-flash",
+        "jsonQuality": "raw",
+        "at": "2026-11-14T11:33:09.414Z"
+      },
+      "qualify": {
+        "at": "2026-11-14T11:44:07.219Z",
+        "scenarioId": "preset-combat",
+        "runId": "1bc927eb-44e8-46b9-8ffa-c14a2c49d740",
+        "ok": true,
+        "strictOk": false,
+        "verdict": "fallback",
+        "turnMs": 657584,
+        "costUsd": 0
+      }
+    },
+    "created_at": "2026-11-14T11:33:08.269Z",
+    "updated_at": "2026-11-14T11:45:02.664Z"
+  },
+  {
+    "id": "eab1f1c1-0a69-4fb1-a341-35ba4e18fb8f",
+    "model_key": "gemma-4-31b-it",
+    "provider": "nvidia",
+    "model_name": "google/gemma-4-31b-it",
+    "hf_provider": null,
+    "active": 0,
+    "is_default": false,
+    "display_name": "Gemma 4 31B",
+    "description": "Google's Gemma 4 (31B), served by NVIDIA.",
+    "notes": "Added from Discover (NVIDIA) on 11/14/2026. NVIDIA API Catalog free tier, so price is 0. JSON mode request hung in testing; left off.",
+    "sort_order": 100,
+    "adult": false,
+    "supports_json_mode": false,
+    "context_length": null,
+    "price_input": "0.000000",
+    "price_output": "0.000000",
+    "params": null,
+    "fallback_model_key": null,
+    "last_check_at": "2026-11-14T10:37:09.267Z",
+    "last_check_ok": false,
+    "last_check_summary": {
+      "check": {
+        "ok": false,
+        "latencyMs": 271659,
+        "model": "google/gemma-4-31b-it",
+        "error": "Request timed out.",
+        "upstreamStatus": null,
+        "at": "2026-11-14T10:37:09.226Z"
+      },
+      "qualify": {
+        "at": "2026-11-14T10:49:36.002Z",
+        "scenarioId": "preset-combat",
+        "runId": "2b445438-8ad1-4368-ab79-d3c3a69bf8a3",
+        "ok": false,
+        "strictOk": false,
+        "verdict": "failed",
+        "turnMs": 33930,
+        "costUsd": 0
+      }
+    },
+    "created_at": "2026-11-14T10:32:23.502Z",
+    "updated_at": "2026-11-14T10:32:23.502Z"
+  },
+  {
     "id": "llm-deepseek-v41-flash",
     "model_key": "deepseek-v4.1-flash",
     "provider": "huggingface",
@@ -14,9 +228,10 @@
     "adult": false,
     "supports_json_mode": true,
     "context_length": null,
-    "price_input": "0.20",
-    "price_output": "0.60",
+    "price_input": "0.200000",
+    "price_output": "0.600000",
     "params": null,
+    "fallback_model_key": null,
     "last_check_at": "2026-11-12T09:35:02.426Z",
     "last_check_ok": true,
     "last_check_summary": {
@@ -39,8 +254,7 @@
       }
     },
     "created_at": "2026-11-12T06:53:40.061Z",
-    "updated_at": "2026-11-12T09:35:15.579Z",
-    "fallback_model_key": null
+    "updated_at": "2026-11-12T09:35:15.579Z"
   },
   {
     "id": "llm-gpt-4o-mini",
@@ -57,9 +271,10 @@
     "adult": false,
     "supports_json_mode": true,
     "context_length": 128000,
-    "price_input": "0.15",
-    "price_output": "0.60",
+    "price_input": "0.150000",
+    "price_output": "0.600000",
     "params": null,
+    "fallback_model_key": null,
     "last_check_at": "2026-11-12T06:54:27.385Z",
     "last_check_ok": true,
     "last_check_summary": {
@@ -82,8 +297,7 @@
       }
     },
     "created_at": "2026-11-12T06:53:40.061Z",
-    "updated_at": "2026-11-12T06:53:40.061Z",
-    "fallback_model_key": null
+    "updated_at": "2026-11-12T06:53:40.061Z"
   },
   {
     "id": "llm-gpt-oss-120b",
@@ -100,11 +314,12 @@
     "adult": false,
     "supports_json_mode": true,
     "context_length": null,
-    "price_input": "0.05",
-    "price_output": "0.25",
+    "price_input": "0.050000",
+    "price_output": "0.250000",
     "params": {
       "maxTokens": 2000
     },
+    "fallback_model_key": null,
     "last_check_at": "2026-11-12T09:35:02.932Z",
     "last_check_ok": true,
     "last_check_summary": {
@@ -127,8 +342,7 @@
       }
     },
     "created_at": "2026-11-12T06:53:40.061Z",
-    "updated_at": "2026-11-12T09:35:15.665Z",
-    "fallback_model_key": null
+    "updated_at": "2026-11-12T09:35:15.665Z"
   },
   {
     "id": "llm-hermes-3-70b",
@@ -145,9 +359,10 @@
     "adult": true,
     "supports_json_mode": true,
     "context_length": null,
-    "price_input": "0.70",
-    "price_output": "0.70",
+    "price_input": "0.700000",
+    "price_output": "0.700000",
     "params": null,
+    "fallback_model_key": null,
     "last_check_at": "2026-11-12T09:35:03.511Z",
     "last_check_ok": true,
     "last_check_summary": {
@@ -170,8 +385,7 @@
       }
     },
     "created_at": "2026-11-12T06:53:40.061Z",
-    "updated_at": "2026-11-12T09:35:15.726Z",
-    "fallback_model_key": null
+    "updated_at": "2026-11-12T09:35:15.726Z"
   },
   {
     "id": "llm-stheno-8b",
@@ -188,9 +402,10 @@
     "adult": true,
     "supports_json_mode": false,
     "context_length": 8192,
-    "price_input": "0.05",
-    "price_output": "0.05",
+    "price_input": "0.050000",
+    "price_output": "0.050000",
     "params": null,
+    "fallback_model_key": "hermes-3-70b",
     "last_check_at": "2026-11-12T09:35:04.213Z",
     "last_check_ok": true,
     "last_check_summary": {
@@ -213,8 +428,7 @@
       }
     },
     "created_at": "2026-11-12T06:53:40.061Z",
-    "updated_at": "2026-11-12T09:35:15.752Z",
-    "fallback_model_key": "hermes-3-70b"
+    "updated_at": "2026-11-12T09:35:15.752Z"
   },
   {
     "id": "llm-wizardlm-2-8x22b",
@@ -231,9 +445,10 @@
     "adult": true,
     "supports_json_mode": false,
     "context_length": 65535,
-    "price_input": "0.62",
-    "price_output": "0.62",
+    "price_input": "0.620000",
+    "price_output": "0.620000",
     "params": null,
+    "fallback_model_key": "hermes-3-70b",
     "last_check_at": "2026-11-12T09:35:05.318Z",
     "last_check_ok": true,
     "last_check_summary": {
@@ -256,7 +471,6 @@
       }
     },
     "created_at": "2026-11-12T06:53:40.061Z",
-    "updated_at": "2026-11-12T09:35:15.802Z",
-    "fallback_model_key": "hermes-3-70b"
+    "updated_at": "2026-11-12T09:35:15.802Z"
   }
 ]

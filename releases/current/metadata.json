@@ -1,8 +1,8 @@
 {
-  "version": "v10.7.0",
+  "version": "v10.8.0",
   "publishedBy": "dev",
-  "publishedAt": "2026-11-13T11:28:34.989Z",
-  "notes": "Release format 2: adds a full copy of every content table (active and inactive rows), so an empty database can be set up from the release. No content changes since v10.6.0.",
+  "publishedAt": "2026-11-14T11:45:30.538Z",
+  "notes": "Adds NVIDIA provider and the Nemotron 3 Ultra story model. Other NVIDIA models added as inactive drafts.",
   "formatVersion": 2,
   "workspace": {
     "items": {
@@ -37,8 +37,8 @@
     },
     "llm_models": {
       "file": "workspace/llm_models.json",
-      "rows": 6,
-      "sha256": "0b8ed3c7e7bd045d38055f4a473ce0dabf703d3b1ab739a0fe0024bdd8475942"
+      "rows": 11,
+      "sha256": "26580106736c429890c0a0f9142690dadbeefbc2e5340cc9d10050ddd787619b"
     },
     "mod_story_themes": {
       "file": "workspace/mod_story_themes.json",

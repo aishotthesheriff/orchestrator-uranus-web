@@ -42,27 +42,6 @@
     "updatedAt": "2025-10-29T21:57:18.290Z"
   },
   {
-    "id": "e5b37a89-3616-4509-99df-124b0f7040b8",
-    "name": "technical_problem",
-    "promptTemplate": "Ship technical malfunction: {{CURRENT_NARRATIVE}}. Interior view with crew working on repairs, exposed wiring, makeshift fixes. Mood: {{ABSURDITY_DESCRIPTION}}.",
-    "inheritVisualStyle": 1,
-    "size": "1024x1024",
-    "quality": "auto",
-    "description": "Engineering problems and repair scenes",
-    "sceneTypes": [
-      "technical",
-      "repair",
-      "engineering"
-    ],
-    "tags": [
-      "technical",
-      "problem"
-    ],
-    "active": 1,
-    "createdAt": "2025-10-27T18:58:21.232Z",
-    "updatedAt": "2025-10-27T18:58:21.232Z"
-  },
-  {
     "id": "65f28af1-d20f-4e66-9ecd-aa71096a3590",
     "name": "arrival_departure",
     "promptTemplate": "Ship arriving or departing in {{SEGMENT}} region: {{CURRENT_NARRATIVE}}. Ship in motion with dramatic lighting and cosmic backdrop. Sense of journey and adventure.",
@@ -78,6 +57,27 @@
     "tags": [
       "journey",
       "milestone"
+    ],
+    "active": 1,
+    "createdAt": "2025-10-27T18:58:21.232Z",
+    "updatedAt": "2025-10-27T18:58:21.232Z"
+  },
+  {
+    "id": "e5b37a89-3616-4509-99df-124b0f7040b8",
+    "name": "technical_problem",
+    "promptTemplate": "Ship technical malfunction: {{CURRENT_NARRATIVE}}. Interior view with crew working on repairs, exposed wiring, makeshift fixes. Mood: {{ABSURDITY_DESCRIPTION}}.",
+    "inheritVisualStyle": 1,
+    "size": "1024x1024",
+    "quality": "auto",
+    "description": "Engineering problems and repair scenes",
+    "sceneTypes": [
+      "technical",
+      "repair",
+      "engineering"
+    ],
+    "tags": [
+      "technical",
+      "problem"
     ],
     "active": 1,
     "createdAt": "2025-10-27T18:58:21.232Z",
@@ -105,27 +105,6 @@
     "updatedAt": "2025-10-27T18:58:21.231Z"
   },
   {
-    "id": "e11c8ade-40f1-4875-afe8-ed2f3359ab43",
-    "name": "crisis_moment",
-    "promptTemplate": "Dramatic crisis aboard spaceship: {{CURRENT_NARRATIVE}}. Flashing warning lights, sparks, and comedic chaos. Mood: {{ABSURDITY_DESCRIPTION}}.",
-    "inheritVisualStyle": 1,
-    "size": "1024x1024",
-    "quality": "auto",
-    "description": "High-stakes emergency and action scenes",
-    "sceneTypes": [
-      "crisis",
-      "action",
-      "emergency"
-    ],
-    "tags": [
-      "action",
-      "drama"
-    ],
-    "active": 1,
-    "createdAt": "2025-10-27T18:58:21.231Z",
-    "updatedAt": "2025-10-27T18:58:21.231Z"
-  },
-  {
     "id": "af8c8130-4025-4022-8938-bf3e72b24285",
     "name": "character_interaction",
     "promptTemplate": "Character-focused scene aboard ship: {{CURRENT_NARRATIVE}}. Characters present: {{NPC_SUMMARY}}. Focus on character expressions and interactions. Mood: {{ABSURDITY_DESCRIPTION}}.",
@@ -141,6 +120,27 @@
     "tags": [
       "character",
       "social"
+    ],
+    "active": 1,
+    "createdAt": "2025-10-27T18:58:21.231Z",
+    "updatedAt": "2025-10-27T18:58:21.231Z"
+  },
+  {
+    "id": "e11c8ade-40f1-4875-afe8-ed2f3359ab43",
+    "name": "crisis_moment",
+    "promptTemplate": "Dramatic crisis aboard spaceship: {{CURRENT_NARRATIVE}}. Flashing warning lights, sparks, and comedic chaos. Mood: {{ABSURDITY_DESCRIPTION}}.",
+    "inheritVisualStyle": 1,
+    "size": "1024x1024",
+    "quality": "auto",
+    "description": "High-stakes emergency and action scenes",
+    "sceneTypes": [
+      "crisis",
+      "action",
+      "emergency"
+    ],
+    "tags": [
+      "action",
+      "drama"
     ],
     "active": 1,
     "createdAt": "2025-10-27T18:58:21.231Z",

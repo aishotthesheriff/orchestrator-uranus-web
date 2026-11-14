@@ -110,28 +110,6 @@
     "updatedAt": "2025-10-27T18:58:21.218Z"
   },
   {
-    "id": "800b5314-a784-497d-9e75-74537a3a3c02",
-    "name": "Reality Auditor Inspection",
-    "segment": "Approaching Uranus",
-    "skill": "Vibes",
-    "dc": 18,
-    "triggerCondition": {
-      "stat": "weirdness",
-      "type": "stat",
-      "value": 5,
-      "operator": ">="
-    },
-    "passEffect": "weirdness-2",
-    "failEffect": "freeze-system",
-    "tags": [
-      "absurd",
-      "authority"
-    ],
-    "active": 1,
-    "createdAt": "2025-10-27T18:58:21.217Z",
-    "updatedAt": "2025-10-27T18:58:21.217Z"
-  },
-  {
     "id": "07179791-b0ab-4199-af1d-7636f6f721c6",
     "name": "Quantum Mold Outbreak",
     "segment": "Outer Darkness",
@@ -154,24 +132,26 @@
     "updatedAt": "2025-10-27T18:58:21.217Z"
   },
   {
-    "id": "495873f2-b1bf-4dc5-ad0d-80c94f7b61ac",
-    "name": "Cosmic HOA Inspection",
-    "segment": "Jupiter & Saturn",
-    "skill": "Deception",
-    "dc": 15,
+    "id": "800b5314-a784-497d-9e75-74537a3a3c02",
+    "name": "Reality Auditor Inspection",
+    "segment": "Approaching Uranus",
+    "skill": "Vibes",
+    "dc": 18,
     "triggerCondition": {
-      "type": "random",
-      "chance": 0.12
+      "stat": "weirdness",
+      "type": "stat",
+      "value": 5,
+      "operator": ">="
     },
-    "passEffect": "morale+1",
-    "failEffect": "fuel-5,morale-1",
+    "passEffect": "weirdness-2",
+    "failEffect": "freeze-system",
     "tags": [
-      "authority",
-      "travel"
+      "absurd",
+      "authority"
     ],
     "active": 1,
-    "createdAt": "2025-10-27T18:58:21.216Z",
-    "updatedAt": "2025-10-27T18:58:21.216Z"
+    "createdAt": "2025-10-27T18:58:21.217Z",
+    "updatedAt": "2025-10-27T18:58:21.217Z"
   },
   {
     "id": "1bb153e0-d815-4b22-92d1-e7ddf2368858",
@@ -189,6 +169,26 @@
     "tags": [
       "bureaucracy",
       "cosmic"
+    ],
+    "active": 1,
+    "createdAt": "2025-10-27T18:58:21.216Z",
+    "updatedAt": "2025-10-27T18:58:21.216Z"
+  },
+  {
+    "id": "495873f2-b1bf-4dc5-ad0d-80c94f7b61ac",
+    "name": "Cosmic HOA Inspection",
+    "segment": "Jupiter & Saturn",
+    "skill": "Deception",
+    "dc": 15,
+    "triggerCondition": {
+      "type": "random",
+      "chance": 0.12
+    },
+    "passEffect": "morale+1",
+    "failEffect": "fuel-5,morale-1",
+    "tags": [
+      "authority",
+      "travel"
     ],
     "active": 1,
     "createdAt": "2025-10-27T18:58:21.216Z",

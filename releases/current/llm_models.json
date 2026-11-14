@@ -258,5 +258,50 @@
     },
     "createdAt": "2026-11-12T06:53:40.061Z",
     "updatedAt": "2026-11-12T09:35:15.802Z"
+  },
+  {
+    "id": "b2c29b7d-a637-4451-ba28-bee8c666838e",
+    "modelKey": "nemotron-3-ultra",
+    "provider": "nvidia",
+    "modelName": "nvidia/nemotron-3-ultra-550b-a55b",
+    "hfProvider": null,
+    "active": 1,
+    "isDefault": false,
+    "displayName": "Nemotron 3 Ultra",
+    "description": "NVIDIA's Nemotron 3 Ultra (550B), served by NVIDIA.",
+    "notes": "Added 2026-11-14. NVIDIA API Catalog free tier, so price is 0. Reasoning model: needs a high max tokens.",
+    "sortOrder": 100,
+    "adult": false,
+    "supportsJsonMode": false,
+    "contextLength": null,
+    "priceInput": 0,
+    "priceOutput": 0,
+    "params": {
+      "maxTokens": 4000
+    },
+    "fallbackModelKey": null,
+    "lastCheckAt": "2026-11-14T11:10:54.893Z",
+    "lastCheckOk": true,
+    "lastCheckSummary": {
+      "check": {
+        "ok": true,
+        "latencyMs": 3270,
+        "model": "nvidia/nemotron-3-ultra-550b-a55b",
+        "jsonQuality": "raw",
+        "at": "2026-11-14T11:10:54.879Z"
+      },
+      "qualify": {
+        "at": "2026-11-14T11:12:46.346Z",
+        "scenarioId": "preset-combat",
+        "runId": "eb015c24-2a10-4ce7-a99e-a0d8387a30c6",
+        "ok": true,
+        "strictOk": true,
+        "verdict": "clean",
+        "turnMs": 30416,
+        "costUsd": 0
+      }
+    },
+    "createdAt": "2026-11-14T11:10:51.342Z",
+    "updatedAt": "2026-11-14T11:10:51.342Z"
   }
 ]

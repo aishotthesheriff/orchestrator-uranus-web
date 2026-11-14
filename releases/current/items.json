@@ -63,27 +63,6 @@
     "updatedAt": "2025-10-27T18:58:21.224Z"
   },
   {
-    "id": "quantum_whoopee_cushion",
-    "name": "Quantum Whoopee Cushion",
-    "description": "Advantage on Vibes checks; science is unreliable",
-    "icon": "💨",
-    "skillBonusSkill": null,
-    "skillBonusValue": null,
-    "sceneEffectTags": [
-      "absurd"
-    ],
-    "sceneEffectEffect": "vibes-advantage",
-    "efficiency": null,
-    "tags": [
-      "absurd",
-      "cosmic",
-      "prank"
-    ],
-    "active": 1,
-    "createdAt": "2025-10-27T18:58:21.223Z",
-    "updatedAt": "2025-10-27T18:58:21.223Z"
-  },
-  {
     "id": "nebula_freshener",
     "name": "Nebula Air Freshener",
     "description": "+1 Morale on crew scenes; reduces morale loss by 1/day",
@@ -101,6 +80,27 @@
       "social",
       "crew",
       "comfort"
+    ],
+    "active": 1,
+    "createdAt": "2025-10-27T18:58:21.223Z",
+    "updatedAt": "2025-10-27T18:58:21.223Z"
+  },
+  {
+    "id": "quantum_whoopee_cushion",
+    "name": "Quantum Whoopee Cushion",
+    "description": "Advantage on Vibes checks; science is unreliable",
+    "icon": "💨",
+    "skillBonusSkill": null,
+    "skillBonusValue": null,
+    "sceneEffectTags": [
+      "absurd"
+    ],
+    "sceneEffectEffect": "vibes-advantage",
+    "efficiency": null,
+    "tags": [
+      "absurd",
+      "cosmic",
+      "prank"
     ],
     "active": 1,
     "createdAt": "2025-10-27T18:58:21.223Z",
